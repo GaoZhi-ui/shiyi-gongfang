@@ -12,10 +12,12 @@ GET    /chapters/{filename}/diff     — 查看 git 版本差异（若启用）
 路径前缀 /api/v1/chapters
 """
 
+import json
 import re
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
@@ -351,6 +353,152 @@ def rename_chapter(filename: str, body: ChapterRename):
         "status": "renamed",
         "old_filename": filename,
         "new_filename": new_name,
+    }
+
+
+# ─── 批量操作请求体 ───
+
+
+class BatchDeleteBody(BaseModel):
+    chapter_ids: list[str] = Field(..., min_length=1, description="要删除的章节文件名列表")
+
+
+class BatchExportBody(BaseModel):
+    chapter_ids: list[str] = Field(..., min_length=1, description="要导出的章节文件名列表")
+    format: Literal["docx", "txt", "markdown"] = Field("markdown", description="导出格式")
+
+
+class BatchTagBody(BaseModel):
+    chapter_ids: list[str] = Field(..., min_length=1, description="要打标签的章节文件名列表")
+    tag: str = Field(..., min_length=1, max_length=50, description="标签名")
+
+
+# ─── 标签存储 ───
+
+
+TAGS_FILE = BASE / "data" / "chapter_tags.json"
+
+
+def _load_tags() -> dict:
+    if TAGS_FILE.exists():
+        return json.loads(TAGS_FILE.read_text(encoding="utf-8"))
+    return {}
+
+
+def _save_tags(tags: dict):
+    TAGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    TAGS_FILE.write_text(
+        json.dumps(tags, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _cleanup_tags(filenames: list[str]):
+    """删除指定文件名的标签记录"""
+    tags = _load_tags()
+    changed = False
+    for fn in filenames:
+        if fn in tags:
+            del tags[fn]
+            changed = True
+    if changed:
+        _save_tags(tags)
+
+
+# ─── 批量操作路由 ───
+
+
+@router.post("/batch/delete")
+def batch_delete_chapters(body: BatchDeleteBody):
+    """批量删除章节文件"""
+    deleted: list[str] = []
+    errors: list[dict] = []
+
+    for filename in body.chapter_ids:
+        try:
+            target = _safe_chapter_path(filename)
+            if not target.exists():
+                errors.append({"filename": filename, "reason": "not_found"})
+                continue
+            target.unlink()
+            deleted.append(filename)
+        except (ChapterPathTraversalError, ChapterFileTypeError) as e:
+            errors.append({"filename": filename, "reason": str(e)})
+
+    # 清理被删除章节的标签记录
+    _cleanup_tags(deleted)
+
+    return {
+        "status": "ok" if not errors else "partial",
+        "deleted": deleted,
+        "deleted_count": len(deleted),
+        "errors": errors,
+        "error_count": len(errors),
+    }
+
+
+@router.post("/batch/export", status_code=201)
+def batch_export_chapters(body: BatchExportBody):
+    """批量导出章节，返回下载链接"""
+    # 延迟导入避免循环引用
+    from routers.export import (
+        _collect_chapters as _export_collect,
+        _export_docx,
+        _export_txt,
+        _export_markdown_zip,
+        _export_title,
+    )
+
+    chapters = _export_collect(body.chapter_ids)
+    title = _export_title(body.chapter_ids, None)
+
+    if body.format == "docx":
+        filepath = _export_docx(chapters, title)
+    elif body.format == "txt":
+        filepath = _export_txt(chapters, title)
+    else:
+        filepath = _export_markdown_zip(chapters, title)
+
+    return {
+        "status": "ok",
+        "format": body.format,
+        "filename": filepath.name,
+        "chapter_count": len(chapters),
+        "download_url": f"/export/{filepath.name}",
+    }
+
+
+@router.post("/batch/tag")
+def batch_tag_chapters(body: BatchTagBody):
+    """批量给章节打标签"""
+    tags = _load_tags()
+    tagged: list[str] = []
+    errors: list[dict] = []
+
+    for filename in body.chapter_ids:
+        try:
+            target = _safe_chapter_path(filename)
+            if not target.exists():
+                errors.append({"filename": filename, "reason": "not_found"})
+                continue
+
+            if filename not in tags:
+                tags[filename] = []
+            if body.tag not in tags[filename]:
+                tags[filename].append(body.tag)
+            tagged.append(filename)
+        except (ChapterPathTraversalError, ChapterFileTypeError) as e:
+            errors.append({"filename": filename, "reason": str(e)})
+
+    _save_tags(tags)
+
+    return {
+        "status": "ok" if not errors else "partial",
+        "tag": body.tag,
+        "tagged": tagged,
+        "tagged_count": len(tagged),
+        "errors": errors,
+        "error_count": len(errors),
     }
 
 
