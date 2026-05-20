@@ -400,6 +400,37 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .tb-loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid #444;border-top-color:#d4a040;border-radius:50%;animation:spin .6s linear infinite;margin:8px auto}
 .tb-result-success{background:#0d1f0d;border:1px solid #1e3a1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#8bc34a;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
 .tb-result-error{background:#1f0d0d;border:1px solid #3a1e1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#ef5350;font-family:monospace;white-space:pre-wrap;word-break:break-word}
+
+/* ===== Focus Mode ===== */
+.focus-btn{background:transparent;border:1px solid #2a2825;border-radius:6px;color:#d4a040;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.focus-btn:hover{background:rgba(212,160,64,0.1);border-color:#d4a040}
+.focus-exit-btn{position:fixed;top:14px;right:20px;z-index:1000;background:rgba(212,160,64,0.12);border:1px solid rgba(212,160,64,0.3);border-radius:8px;color:#d4a040;padding:6px 14px;font-size:12px;cursor:pointer;transition:opacity .3s ease,transform .3s ease;display:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.focus-exit-btn:hover{background:rgba(212,160,64,0.2);border-color:#d4a040}
+body.focus-mode .focus-exit-btn{display:block;animation:fadeIn .3s ease}
+body.focus-mode .sidebar{width:0!important;min-width:0!important;padding:0!important;border:none!important;opacity:0;overflow:hidden;pointer-events:none;flex:0 0 0}
+body.focus-mode .right-panel{width:0!important;min-width:0!important;padding:0!important;border:none!important;opacity:0;overflow:hidden;pointer-events:none;flex:0 0 0}
+body.focus-mode .topbar{height:0!important;min-height:0!important;padding:0!important;border:none!important;opacity:0;overflow:hidden;pointer-events:none}
+body.focus-mode .editor-area textarea{font-size:16px;line-height:1.9;padding:40px 60px}
+body.focus-mode .editor-area .editor-footer{padding:8px 60px}
+.sidebar,.right-panel{transition:width .3s ease,opacity .3s ease,padding .3s ease}
+.topbar{transition:height .3s ease,opacity .3s ease,padding .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== Editor Toolbar ===== */
+.editor-toolbar{display:none;align-items:center;gap:8px;padding:4px 16px;background:#181818;border-bottom:1px solid #2a2825;flex-shrink:0;min-height:32px}
+.editor-area.active .editor-toolbar{display:flex}
+.toolbar-spacer{flex:1}
+.tw-toggle{background:transparent;border:1px solid #2a2825;border-radius:5px;color:#888;padding:3px 8px;font-size:11px;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap}
+.tw-toggle:hover{background:#242424;color:#d4d4d4}
+.tw-toggle.active{background:rgba(212,160,64,0.1);color:#d4a040;border-color:rgba(212,160,64,0.3)}
+
+/* ===== Chapter Navigator ===== */
+.chapter-nav{display:flex;align-items:center;gap:8px}
+.chapter-nav .nav-arrow{background:transparent;border:1px solid #2a2825;border-radius:5px;color:#888;padding:2px 7px;font-size:11px;cursor:pointer;transition:all .12s;user-select:none;line-height:1.2}
+.chapter-nav .nav-arrow:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+.chapter-nav .nav-arrow:disabled{opacity:.3;cursor:default;pointer-events:none}
+.chapter-nav .nav-label{font-size:11px;color:#999;cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .12s;user-select:none}
+.chapter-nav .nav-label:hover{background:#242424;color:#d4d4d4}
 </style>
 </head>
 <body>
@@ -470,8 +501,11 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
     <div class="topbar-spacer"></div>
     <button class="shortcut-btn" id="shortcutHelpBtn" title="快捷键">⌨</button>
+    <button class="focus-btn" id="focusToggleBtn" title="专注模式">🎯 专注</button>
     <button class="api-btn" id="apiSettingsBtn">⚙ 设置</button>
   </div>
+
+  <button class="focus-exit-btn" id="focusExitBtn" title="退出专注模式 (Esc)">✕ 退出专注</button>
 
   <div class="editor-bar" id="editorBar">
     <button class="toggle-btn" id="editorToggleBtn">✏️ 编辑</button>
@@ -481,6 +515,15 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   </div>
 
   <div class="editor-area" id="editorArea">
+    <div class="editor-toolbar">
+      <span class="tw-toggle" id="twToggle">⏳ 打字机滚动</span>
+      <div class="toolbar-spacer"></div>
+      <div class="chapter-nav" id="chapterNav">
+        <button class="nav-arrow" id="navPrev" title="上一章 (Ctrl+↑)">▲</button>
+        <span class="nav-label" id="navLabel" title="点击跳转章节">第1章 / 共6章</span>
+        <button class="nav-arrow" id="navNext" title="下一章 (Ctrl+↓)">▼</button>
+      </div>
+    </div>
     <textarea id="editorTextarea" placeholder="在此撰写或粘贴章节内容…&#10;&#10;支持 Markdown 格式。"></textarea>
     <div class="editor-footer">
       <span class="editor-char-count">已写 <span class="num" id="editorCharCount">0</span> 字</span>
@@ -667,7 +710,9 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
         <div class="shortcut-item"><span class="shortcut-keys">Ctrl + N</span><span class="shortcut-desc">新建章节</span></div>
         <div class="shortcut-item"><span class="shortcut-keys">Ctrl + F</span><span class="shortcut-desc">搜索当前编辑区</span></div>
         <div class="shortcut-item"><span class="shortcut-keys">Ctrl + Shift + F</span><span class="shortcut-desc">全局搜索章节</span></div>
-        <div class="shortcut-item"><span class="shortcut-keys">Esc</span><span class="shortcut-desc">关闭面板 / 弹窗</span></div>
+        <div class="shortcut-item"><span class="shortcut-keys">Ctrl + ↑</span><span class="shortcut-desc">上一章（编辑模式）</span></div>
+        <div class="shortcut-item"><span class="shortcut-keys">Ctrl + ↓</span><span class="shortcut-desc">下一章（编辑模式）</span></div>
+        <div class="shortcut-item"><span class="shortcut-keys">Esc</span><span class="shortcut-desc">关闭面板 / 弹窗 / 退出专注</span></div>
         <div class="shortcut-divider"></div>
         <div class="shortcut-item"><span class="shortcut-keys">⌨</span><span class="shortcut-desc">打开本面板</span></div>
       </div>
@@ -2167,6 +2212,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     html += '</div>';
     panelBody.innerHTML = html;
     bindCorkboardDragEvents();
+    updateChapterNav();
   }
 
   function bindCorkboardDragEvents(){
@@ -2755,8 +2801,13 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       globalSearchChapters();
       return;
     }
-    // Escape — 关闭面板/弹窗
+    // Escape — 关闭面板/弹窗/退出专注
     if(e.key === 'Escape'){
+      if(focusMode){
+        e.preventDefault();
+        toggleFocusMode();
+        return;
+      }
       var anyOpen = document.querySelector('.modal-overlay.open');
       if(anyOpen){
         e.preventDefault();
@@ -2773,6 +2824,18 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
         togglePanel();
         return;
       }
+    }
+    // Ctrl+↑ — 上一章
+    if(ctrl && e.key === 'ArrowUp' && corkboardChapters.length > 0){
+      e.preventDefault();
+      if(typeof switchToChapter === 'function') switchToChapter(currentChapterIndex - 1);
+      return;
+    }
+    // Ctrl+↓ — 下一章
+    if(ctrl && e.key === 'ArrowDown' && corkboardChapters.length > 0){
+      e.preventDefault();
+      if(typeof switchToChapter === 'function') switchToChapter(currentChapterIndex + 1);
+      return;
     }
   });
 
@@ -2794,6 +2857,126 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       e.target.classList.remove('open');
     }
   });
+
+  // ========== Focus Mode ==========
+  var focusMode = false;
+  var focusToggleBtn = document.getElementById('focusToggleBtn');
+  var focusExitBtn = document.getElementById('focusExitBtn');
+
+  function toggleFocusMode(){
+    focusMode = !focusMode;
+    document.body.classList.toggle('focus-mode', focusMode);
+    if(focusMode && editorTextarea) editorTextarea.focus();
+  }
+
+  focusToggleBtn.addEventListener('click', toggleFocusMode);
+  focusExitBtn.addEventListener('click', toggleFocusMode);
+
+  // ========== Typewriter Scroll ==========
+  var twEnabled = false;
+  var twToggle = document.getElementById('twToggle');
+
+  function centerCursorLine(){
+    if(!twEnabled || !editorMode) return;
+    var ta = editorTextarea;
+    if(!ta || !ta.value) return;
+    var style = getComputedStyle(ta);
+    var lineHeight = parseFloat(style.lineHeight) || 24;
+    var cursorPos = ta.selectionStart;
+    var text = ta.value.substring(0, cursorPos);
+    var lines = text.split('\n');
+    var cursorLine = lines.length;
+    var targetScroll = cursorLine * lineHeight - ta.clientHeight / 2 + lineHeight / 2;
+    ta.scrollTop = Math.max(0, targetScroll);
+  }
+
+  twToggle.addEventListener('click', function(){
+    twEnabled = !twEnabled;
+    twToggle.classList.toggle('active', twEnabled);
+    if(twEnabled) centerCursorLine();
+  });
+
+  editorTextarea.addEventListener('click', function(){
+    if(twEnabled) centerCursorLine();
+  });
+
+  editorTextarea.addEventListener('keyup', function(){
+    if(twEnabled) centerCursorLine();
+  });
+
+  // ========== Quick Chapter Switch ==========
+  var currentChapterIndex = 0;
+
+  window.updateChapterNav = function(){
+    var navLabel = document.getElementById('navLabel');
+    var navPrev = document.getElementById('navPrev');
+    var navNext = document.getElementById('navNext');
+    if(!navLabel) return;
+    var total = corkboardChapters.length;
+    if(total === 0){
+      navLabel.textContent = '无章节';
+      if(navPrev) navPrev.disabled = true;
+      if(navNext) navNext.disabled = true;
+      return;
+    }
+    if(currentChapterIndex < 0) currentChapterIndex = 0;
+    if(currentChapterIndex >= total) currentChapterIndex = total - 1;
+    var ch = corkboardChapters[currentChapterIndex];
+    var num = ch.number || (currentChapterIndex + 1);
+    navLabel.textContent = '第' + num + '章 / 共' + total + '章';
+    navLabel.title = '点击跳转章节';
+    if(navPrev) navPrev.disabled = currentChapterIndex <= 0;
+    if(navNext) navNext.disabled = currentChapterIndex >= total - 1;
+  };
+
+  function saveCurrentDraft(){
+    if(editorTextarea && editorTextarea.value.trim()){
+      saveDraftToLocal();
+    }
+  }
+
+  window.switchToChapter = function(index){
+    if(!corkboardChapters.length) return;
+    while(index < 0) index += corkboardChapters.length;
+    if(index >= corkboardChapters.length) index = 0;
+    if(index === currentChapterIndex) return;
+    // Auto-save unsaved changes
+    saveCurrentDraft();
+    currentChapterIndex = index;
+    var ch = corkboardChapters[index];
+    editorTextarea.value = ch.content || ch.body || '';
+    autoResizeInput(editorTextarea);
+    var len = editorTextarea.value.replace(/[\s\n\r]/g,'').length;
+    editorCharCount.textContent = len.toLocaleString();
+    editorSaveStatus.textContent = '📄 ' + (ch.title || '第' + (ch.number || index+1) + '章');
+    editorSaveStatus.className = 'editor-status saved';
+    updateChapterNav();
+    // Switch to editor mode if not already
+    if(!editorMode) editorToggleBtn.click();
+    editorTextarea.focus();
+  };
+
+  // Bind nav buttons
+  document.getElementById('navPrev').addEventListener('click', function(){
+    switchToChapter(currentChapterIndex - 1);
+  });
+  document.getElementById('navNext').addEventListener('click', function(){
+    switchToChapter(currentChapterIndex + 1);
+  });
+  document.getElementById('navLabel').addEventListener('click', function(){
+    var total = corkboardChapters.length;
+    if(total === 0) return;
+    var input = prompt('跳转到第几章？（1-' + total + '）');
+    if(input){
+      var idx = parseInt(input) - 1;
+      if(!isNaN(idx) && idx >= 0 && idx < total){
+        switchToChapter(idx);
+      }
+    }
+  });
+
+  // 初始化章节导航
+  setTimeout(function(){ updateChapterNav(); }, 500);
 })();
 </script>
 </body>

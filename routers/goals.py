@@ -17,13 +17,14 @@ from pathlib import Path
 from datetime import datetime, date, timezone
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
+from core.enums import GoalStatus
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 BASE = Path(__file__).resolve().parent.parent
 GOALS_DIR = BASE / "goals"
 GOALS_DIR.mkdir(exist_ok=True)
 
-ALLOWED_STATUSES = {"active", "completed", "abandoned"}
+ALLOWED_STATUSES = {s.value for s in GoalStatus}
 
 
 # ─── 路径安全 ───
@@ -89,15 +90,8 @@ class GoalCreate(BaseModel):
 
 class GoalUpdate(BaseModel):
     current_word_count: int | None = Field(default=None, ge=0, description="当前已写字数")
-    status: str | None = Field(default=None)
+    status: GoalStatus | None = Field(default=None, description="目标状态")
     check_in: bool = Field(default=False, description="今日打卡")
-
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, v: str | None) -> str | None:
-        if v is not None and v not in ALLOWED_STATUSES:
-            raise ValueError(f"status 必须是 {ALLOWED_STATUSES} 之一")
-        return v
 
 
 class GoalResponse(BaseModel):
@@ -106,7 +100,7 @@ class GoalResponse(BaseModel):
     target_word_count: int
     deadline: str
     current_word_count: int = 0
-    status: str = "active"
+    status: GoalStatus = GoalStatus.ACTIVE
     check_ins: list[str] = []
     progress_pct: float = 0.0
     created_at: str = ""

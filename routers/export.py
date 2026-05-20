@@ -7,6 +7,8 @@ POST /api/v1/export/markdown   — 导出为 markdown 压缩包
 
 导出文件存 export/ 临时目录，返回下载链接。
 路径前缀 /api/v1/export
+
+架构：原始文本 → tokenize() → ChapterToken[] → FormattedDocument → Consumer
 """
 
 import json, re, zipfile, uuid
@@ -17,6 +19,9 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+
+from core.export_engine import build_document
+from core.export_consumers import DocxConsumer, TxtConsumer, MarkdownConsumer
 
 router = APIRouter(prefix="/export", tags=["export"])
 BASE = Path(__file__).resolve().parent.parent
@@ -134,160 +139,28 @@ def _export_title(chapters_param: list[str] | str, custom_title: str | None) -> 
     return f"写作助手_导出_{now.strftime('%Y%m%d_%H%M')}"
 
 
-def _safe_filename(title: str, ext: str) -> str:
-    """生成安全文件名"""
-    safe = re.sub(r'[<>:"/\\|?*]', '_', title)
-    safe = safe.strip().replace(' ', '_')
-    if not safe:
-        safe = "export"
-    return f"{safe}{ext}"
-
-
-# ─── 内部导出函数 ───
+# ─── 内部导出函数（基于 export_engine） ───
 
 
 def _export_docx(chapters: list[tuple[str, str]], title: str) -> Path:
-    """生成 docx 文件"""
-    try:
-        from docx import Document
-        from docx.shared import Pt, Cm, RGBColor
-        from docx.enum.text import WD_ALIGN_PARAGRAPH
-    except ImportError:
-        raise HTTPException(500, detail={
-            "code": "DEPENDENCY_MISSING",
-            "message": "python-docx 未安装，请执行 pip install python-docx",
-        })
-
-    doc = Document()
-
-    # 文档标题
-    title_para = doc.add_heading(title, level=0)
-    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    # 元数据
-    meta = doc.add_paragraph()
-    meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = meta.add_run(
-        f"共 {len(chapters)} 章 | 导出时间: "
-        f"{datetime.now(timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M')}"
-    )
-    run.font.size = Pt(9)
-    run.font.color.rgb = RGBColor(0x88, 0x88, 0x88)
-
-    doc.add_page_break()
-
-    for i, (filename, content) in enumerate(chapters):
-        # 章节标题
-        doc.add_heading(filename.replace(".md", ""), level=1)
-
-        # 解析正文与日记
-        parts = content.split("---", 1)
-        body = parts[0].strip()
-        diary = parts[1].strip() if len(parts) > 1 else ""
-
-        # 正文
-        for line in body.split("\n"):
-            line = line.strip()
-            if not line:
-                continue
-            if line.startswith("#"):
-                level = min(len(line.split()[0]), 4)
-                doc.add_heading(line.lstrip("#").strip(), level=level)
-            elif line.startswith("- ") or line.startswith("* "):
-                doc.add_paragraph(line[2:], style="List Bullet")
-            elif re.match(r"^\d+\. ", line):
-                doc.add_paragraph(line, style="List Number")
-            else:
-                p = doc.add_paragraph(line)
-
-        # 日记部分
-        if diary:
-            doc.add_paragraph("")  # spacing
-            diary_label = doc.add_paragraph()
-            run_lbl = diary_label.add_run("—— 章末日记 ——")
-            run_lbl.bold = True
-            run_lbl.font.size = Pt(10)
-            run_lbl.font.color.rgb = RGBColor(0x66, 0x66, 0x66)
-
-            for line in diary.split("\n"):
-                line = line.strip()
-                if line:
-                    p = doc.add_paragraph(line)
-                    p.paragraph_format.left_indent = Cm(1)
-
-        # 章节间分页（最后一章不分页）
-        if i < len(chapters) - 1:
-            doc.add_page_break()
-
-    filename = _safe_filename(title, ".docx")
-    filepath = EXPORT_DIR / filename
-    doc.save(str(filepath))
-    return filepath
+    """Token化 → DocxConsumer 管线"""
+    doc = build_document(title, chapters)
+    consumer = DocxConsumer(export_dir=EXPORT_DIR)
+    return consumer.consume(doc)
 
 
 def _export_txt(chapters: list[tuple[str, str]], title: str) -> Path:
-    """生成 txt 文件"""
-    lines: list[str] = []
-    lines.append(f"{'='*60}")
-    lines.append(f"{title:^60}")
-    lines.append(f"{'='*60}")
-    lines.append(f"共 {len(chapters)} 章")
-    lines.append(f"导出时间: {datetime.now(timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M')}")
-    lines.append("")
-    lines.append(f"{'='*60}")
-    lines.append("")
-
-    for filename, content in chapters:
-        lines.append("")
-        lines.append(f"{'─'*40}")
-        lines.append(f"  {filename.replace('.md', '')}")
-        lines.append(f"{'─'*40}")
-        lines.append("")
-
-        parts = content.split("---", 1)
-        lines.append(parts[0].strip())
-
-        if len(parts) > 1 and parts[1].strip():
-            lines.append("")
-            lines.append("[章末日记]")
-            lines.append(parts[1].strip())
-
-        lines.append("")
-
-    content = "\n".join(lines)
-    filename = _safe_filename(title, ".txt")
-    filepath = EXPORT_DIR / filename
-    filepath.write_text(content, encoding="utf-8")
-    return filepath
+    """Token化 → TxtConsumer 管线"""
+    doc = build_document(title, chapters)
+    consumer = TxtConsumer(export_dir=EXPORT_DIR)
+    return consumer.consume(doc)
 
 
 def _export_markdown_zip(chapters: list[tuple[str, str]], title: str) -> Path:
-    """生成 markdown 压缩包"""
-    buf = BytesIO()
-
-    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
-        # 添加一个元信息文件
-        meta = (
-            f"# {title}\n\n"
-            f"导出时间: {datetime.now(timezone.utc).astimezone().strftime('%Y-%m-%d %H:%M')}\n"
-            f"章节数: {len(chapters)}\n\n"
-            f"| # | 文件名 | 字数 |\n"
-            f"|---|--------|------|\n"
-        )
-        for i, (filename, content) in enumerate(chapters, 1):
-            cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', content))
-            meta += f"| {i} | {filename} | {cjk} |\n"
-
-        zf.writestr("README.md", meta.encode("utf-8"))
-
-        # 添加各章节文件
-        for filename, content in chapters:
-            zf.writestr(filename, content.encode("utf-8"))
-
-    filename = _safe_filename(title, ".zip")
-    filepath = EXPORT_DIR / filename
-    filepath.write_bytes(buf.getvalue())
-    return filepath
+    """Token化 → MarkdownConsumer 管线"""
+    doc = build_document(title, chapters)
+    consumer = MarkdownConsumer(export_dir=EXPORT_DIR)
+    return consumer.consume(doc)
 
 
 # ─── 路由 ───

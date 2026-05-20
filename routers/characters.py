@@ -26,6 +26,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from routers.sanitize import sanitize_text
+from core.enums import RelationType
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 BASE = Path(__file__).resolve().parent.parent
@@ -108,14 +109,14 @@ class RelationCreate(BaseModel):
     project_id: str = Field(..., min_length=1, description="项目 ID")
     source: str = Field(..., min_length=1, description="源角色 ID")
     target: str = Field(..., min_length=1, description="目标角色 ID")
-    type: str = Field(default="neutral", description="关系类型: ally/enemy/love/family/neutral")
+    type: RelationType = Field(default=RelationType.NEUTRAL, description="关系类型")
     label: str = Field(default="", max_length=100, description="关系标签，如'战友'")
 
 
 class RelationResponse(BaseModel):
     source: str
     target: str
-    type: str
+    type: RelationType
     label: str = ""
 
 
@@ -174,7 +175,7 @@ async def list_relations(project_id: str = Query(..., description="项目 ID")):
             edges.append({
                 "source": r["source"],
                 "target": r["target"],
-                "type": r.get("type", "neutral"),
+                "type": r.get("type", RelationType.NEUTRAL.value),
                 "label": r.get("label", ""),
             })
 
@@ -204,7 +205,7 @@ async def create_relation(body: RelationCreate):
     new_rel = {
         "source": body.source,
         "target": body.target,
-        "type": body.type,
+        "type": body.type.value,
         "label": body.label,
     }
     if existing:

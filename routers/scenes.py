@@ -21,6 +21,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
+from core.enums import SceneType
 
 router = APIRouter(prefix="/scenes", tags=["scenes"])
 BASE = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ SCENES_DIR = BASE / "scenes"
 SCENES_DIR.mkdir(exist_ok=True)
 
 ALLOWED_STATUSES = {"draft", "written", "revised", "final"}
+ALLOWED_SCENE_TYPES = {t.value for t in SceneType}
 
 # ─── 异常定义 ───
 
@@ -85,6 +87,7 @@ class SceneItem(BaseModel):
     id: str
     chapter_id: str
     title: str
+    scene_type: SceneType = SceneType.NARRATION
     status: str = "draft"
     word_count: int = 0
     summary: str = ""
@@ -95,6 +98,7 @@ class SceneItem(BaseModel):
 
 class SceneCreate(BaseModel):
     title: str = Field(default="新场景", max_length=200, description="场景标题")
+    scene_type: SceneType = Field(default=SceneType.NARRATION, description="场景类型")
     status: str = Field(default="draft", description="状态: draft/written/revised/final")
     word_count: int = Field(default=0, ge=0, description="场景字数")
     summary: str = Field(default="", max_length=2000, description="场景摘要")
@@ -106,9 +110,17 @@ class SceneCreate(BaseModel):
             raise ValueError(f"status 必须是 {ALLOWED_STATUSES} 之一")
         return v
 
+    @field_validator("scene_type")
+    @classmethod
+    def validate_scene_type(cls, v: SceneType) -> SceneType:
+        if v.value not in ALLOWED_SCENE_TYPES:
+            raise ValueError(f"scene_type 必须是 {list(SceneType)} 之一")
+        return v
+
 
 class SceneUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=200)
+    scene_type: SceneType | None = Field(default=None, description="场景类型")
     status: str | None = Field(default=None)
     word_count: int | None = Field(default=None, ge=0)
     summary: str | None = Field(default=None, max_length=2000)
@@ -168,6 +180,7 @@ def create_scene(chapter_id: str, body: SceneCreate):
         "id": uuid.uuid4().hex[:12],
         "chapter_id": chapter_id,
         "title": body.title,
+        "scene_type": body.scene_type.value,
         "status": body.status,
         "word_count": body.word_count,
         "summary": body.summary,

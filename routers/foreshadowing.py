@@ -17,14 +17,15 @@ from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
+from core.enums import ForeshadowingType, ForeshadowingStatus
 
 router = APIRouter(prefix="/foreshadowing", tags=["foreshadowing"])
 BASE = Path(__file__).resolve().parent.parent
 FORESHADOWING_DIR = BASE / "foreshadowing"
 FORESHADOWING_DIR.mkdir(exist_ok=True)
 
-ALLOWED_TYPES = {"plot", "character", "object", "lore"}
-ALLOWED_STATUSES = {"pending", "revealed", "resolved", "abandoned"}
+ALLOWED_TYPES = {t.value for t in ForeshadowingType}
+ALLOWED_STATUSES = {s.value for s in ForeshadowingStatus}
 
 
 # ─── 路径安全 ───
@@ -72,30 +73,15 @@ class ForeshadowingCreate(BaseModel):
     project_id: str = Field(..., min_length=1, description="项目 ID")
     title: str = Field(..., min_length=1, max_length=200, description="伏笔标题")
     description: str = Field(default="", max_length=2000, description="伏笔描述")
-    type: str = Field(default="plot", description=f"伏笔类型: {ALLOWED_TYPES}")
+    type: ForeshadowingType = Field(default=ForeshadowingType.PLOT, description="伏笔类型")
     chapter_planted: int = Field(default=1, ge=1, description="设置章节")
     chapter_expected: int = Field(default=1, ge=1, description="预期回收章节")
-    status: str = Field(default="pending", description=f"状态: {ALLOWED_STATUSES}")
+    status: ForeshadowingStatus = Field(default=ForeshadowingStatus.PENDING, description="伏笔状态")
     strength: int = Field(default=3, ge=1, le=5, description="伏笔力度 1-5")
-
-    @field_validator("type")
-    @classmethod
-    def validate_type(cls, v: str) -> str:
-        if v not in ALLOWED_TYPES:
-            raise ValueError(f"type 必须是 {ALLOWED_TYPES} 之一")
-        return v
-
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, v: str) -> str:
-        if v not in ALLOWED_STATUSES:
-            raise ValueError(f"status 必须是 {ALLOWED_STATUSES} 之一")
-        return v
 
     @field_validator("chapter_expected")
     @classmethod
     def expected_ge_planted(cls, v: int, info) -> int:
-        # 只在 chapter_planted 也传了的情况下检查
         if "chapter_planted" in info.data and v < info.data["chapter_planted"]:
             raise ValueError("预期回收章节不能早于设置章节")
         return v
@@ -104,35 +90,21 @@ class ForeshadowingCreate(BaseModel):
 class ForeshadowingUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=200)
     description: str | None = Field(default=None, max_length=2000)
-    type: str | None = Field(default=None)
+    type: ForeshadowingType | None = Field(default=None, description="伏笔类型")
     chapter_planted: int | None = Field(default=None, ge=1)
     chapter_expected: int | None = Field(default=None, ge=1)
-    status: str | None = Field(default=None)
+    status: ForeshadowingStatus | None = Field(default=None, description="伏笔状态")
     strength: int | None = Field(default=None, ge=1, le=5)
-
-    @field_validator("type")
-    @classmethod
-    def validate_type(cls, v: str | None) -> str | None:
-        if v is not None and v not in ALLOWED_TYPES:
-            raise ValueError(f"type 必须是 {ALLOWED_TYPES} 之一")
-        return v
-
-    @field_validator("status")
-    @classmethod
-    def validate_status(cls, v: str | None) -> str | None:
-        if v is not None and v not in ALLOWED_STATUSES:
-            raise ValueError(f"status 必须是 {ALLOWED_STATUSES} 之一")
-        return v
 
 
 class ForeshadowingResponse(BaseModel):
     id: str
     title: str
     description: str = ""
-    type: str
+    type: ForeshadowingType
     chapter_planted: int
     chapter_expected: int
-    status: str
+    status: ForeshadowingStatus
     strength: int
     gap: int = 0  # chapter_expected - chapter_planted
     created_at: str = ""

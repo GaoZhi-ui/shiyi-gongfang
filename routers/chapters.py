@@ -21,6 +21,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from routers.sanitize import sanitize_text
+from core.enums import ChapterStatus
 
 router = APIRouter(prefix="/chapters", tags=["chapters"])
 BASE = Path(__file__).resolve().parent.parent
@@ -134,6 +135,7 @@ class ChapterListItem(BaseModel):
     is_draft: bool = False
     is_anchor: bool = False
     is_compilation: bool = False
+    status: ChapterStatus = ChapterStatus.DRAFT
     size: int
     modified: str
     cjk_chars: int
@@ -149,6 +151,7 @@ class ChapterCreate(BaseModel):
     title: str = Field("", description="章节标题（可选，不提供则自动命名）")
     content: str = Field("", description="正文内容（Markdown）")
     filename: str | None = Field(None, description="指定文件名，不指定则自动生成")
+    status: ChapterStatus = Field(default=ChapterStatus.DRAFT, description="章节状态")
 
 
 class ChapterUpdate(BaseModel):
@@ -206,20 +209,22 @@ def _auto_filename(title: str, existing_names: set[str]) -> str:
 
 @router.get("")
 def list_chapters(
-    status: str | None = Query(None, pattern="^(draft|published|all)?$"),
+    status: ChapterStatus | None = Query(None, description="按章节状态过滤"),
 ):
     """列出所有章节文件，支持状态过滤。
 
-    - draft: 仅 _tmp_ 前缀的草稿
-    - published: 排除 _tmp_ 前缀的正式章节
-    - all / 不传: 全部
+    - draft: 草稿状态
+    - reviewing: 审阅中
+    - final: 定稿
+    - 不传: 全部
     """
     result = []
     for entry in sorted(CHAPTERS_DIR.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True):
         name = entry.name
-        if status == "draft" and not name.startswith(TMP_PREFIX):
+        if status and not name.startswith(TMP_PREFIX):
+            # _tmp_ 前缀自动对应 DRAFT，无前缀的章节可由用户自行设置状态
             continue
-        if status == "published" and name.startswith(TMP_PREFIX):
+        if status == ChapterStatus.DRAFT and not name.startswith(TMP_PREFIX):
             continue
         _parse_chapter_path(entry, result)
     return {"chapters": result}
