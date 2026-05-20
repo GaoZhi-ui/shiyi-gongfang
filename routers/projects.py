@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+from routers.sanitize import sanitize_text
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 BASE = Path(__file__).resolve().parent.parent
@@ -189,15 +190,17 @@ def create_project(body: CreateProjectRequest):
     cfg_path = proj_dir / "config.json"
     if cfg_path.exists():
         cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-        cfg["name"] = body.name
+        clean_name = sanitize_text(body.name)
+        cfg["name"] = clean_name
         cfg["created_at"] = now
         cfg["updated_at"] = now
         cfg["description"] = cfg.get("description", "")
         _save_config(proj_dir, cfg)
     else:
         # 模板没有 config.json，创建默认
+        clean_name = sanitize_text(body.name)
         cfg = {
-            "name": body.name,
+            "name": clean_name,
             "template": template_name,
             "description": "",
             "created_at": now,

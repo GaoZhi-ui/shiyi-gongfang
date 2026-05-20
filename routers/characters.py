@@ -25,6 +25,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
+from routers.sanitize import sanitize_text
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 BASE = Path(__file__).resolve().parent.parent
@@ -231,8 +232,8 @@ async def create_character(body: CharacterCreate):
     data = _load_data(body.project_id)
     new_char = {
         "id": uuid.uuid4().hex[:12],
-        "name": body.name,
-        "description": body.description,
+        "name": sanitize_text(body.name),
+        "description": sanitize_text(body.description),
         "traits": body.traits,
         "avatar_color": body.avatar_color,
         "created_at": _now(),
@@ -254,9 +255,9 @@ async def update_character(char_id: str, body: CharacterUpdate,
 
     char = data["characters"][idx]
     if body.name is not None:
-        char["name"] = body.name
+        char["name"] = sanitize_text(body.name)
     if body.description is not None:
-        char["description"] = body.description
+        char["description"] = sanitize_text(body.description)
     if body.traits is not None:
         char["traits"] = body.traits
     if body.avatar_color is not None:

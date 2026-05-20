@@ -225,7 +225,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
 /* ========== Markdown 编辑器 ========== */
 .editor-bar{display:flex;align-items:center;gap:8px;padding:6px 16px;border-bottom:1px solid #2a2825;background:#151515;flex-shrink:0}
-.editor-bar .toggle-btn{padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .12s;background:transparent;border:1px solid #2a2825;color:#888}
+.editor-bar .toggle-btn{padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .12s;background:transparent;border:1px solid #2a2825;color:#888;position:relative;top:0}
 .editor-bar .toggle-btn:hover{border-color:#3a3a3a;color:#d4d4d4}
 .editor-bar .toggle-btn.active{background:rgba(212,160,64,0.1);color:#d4a040;border-color:#d4a040}
 .editor-bar .editor-label{font-size:12px;color:#666}
@@ -703,6 +703,28 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="modal-footer">
       <button class="btn-secondary" id="newProjectCancel">取消</button>
       <button class="btn-primary" id="newProjectConfirm">创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建章节弹窗 -->
+<div class="modal-overlay" id="newChapterModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>📄 新建章节</h2>
+      <button class="close-btn" id="newChapterClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tab-body">
+        <div class="field">
+          <label>章节标题</label>
+          <input type="text" id="newChapterTitle" placeholder="输入章节标题" maxlength="100">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="newChapterCancel">取消</button>
+      <button class="btn-primary" id="newChapterConfirm">确定</button>
     </div>
   </div>
 </div>
@@ -1737,6 +1759,18 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     if(e.key==='Enter') $('newProjectConfirm').click();
   });
 
+  // 新建章节弹窗
+  $('newChapterClose').addEventListener('click', function(){
+    $('newChapterModal').classList.remove('open');
+  });
+  $('newChapterCancel').addEventListener('click', function(){
+    $('newChapterModal').classList.remove('open');
+  });
+  $('newChapterConfirm').addEventListener('click', confirmNewChapter);
+  $('newChapterTitle').addEventListener('keydown', function(e){
+    if(e.key==='Enter') confirmNewChapter();
+  });
+
   // 快捷键帮助弹窗
   $('shortcutHelpBtn').addEventListener('click', function(){
     $('shortcutModal').classList.add('open');
@@ -2639,16 +2673,26 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   }
 
   function showNewChapterDialog(){
-    var title = prompt('输入新章节标题：', '第' + ((corkboardChapters.length||0)+1) + '章');
-    if(title && title.trim()){
-      editorTextarea.value = '';
-      editorCharCount.textContent = '0';
-      editorSaveStatus.textContent = '📄 新章节：' + title.trim();
-      editorSaveStatus.className = 'editor-status saved';
-      editorTextarea.focus();
-      // 切换到编辑模式
-      if(!editorMode) editorToggleBtn.click();
-    }
+    var modal = $('newChapterModal');
+    var input = $('newChapterTitle');
+    input.value = '第' + ((corkboardChapters.length||0)+1) + '章';
+    modal.classList.add('open');
+    setTimeout(function(){ input.focus(); input.select(); }, 50);
+  }
+
+  function confirmNewChapter(){
+    var modal = $('newChapterModal');
+    var input = $('newChapterTitle');
+    var title = input.value.trim();
+    if(!title) return;
+    modal.classList.remove('open');
+    editorTextarea.value = '';
+    editorCharCount.textContent = '0';
+    editorSaveStatus.textContent = '📄 新章节：' + title;
+    editorSaveStatus.className = 'editor-status saved';
+    editorTextarea.focus();
+    // 切换到编辑模式
+    if(!editorMode) editorToggleBtn.click();
   }
 
   function searchInEditor(){

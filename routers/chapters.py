@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
+from routers.sanitize import sanitize_text
 
 router = APIRouter(prefix="/chapters", tags=["chapters"])
 BASE = Path(__file__).resolve().parent.parent
@@ -471,6 +472,7 @@ def batch_export_chapters(body: BatchExportBody):
 @router.post("/batch/tag")
 def batch_tag_chapters(body: BatchTagBody):
     """批量给章节打标签"""
+    clean_tag = sanitize_text(body.tag)
     tags = _load_tags()
     tagged: list[str] = []
     errors: list[dict] = []
@@ -484,8 +486,8 @@ def batch_tag_chapters(body: BatchTagBody):
 
             if filename not in tags:
                 tags[filename] = []
-            if body.tag not in tags[filename]:
-                tags[filename].append(body.tag)
+            if clean_tag not in tags[filename]:
+                tags[filename].append(clean_tag)
             tagged.append(filename)
         except (ChapterPathTraversalError, ChapterFileTypeError) as e:
             errors.append({"filename": filename, "reason": str(e)})
