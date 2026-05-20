@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from core.tools import Tool, get_registry
+from core.style_engine import get_registry as get_style_registry
 
 # ─── 路径基础 ───
 
@@ -576,6 +577,47 @@ def _guard_scan_handler(args: dict[str, Any]) -> dict:
         return {"isError": True, "content": [{"type": "text", "text": f"安全检查异常: {e}"}]}
 
 
+# ─── 12. style_list — 列出所有写法风格 ───
+
+
+def _style_list_handler(args: dict[str, Any]) -> dict:
+    """列出所有已注册的可复用写作风格"""
+    try:
+        sr = get_style_registry()
+        styles = sr.list()
+        result = [s.to_dict() for s in styles]
+        return {
+            "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False)}],
+            "meta": {"total": len(result)},
+        }
+    except Exception as e:
+        return {"isError": True, "content": [{"type": "text", "text": f"读取风格列表失败: {e}"}]}
+
+
+# ─── 13. style_analyze — 分析文本匹配风格 ───
+
+
+def _style_analyze_handler(args: dict[str, Any]) -> dict:
+    """分析一段文本，返回各风格的匹配度和详细特征"""
+    text: str = args.get("text", "")
+    if not text:
+        return {"isError": True, "content": [{"type": "text", "text": "缺少必填参数: text"}]}
+
+    try:
+        sr = get_style_registry()
+        results = sr.match(text)
+        return {
+            "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False)}],
+            "meta": {
+                "total_styles": len(results),
+                "best_match": results[0]["style"] if results else None,
+                "best_score": results[0]["score"] if results else 0,
+            },
+        }
+    except Exception as e:
+        return {"isError": True, "content": [{"type": "text", "text": f"风格分析失败: {e}"}]}
+
+
 # ══════════════════════════════════════════════
 # 注册函数
 # ══════════════════════════════════════════════
@@ -754,4 +796,26 @@ def register_all_tools() -> None:
             "required": ["chapter"],
         },
         handler=_guard_scan_handler,
+    ))
+
+    # 12. style_list — 列出所有写法风格
+    registry.register(Tool(
+        name="style_list",
+        description="列出所有已注册的可复用写作风格，含特征画像和规则定义",
+        inputSchema={"type": "object", "properties": {}},
+        handler=_style_list_handler,
+    ))
+
+    # 13. style_analyze — 分析文本匹配风格
+    registry.register(Tool(
+        name="style_analyze",
+        description="分析一段文本与各写作风格的匹配度，返回评分、细节特征和禁用词命中",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "要分析的文本内容（建议至少 100 字以获得稳定结果）"},
+            },
+            "required": ["text"],
+        },
+        handler=_style_analyze_handler,
     ))
