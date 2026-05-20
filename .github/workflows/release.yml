@@ -12,6 +12,7 @@ on:
 
 env:
   APP_NAME: shiyi-gongfang
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # ── 版本提取 ──
@@ -81,6 +82,7 @@ jobs:
 
   # ── 发布 Release ──
   release:
+    if: ${{ always() }}
     needs: [version, build]
     runs-on: ubuntu-latest
     permissions:

@@ -137,7 +137,7 @@ def build(clean: bool = False, debug: bool = False, onedir: bool = False, gui: b
 
     if output.exists():
         size_mb = output.stat().st_size / (1024 * 1024)
-        print(f"\n[OK] 构建完成: {output} ({size_mb:.1f} MB)")
+        print(f"\n[OK] Build complete: {output.name} ({size_mb:.1f} MB)")
         return str(output)
     else:
         print(f"\n[!] 构建产物未找到，检查 {DIST_DIR}/ 目录")
