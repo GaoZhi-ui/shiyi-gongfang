@@ -24,6 +24,8 @@ from routers.characters import router as characters_router
 from routers.foreshadowing import router as foreshadowing_router
 from routers.snapshots import router as snapshots_router
 from routers.export import router as export_router
+from routers.stats import router as stats_router
+from routers.backup import router as backup_router
 
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
@@ -46,6 +48,8 @@ app.include_router(characters_router, prefix="/api/v1")
 app.include_router(foreshadowing_router, prefix="/api/v1")
 app.include_router(snapshots_router, prefix="/api/v1")
 app.include_router(export_router, prefix="/api/v1")
+app.include_router(stats_router, prefix="/api/v1")
+app.include_router(backup_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")

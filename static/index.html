@@ -11,6 +11,28 @@ body{font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sa
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
 ::-webkit-scrollbar-thumb:hover{background:#444}
+
+/* 预览面板 */
+.preview-toggle{font-size:11px;color:#888;padding:3px 8px;border-radius:4px;cursor:pointer;user-select:none;transition:all .12s;white-space:nowrap}
+.preview-toggle:hover{background:#242424;color:#d4a040}
+.preview-toggle.active{background:rgba(212,160,64,0.1);color:#d4a040}
+.preview-panel{display:none;width:100%;flex:1;min-height:60px;background:#1a1a1a;border:1px solid #2a2825;border-radius:6px;padding:10px;color:#d4d4d4;font-size:14px;line-height:1.7;overflow-y:auto;white-space:normal;word-break:break-word;font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif}
+.preview-panel.active{display:block}
+.preview-panel h1{font-size:22px;font-weight:600;color:#f0e6d3;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid #2a2825}
+.preview-panel h2{font-size:19px;font-weight:600;color:#e8dcc8;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid #2a2825}
+.preview-panel h3{font-size:16px;font-weight:600;color:#ddd2b8;margin:12px 0 6px}
+.preview-panel p{margin:6px 0}
+.preview-panel strong{color:#f0e6d3;font-weight:600}
+.preview-panel em{color:#c8b898;font-style:italic}
+.preview-panel ul{margin:6px 0;padding-left:22px}
+.preview-panel li{margin:3px 0;color:#d4d4d4}
+.preview-panel hr{margin:16px 0;border:none;border-top:1px solid #2a2825}
+.preview-panel br{display:block;content:'';margin:8px 0}
+.preview-panel .preview-empty{color:#555;text-align:center;padding:40px 0;font-size:13px}
+.preview-panel blockquote{margin:8px 0;padding:4px 12px;border-left:3px solid #d4a040;color:#b8b0a0;background:rgba(212,160,64,0.04);border-radius:0 4px 4px 0}
+.preview-panel code{background:#252525;color:#e8dcc8;padding:1px 5px;border-radius:3px;font-size:13px;font-family:'Cascadia Code','JetBrains Mono','Fira Code',monospace}
+.preview-panel pre{margin:8px 0;padding:10px 14px;background:#151515;border:1px solid #2a2825;border-radius:6px;overflow-x:auto}
+.preview-panel pre code{background:transparent;padding:0;color:#c8c3b8;font-size:13px;line-height:1.6}
 ::selection{background:rgba(212,160,64,0.25);color:#fff}
 
 input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
@@ -465,6 +487,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
     <div class="tool-item" data-tool="export"><span class="icon">📥</span><span class="label">导出草稿</span></div>
     <div class="tool-item" data-tool="goal"><span class="icon">🎯</span><span class="label">写作目标</span></div>
+    <div class="tool-item" data-tool="stats"><span class="icon">📊</span><span class="label">统计</span></div>
 
     <div class="tool-group-title">工具</div>
     <div class="tool-item" data-tool="toolsBrowser"><span class="icon">🔧</span><span class="label">工具浏览器</span></div>
@@ -517,6 +540,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   <div class="editor-area" id="editorArea">
     <div class="editor-toolbar">
       <span class="tw-toggle" id="twToggle">⏳ 打字机滚动</span>
+      <span class="preview-toggle" id="previewToggle">📄 预览</span>
       <div class="toolbar-spacer"></div>
       <div class="chapter-nav" id="chapterNav">
         <button class="nav-arrow" id="navPrev" title="上一章 (Ctrl+↑)">▲</button>
@@ -525,6 +549,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       </div>
     </div>
     <textarea id="editorTextarea" placeholder="在此撰写或粘贴章节内容…&#10;&#10;支持 Markdown 格式。"></textarea>
+    <div class="preview-panel" id="previewPanel"></div>
     <div class="editor-footer">
       <span class="editor-char-count">已写 <span class="num" id="editorCharCount">0</span> 字</span>
       <span class="editor-status" id="editorSaveStatus"></span>
@@ -1507,6 +1532,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '🏷️';
       panelTitle.textContent = '标签筛选';
       loadTagFilter();
+    }else if(type==='stats'){
+      panelIcon.textContent = '📊';
+      panelTitle.textContent = '写作统计';
+      loadStatsView();
     }else if(type==='chapter'){
       panelIcon.textContent = '📖';
       const d = chapterContext;
@@ -2163,6 +2192,81 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       if(data && data.streak !== undefined) goalState.streak = data.streak;
       if(lastToolClicked==='goal') renderGoalView();
     }catch(e){}
+  }
+
+  // ========== 统计视图 ==========
+  async function loadStatsView(){
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555">请先选择项目</div>';
+      return;
+    }
+    try{
+      var res = await fetch(apiBase()+'/api/v1/stats/'+currentProjectId, {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var s = await res.json();
+
+      var maxDaily = 0;
+      if(s.daily_stats && s.daily_stats.length > 0){
+        maxDaily = Math.max.apply(null, s.daily_stats.map(function(d){ return d.words_written; }));
+      }
+      if(maxDaily === 0) maxDaily = 1;
+
+      var html = '<div style="display:flex;flex-direction:column;gap:14px">';
+
+      // 概览卡片网格
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+      html += statCard('📄 总章节', s.total_chapters);
+      html += statCard('📝 总字数', (s.total_words || 0).toLocaleString());
+      html += statCard('📏 平均每章', (s.average_words_per_chapter || 0).toLocaleString());
+      html += statCard('🔥 连续写作', s.streak_days + ' 天');
+      html += statCard('👥 角色', s.total_characters);
+      html += statCard('🎬 场景', s.total_scenes);
+      html += statCard('🔗 伏笔', s.total_foreshadowing);
+      html += '</div>';
+
+      // 最长/最短章节
+      if(s.longest_chapter || s.shortest_chapter){
+        html += '<div style="background:#1e1e1e;border-radius:6px;padding:10px;font-size:12px">';
+        if(s.longest_chapter){
+          html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2a2825"><span style="color:#999">🏆 最长章节</span><span style="color:#d4d4d4">'+escHtml(s.longest_chapter.name)+' <span style="color:#666">('+(s.longest_chapter.words||0).toLocaleString()+'字)</span></span></div>';
+        }
+        if(s.shortest_chapter){
+          html += '<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:#999">📏 最短章节</span><span style="color:#d4d4d4">'+escHtml(s.shortest_chapter.name)+' <span style="color:#666">('+(s.shortest_chapter.words||0).toLocaleString()+'字)</span></span></div>';
+        }
+        html += '</div>';
+      }
+
+      // 每日写作柱状图
+      html += '<div>';
+      html += '<div style="font-size:11px;color:#888;margin-bottom:8px">📊 每日写作量</div>';
+      if(s.daily_stats && s.daily_stats.length > 0){
+        var barMaxHeight = 80;
+        html += '<div style="display:flex;align-items:flex-end;gap:6px;padding:8px 0;min-height:'+(barMaxHeight+20)+'px;overflow-x:auto">';
+        s.daily_stats.forEach(function(d){
+          var pct = Math.max(3, Math.round(d.words_written / maxDaily * 100));
+          var barH = Math.round(pct / 100 * barMaxHeight);
+          html += '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0">';
+          html += '<div style="font-size:9px;color:#666">'+(d.words_written||0).toLocaleString()+'</div>';
+          html += '<div style="width:28px;height:'+barH+'px;background:linear-gradient(to top,#d4a040,#e8c060);border-radius:3px 3px 0 0;transition:height .3s;min-height:3px"></div>';
+          html += '<div style="font-size:9px;color:#555;writing-mode:vertical-lr;text-orientation:mixed;height:36px;overflow:hidden;text-overflow:ellipsis">'+d.date.slice(5)+'</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }else{
+        html += '<div style="text-align:center;padding:20px 0;color:#555;font-size:12px">暂无写作记录</div>';
+      }
+      html += '</div>';
+
+      html += '</div>';
+      panelBody.innerHTML = html;
+    }catch(e){
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555">加载统计失败: '+escHtml(e.message||e)+'</div>';
+    }
+  }
+
+  function statCard(label, value){
+    return '<div style="background:#1e1e1e;border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:#888;margin-bottom:4px">'+label+'</div><div style="font-size:16px;color:#d4d4d4;font-weight:500">'+value+'</div></div>';
   }
 
   // ========== Corkboard 看板模块 ==========
@@ -2902,6 +3006,133 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 
   editorTextarea.addEventListener('keyup', function(){
     if(twEnabled) centerCursorLine();
+  });
+
+  // ========== Markdown Preview ==========
+  var previewMode = false;
+  var previewToggle = document.getElementById('previewToggle');
+  var previewPanel = document.getElementById('previewPanel');
+
+  function renderMarkdown(text){
+    if(!text || !text.trim()){
+      return '<div class="preview-empty">📝 在编辑区输入内容即可预览</div>';
+    }
+    // 逐行处理
+    var lines = text.split('\n');
+    var html = '';
+    var inList = false;
+
+    for(var i = 0; i < lines.length; i++){
+      var line = lines[i];
+
+      // 空行
+      if(line.trim() === ''){
+        if(inList){ html += '</ul>'; inList = false; }
+        html += '<br>';
+        continue;
+      }
+
+      // 水平线
+      if(/^---$/.test(line.trim())){
+        if(inList){ html += '</ul>'; inList = false; }
+        html += '<hr>';
+        continue;
+      }
+
+      // 标题
+      var headingMatch = line.match(/^(#{1,3})\s+(.+)$/);
+      if(headingMatch){
+        if(inList){ html += '</ul>'; inList = false; }
+        var level = headingMatch[1].length;
+        var content = inlineMarkdown(headingMatch[2]);
+        html += '<h' + level + '>' + content + '</h' + level + '>';
+        continue;
+      }
+
+      // 无序列表
+      var listMatch = line.match(/^[-*]\s+(.+)$/);
+      if(listMatch){
+        if(!inList){ html += '<ul>'; inList = true; }
+        html += '<li>' + inlineMarkdown(listMatch[1]) + '</li>';
+        continue;
+      }
+
+      // 普通段落
+      if(inList){ html += '</ul>'; inList = false; }
+      html += '<p>' + inlineMarkdown(line) + '</p>';
+    }
+
+    if(inList) html += '</ul>';
+    return html;
+  }
+
+  function inlineMarkdown(text){
+    var result = escHtml(text);
+    // **粗体**
+    result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // *斜体*
+    result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // `行内代码`
+    result = result.replace(/`(.+?)`/g, '<code>$1</code>');
+    return result;
+  }
+
+  function escHtml(str){
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function updatePreview(){
+    if(!previewMode) return;
+    var content = editorTextarea.value;
+    previewPanel.innerHTML = renderMarkdown(content);
+    // 同步滚动百分比
+    syncPreviewScroll();
+  }
+
+  function syncPreviewScroll(){
+    if(!previewMode) return;
+    var ta = editorTextarea;
+    var pp = previewPanel;
+    var scrollPct = ta.scrollTop / (ta.scrollHeight - ta.clientHeight);
+    if(!isNaN(scrollPct) && isFinite(scrollPct)){
+      pp.scrollTop = scrollPct * (pp.scrollHeight - pp.clientHeight);
+    }
+  }
+
+  previewToggle.addEventListener('click', function(){
+    previewMode = !previewMode;
+    previewToggle.classList.toggle('active', previewMode);
+    previewToggle.textContent = previewMode ? '✏️ 编辑' : '📄 预览';
+
+    if(previewMode){
+      // 切换到预览
+      editorTextarea.style.display = 'none';
+      previewPanel.classList.add('active');
+      updatePreview();
+      // 如果打字机滚动开着，先禁用
+      if(twEnabled){
+        twEnabled = false;
+        twToggle.classList.remove('active');
+      }
+    }else{
+      // 切换回编辑
+      editorTextarea.style.display = '';
+      previewPanel.classList.remove('active');
+    }
+  });
+
+  // 输入时更新预览
+  editorTextarea.addEventListener('input', function(){
+    if(previewMode) updatePreview();
+  });
+
+  // 滚动同步
+  editorTextarea.addEventListener('scroll', function(){
+    if(previewMode) syncPreviewScroll();
   });
 
   // ========== Quick Chapter Switch ==========
