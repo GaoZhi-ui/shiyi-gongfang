@@ -123,6 +123,7 @@ class ChatContext(BaseModel):
 
 class ChatRequest(BaseModel):
     model: str = Field("deepseek", description="模型标识: deepseek / openai / claude / google / moonshot / zhipu / yi")
+    mode: str = Field("chat", description="对话模式: chat / continue / expand / rewrite", pattern="^(chat|continue|expand|rewrite)$")
     stream: bool = Field(True, description="是否流式响应")
     temperature: float = Field(0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(4096, ge=1, le=32768)
@@ -249,6 +250,35 @@ PROVIDER_CONFIGS = {
 }
 
 DEFAULT_SYSTEM = "你是《泰拉拾遗录》的专属写手。放下日常的对话风格，切换到作家模式。回答简洁、直接、不啰嗦。"
+
+MODE_SYSTEM_PROMPTS = {
+    "chat": DEFAULT_SYSTEM,
+    "continue": (
+        "你正在续写一段小说。\n\n"
+        "规则：\n"
+        "1. 保持已有的文风、视角和叙事节奏\n"
+        "2. 不重复上一段已经说过的内容\n"
+        "3. 不点评、不概括、不以「以下为续写」开头\n"
+        "4. 直接从上一段末尾的语境自然延续\n"
+        "5. 不添加任何 meta 性质的说明"
+    ),
+    "expand": (
+        "你正在根据一段简短的描述展开成详细生动的段落。\n\n"
+        "规则：\n"
+        "1. 保持文风一致\n"
+        "2. 增加细节描写（场景、动作、心理、感官）\n"
+        "3. 不改变原始描述的情节走向和关键信息\n"
+        "4. 展开后的内容需要自然流畅，有画面感"
+    ),
+    "rewrite": (
+        "你正在按要求重写一段文本。\n\n"
+        "规则：\n"
+        "1. 保留原文的关键信息和情节\n"
+        "2. 根据用户的具体要求调整风格、视角或表述方式\n"
+        "3. 重写结果需完整流畅，不自相矛盾\n"
+        "4. 如果用户未指定改写方向，默认优化语言表达"
+    ),
+}
 
 
 # ─── 核心逻辑 ───
@@ -461,6 +491,15 @@ async def _non_stream_chat(payload: dict, cfg: dict, headers: dict) -> dict:
 async def chat_completions(req: ChatRequest):
     """发送消息，获取流式 SSE 或完整 JSON 响应"""
     provider = req.model.lower()
+
+    # 根据 mode 切换 system prompt
+    if req.mode != "chat":
+        mode_prompt = MODE_SYSTEM_PROMPTS.get(req.mode, DEFAULT_SYSTEM)
+        if req.system_prompt != DEFAULT_SYSTEM:
+            req.system_prompt = f"{mode_prompt}\n\n{req.system_prompt}"
+        else:
+            req.system_prompt = mode_prompt
+
     api_key, provider_cfg = _get_api_info(provider)
     payload, cfg = _build_payload(provider, req)
 
