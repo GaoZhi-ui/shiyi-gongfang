@@ -87,6 +87,32 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .tagfilter-chapter.faded{opacity:.25;transform:scale(.98);pointer-events:none}
 .tagfilter-empty{text-align:center;padding:40px 0;color:#555}
 
+/* 搜索面板 */
+.search-container{display:flex;flex-direction:column;gap:10px;height:100%}
+.search-input-wrap{position:relative;display:flex;gap:6px}
+.search-input{flex:1;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;padding:8px 12px;color:#c8c3b8;font-size:13px;transition:border-color .12s}
+.search-input:focus{border-color:#d4a040}
+.search-input::placeholder{color:#555}
+.search-btn{padding:6px 14px;background:#d4a040;border:none;border-radius:6px;color:#141416;font-size:12px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap}
+.search-btn:hover{background:#f0b85c}
+.search-btn:disabled{opacity:.5;cursor:not-allowed}
+.search-status{font-size:11px;color:#666;padding:0 4px}
+.search-results{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:0}
+.search-result-item{background:#1a1a1a;border:1px solid #2a2825;border-radius:6px;padding:8px 10px;cursor:pointer;transition:all .12s}
+.search-result-item:hover{background:#242424;border-color:#3a3a3a}
+.search-result-item .sri-header{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.search-result-item .sri-filename{font-size:12px;color:#d4d4d4;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.search-result-item .sri-count{font-size:10px;color:#d4a040;background:rgba(212,160,64,0.1);padding:1px 6px;border-radius:8px;flex-shrink:0}
+.search-result-item .sri-title{font-size:11px;color:#888;margin-bottom:6px}
+.search-result-item .sri-matches{display:flex;flex-direction:column;gap:3px}
+.search-result-item .sri-match{font-size:11px;color:#999;line-height:1.5;padding:3px 6px;background:#1e1e1e;border-radius:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Cascadia Code','JetBrains Mono','Fira Code',monospace}
+.search-result-item .sri-match em{color:#d4a040;font-style:normal;background:rgba(212,160,64,0.12);padding:0 2px;border-radius:2px}
+.search-empty{text-align:center;padding:40px 0;color:#555;font-size:13px}
+.search-empty .icon{font-size:36px;margin-bottom:10px}
+.search-loading{text-align:center;padding:30px 0;color:#555}
+.search-error{text-align:center;padding:20px;color:#d9534f;font-size:12px}
+.search-shortcut-hint{font-size:10px;color:#555;text-align:center;padding:4px 0}
+
 .col-main{flex:1;display:flex;flex-direction:column;min-width:0}
 
 .topbar{height:50px;padding:0 16px;border-bottom:1px solid #2a2825;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#151515}
@@ -311,6 +337,34 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .cb-card:active .cb-drag-handle{cursor:grabbing}
 .cb-empty-state{text-align:center;padding:40px 0;color:#555;font-size:13px}
 
+/* ========== Binder 活页夹树形结构 ========== */
+.binder-container{padding:6px 0;display:flex;flex-direction:column;gap:2px}
+.binder-folder-group{margin-bottom:2px}
+.binder-folder-header{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:13px;color:#d4a040;transition:all .12s;user-select:none}
+.binder-folder-header:hover{background:#242424}
+.binder-folder-header .bf-arrow{font-size:8px;width:12px;flex-shrink:0;color:#666;transition:transform .15s;text-align:center}
+.binder-folder-header .bf-arrow.collapsed{transform:rotate(-90deg)}
+.binder-folder-header .bf-icon{width:16px;text-align:center;flex-shrink:0;font-size:12px}
+.binder-folder-header .bf-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.binder-folder-header .bf-count{font-size:10px;color:#555;flex-shrink:0;margin-left:auto}
+.binder-children{padding-left:12px;overflow:hidden}
+.binder-children.collapsed{display:none}
+.binder-chapter{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;color:#c8c3b8;transition:all .12s;user-select:none;margin:1px 0}
+.binder-chapter:hover{background:#242424;color:#d4d4d4}
+.binder-chapter.active{background:rgba(212,160,64,0.1);color:#d4a040}
+.binder-chapter .bc-icon{width:16px;text-align:center;flex-shrink:0;font-size:11px}
+.binder-chapter .bc-num{color:#555;width:22px;flex-shrink:0;font-size:10px;text-align:right}
+.binder-chapter .bc-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.binder-chapter .bc-wc{font-size:9px;color:#444;flex-shrink:0}
+.binder-chapter .bc-status-label{font-size:9px;padding:1px 5px;border-radius:3px;flex-shrink:0;line-height:1.4}
+.binder-chapter .bc-status-label.draft{background:rgba(255,255,255,0.04);color:#666}
+.binder-chapter .bc-status-label.review{background:rgba(240,173,78,0.1);color:#f0ad4e}
+.binder-chapter .bc-status-label.complete{background:rgba(92,184,92,0.1);color:#5cb85c}
+.binder-uncategorized-head{color:#888;font-size:11px;padding:5px 8px;font-style:italic;display:flex;align-items:center;gap:6px}
+.binder-uncategorized-head .buh-icon{font-size:10px;color:#555}
+.binder-empty{text-align:center;padding:40px 0;color:#555;font-size:13px}
+.binder-loading{text-align:center;padding:30px 0;color:#555}
+
 /* ========== 角色关系图 ========== */
 .char-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .char-toolbar .ct-title{font-size:12px;color:#888;flex:1}
@@ -482,6 +536,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="corkboard"><span class="icon">📇</span><span class="label">看板</span></div>
     <div class="tool-item" data-tool="split"><span class="icon">🔄</span><span class="label">分屏对照</span></div>
     <div class="tool-item" data-tool="tagfilter"><span class="icon">🏷️</span><span class="label">标签筛选</span></div>
+    <div class="tool-item" data-tool="search"><span class="icon">🔍</span><span class="label">搜索</span></div>
 
     <div class="tool-group-title">快捷操作</div>
     <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
@@ -943,6 +998,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     kbViewingFile = null;
     kbEditing = false;
     if(lastToolClicked==='kb') renderKBFileList();
+    if(lastToolClicked==='outline') loadBinder();
     // 切换项目后尝试恢复对应草稿
     if(editorTextarea){
       editorTextarea.value = '';
@@ -1502,8 +1558,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       loadCorkboard();
     }else if(type==='outline'){
       panelIcon.textContent = '🗺️';
-      panelTitle.textContent = '全卷细纲';
-      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🗺️</div><div style="font-size:13px;margin-bottom:6px">卷二 · 归途未定</div><div style="font-size:11px;color:#555">第25章 ~ 第40章</div></div>';
+      panelTitle.textContent = '活页夹 Binder';
+      loadBinder();
     }else if(type==='timeline'){
       panelIcon.textContent = '📅';
       panelTitle.textContent = '时间线表';
@@ -1532,6 +1588,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '🏷️';
       panelTitle.textContent = '标签筛选';
       loadTagFilter();
+    }else if(type==='search'){
+      renderSearchView();
     }else if(type==='stats'){
       panelIcon.textContent = '📊';
       panelTitle.textContent = '写作统计';
@@ -2366,6 +2424,164 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     });
   }
 
+  // ========== Binder 活页夹树形结构模块 ==========
+  var binderFoldState = {};
+
+  async function loadBinder(){
+    panelBody.innerHTML = '<div class="binder-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div class="binder-empty">请先选择项目</div>';
+      return;
+    }
+    try{
+      var res = await fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/chapters', {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      corkboardChapters = await res.json();
+      if(!Array.isArray(corkboardChapters)) corkboardChapters = [];
+    }catch(e){
+      // 用模拟数据（含 folder 字段）
+      corkboardChapters = [
+        {id:1, number:25, title:'尚未抵达', wordCount:2450, status:'complete', folder:'卷二·归途未定'},
+        {id:2, number:26, title:'灰烬与烟', wordCount:2600, status:'complete', folder:'卷二·归途未定'},
+        {id:3, number:27, title:'裂隙', wordCount:2380, status:'review', folder:'卷二·归途未定'},
+        {id:4, number:28, title:'地下四十六米', wordCount:2520, status:'draft', folder:'卷二·归途未定'},
+        {id:5, number:29, title:'回声', wordCount:2700, status:'draft'},
+        {id:6, number:30, title:'龙门的女人', wordCount:2410, status:'draft', folder:'龙门篇'},
+        {id:7, number:31, title:'拾遗录', wordCount:0, status:'draft', folder:'龙门篇'}
+      ];
+    }
+    renderBinder();
+    updateChapterNav();
+  }
+
+  function renderBinder(){
+    if(!corkboardChapters.length){
+      panelBody.innerHTML = '<div class="binder-empty"><div style="font-size:36px;margin-bottom:10px">📂</div><div>暂无章节</div></div>';
+      return;
+    }
+
+    // 按 folder 分组
+    var groups = {};
+    var uncategorized = [];
+    corkboardChapters.forEach(function(ch, idx){
+      ch._idx = idx;
+      var f = ch.folder;
+      if(f && f.trim()){
+        if(!groups[f]) groups[f] = [];
+        groups[f].push(ch);
+      }else{
+        uncategorized.push(ch);
+      }
+    });
+
+    var folderNames = Object.keys(groups).sort();
+    var html = '<div class="binder-container">';
+
+    // 渲染文件夹组
+    folderNames.forEach(function(folderName){
+      var chapters = groups[folderName];
+      var isOpen = binderFoldState[folderName] !== false; // 默认展开
+      var arrowCls = isOpen ? '' : 'collapsed';
+      var childCls = isOpen ? '' : 'collapsed';
+
+      html += '<div class="binder-folder-group">';
+      html += '<div class="binder-folder-header" data-folder="'+escHtml(folderName)+'">';
+      html += '<span class="bf-arrow '+arrowCls+'">▼</span>';
+      html += '<span class="bf-icon">📁</span>';
+      html += '<span class="bf-name">'+escHtml(folderName)+'</span>';
+      html += '<span class="bf-count">'+chapters.length+'</span>';
+      html += '</div>';
+      html += '<div class="binder-children '+childCls+'" data-folder="'+escHtml(folderName)+'">';
+
+      chapters.forEach(function(ch){
+        html += renderBinderChapter(ch, ch._idx);
+      });
+
+      html += '</div></div>';
+    });
+
+    // 未分类章节
+    if(uncategorized.length > 0){
+      var uncatOpen = binderFoldState['__uncategorized__'] !== false;
+      var uncatArrowCls = uncatOpen ? '' : 'collapsed';
+      var uncatChildCls = uncatOpen ? '' : 'collapsed';
+
+      html += '<div class="binder-folder-group">';
+      html += '<div class="binder-folder-header" data-folder="__uncategorized__">';
+      html += '<span class="bf-arrow '+uncatArrowCls+'">▼</span>';
+      html += '<span class="bf-icon">📁</span>';
+      html += '<span class="bf-name">未分类</span>';
+      html += '<span class="bf-count">'+uncategorized.length+'</span>';
+      html += '</div>';
+      html += '<div class="binder-children '+uncatChildCls+'" data-folder="__uncategorized__">';
+
+      uncategorized.forEach(function(ch){
+        html += renderBinderChapter(ch, ch._idx);
+      });
+
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    panelBody.innerHTML = html;
+
+    // 绑定事件
+    bindBinderEvents();
+  }
+
+  function renderBinderChapter(ch, idx){
+    var statusMap = {draft:'草稿', review:'审查', complete:'完成'};
+    var statusCls = {draft:'draft', review:'review', complete:'complete'};
+    var st = ch.status || 'draft';
+    var isActive = (currentChapterIndex === idx);
+    var activeCls = isActive ? ' active' : '';
+    return '<div class="binder-chapter'+activeCls+'" data-idx="'+idx+'">'+
+      '<span class="bc-icon">📄</span>'+
+      '<span class="bc-num">#'+(ch.number||(idx+1))+'</span>'+
+      '<span class="bc-title">'+escHtml(ch.title||'未命名章节')+'</span>'+
+      '<span class="bc-wc">'+(ch.wordCount||0).toLocaleString()+'字</span>'+
+      '<span class="bc-status-label '+statusCls[st]+'">'+statusMap[st]+'</span>'+
+    '</div>';
+  }
+
+  function bindBinderEvents(){
+    // 文件夹点击展开/折叠
+    document.querySelectorAll('.binder-folder-header').forEach(function(header){
+      header.addEventListener('click', function(e){
+        e.stopPropagation();
+        var folder = this.dataset.folder;
+        // 使用 nextElementSibling 定位子容器，避免 data-folder 查询转义问题
+        var children = this.nextElementSibling;
+        var arrow = this.querySelector('.bf-arrow');
+        if(!children || !children.classList.contains('binder-children')) return;
+        var currentlyOpen = !children.classList.contains('collapsed');
+        if(currentlyOpen){
+          children.classList.add('collapsed');
+          if(arrow) arrow.classList.add('collapsed');
+          binderFoldState[folder] = false;
+        }else{
+          children.classList.remove('collapsed');
+          if(arrow) arrow.classList.remove('collapsed');
+          binderFoldState[folder] = true;
+        }
+      });
+    });
+
+    // 章节点击加载到编辑器
+    document.querySelectorAll('.binder-chapter').forEach(function(chEl){
+      chEl.addEventListener('click', function(e){
+        e.stopPropagation();
+        var idx = parseInt(this.dataset.idx);
+        if(!isNaN(idx) && idx >= 0 && idx < corkboardChapters.length){
+          switchToChapter(idx);
+          // 更新高亮
+          document.querySelectorAll('.binder-chapter').forEach(function(c){ c.classList.remove('active'); });
+          this.classList.add('active');
+        }
+      });
+    });
+  }
+
   // ========== 角色关系图模块 ==========
   var charactersData = [];
   var relationsData = [];
@@ -2817,6 +3033,163 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }).join('');
   }
 
+  // ========== 全局搜索面板 ==========
+  var searchDebounceTimer = null;
+
+  function renderSearchView(){
+    panelIcon.textContent = '🔍';
+    panelTitle.textContent = '搜索章节';
+    panelBody.innerHTML = '<div class="search-container">'+
+      '<div class="search-input-wrap">'+
+        '<input type="text" class="search-input" id="searchInput" placeholder="输入关键词搜索全文…" autofocus>'+
+        '<button class="search-btn" id="searchBtn">搜索</button>'+
+      '</div>'+
+      '<div class="search-status" id="searchStatus"></div>'+
+      '<div class="search-results" id="searchResults">'+
+        '<div class="search-empty"><div class="icon">🔍</div><div>输入关键词，搜索所有章节</div></div>'+
+      '</div>'+
+      '<div class="search-shortcut-hint">Ctrl+Shift+F 快速打开</div>'+
+    '</div>';
+
+    var input = document.getElementById('searchInput');
+    var btn = document.getElementById('searchBtn');
+
+    function doSearch(){
+      var q = input.value.trim();
+      if(!q) return;
+      performSearch(q);
+    }
+
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        doSearch();
+      }
+    });
+
+    // 去抖自动搜索：停止输入 400ms 后自动触发
+    input.addEventListener('input', function(){
+      clearTimeout(searchDebounceTimer);
+      var q = this.value.trim();
+      if(!q) {
+        document.getElementById('searchResults').innerHTML = '<div class="search-empty"><div class="icon">🔍</div><div>输入关键词，搜索所有章节</div></div>';
+        document.getElementById('searchStatus').textContent = '';
+        return;
+      }
+      searchDebounceTimer = setTimeout(function(){ doSearch(); }, 400);
+    });
+
+    btn.addEventListener('click', doSearch);
+
+    // 自动聚焦
+    setTimeout(function(){ input.focus(); }, 100);
+  }
+
+  async function performSearch(query){
+    var resultsEl = document.getElementById('searchResults');
+    var statusEl = document.getElementById('searchStatus');
+    if(!resultsEl || !statusEl) return;
+
+    statusEl.textContent = '搜索中…';
+    resultsEl.innerHTML = '<div class="search-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+
+    try{
+      var res = await fetch(apiBase()+'/api/v1/chapters/search', {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({query: query, scope: 'all'})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var data = await res.json();
+      renderSearchResults(data, query);
+      statusEl.textContent = '找到 '+(data.total||0)+' 个文件，共 '+(data.results||[]).reduce(function(s,r){ return s+r.match_count; },0)+' 处匹配';
+    }catch(e){
+      resultsEl.innerHTML = '<div class="search-error">⚠ 搜索失败: '+escHtml(e.message)+'</div>';
+      statusEl.textContent = '';
+    }
+  }
+
+  function renderSearchResults(data, query){
+    var resultsEl = document.getElementById('searchResults');
+    if(!resultsEl) return;
+    var results = data.results || [];
+    if(results.length === 0){
+      resultsEl.innerHTML = '<div class="search-empty"><div class="icon">🔍</div><div>未找到包含「'+escHtml(query)+'」的内容</div></div>';
+      return;
+    }
+
+    // 高亮函数
+    function highlightText(text, q){
+      var lower = text.toLowerCase();
+      var qLower = q.toLowerCase();
+      var result = '';
+      var last = 0;
+      while(true){
+        var idx = lower.indexOf(qLower, last);
+        if(idx === -1) break;
+        result += escHtml(text.substring(last, idx));
+        result += '<em>'+escHtml(text.substring(idx, idx + q.length))+'</em>';
+        last = idx + q.length;
+      }
+      result += escHtml(text.substring(last));
+      return result;
+    }
+
+    var html = results.map(function(r){
+      return '<div class="search-result-item" data-filename="'+escHtml(r.filename)+'">'+
+        '<div class="sri-header">'+
+          '<span class="sri-filename">'+escHtml(r.filename)+'</span>'+
+          '<span class="sri-count">'+r.match_count+' 处</span>'+
+        '</div>'+
+        '<div class="sri-title">'+escHtml(r.title)+'</div>'+
+        '<div class="sri-matches">'+
+          r.matches.slice(0, 5).map(function(m){
+            return '<div class="sri-match">' + highlightText(m.content, query) + '</div>';
+          }).join('') +
+          (r.matches.length > 5 ? '<div class="sri-match" style="color:#555;text-align:center">…还有 '+(r.matches.length-5)+' 处</div>' : '') +
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    resultsEl.innerHTML = html;
+
+    // 点击结果跳转到对应章节
+    resultsEl.querySelectorAll('.search-result-item').forEach(function(el){
+      el.addEventListener('click', function(){
+        var filename = this.dataset.filename;
+        // 从 corkboardChapters 中查找对应章节
+        var idx = corkboardChapters.findIndex(function(ch){
+          return ch.filename === filename || (ch.title && filename.indexOf(ch.title) !== -1);
+        });
+        if(idx !== -1 && typeof switchToChapter === 'function'){
+          switchToChapter(idx);
+        }else{
+          // 尝试读取文件内容
+          loadChapterByFilename(filename);
+        }
+      });
+    });
+  }
+
+  async function loadChapterByFilename(filename){
+    try{
+      var res = await fetch(apiBase()+'/api/v1/chapters/'+encodeURIComponent(filename), {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var data = await res.json();
+      // 切换到编辑模式并填充内容
+      if(!editorMode) editorToggleBtn.click();
+      editorTextarea.value = data.content || '';
+      autoResizeInput(editorTextarea);
+      var len = editorTextarea.value.replace(/[\s\n\r]/g,'').length;
+      editorCharCount.textContent = len.toLocaleString();
+      editorSaveStatus.textContent = '📄 ' + (data.filename || filename);
+      editorSaveStatus.className = 'editor-status saved';
+      editorTextarea.focus();
+    }catch(e){
+      // 静默失败
+    }
+  }
+
   // ========== 全局快捷键系统 ==========
   function closeAllModals(){
     document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
@@ -2859,22 +3232,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   }
 
   function globalSearchChapters(){
-    var q = prompt('搜索章节标题：');
-    if(q && q.trim()){
-      // 尝试在 corkboard 中搜索，否则切换到 tag filter 视图
-      var matches = corkboardChapters.filter(function(ch){
-        return (ch.title||'').toLowerCase().indexOf(q.toLowerCase()) !== -1;
-      });
-      if(matches.length > 0){
-        var msg = '找到 ' + matches.length + ' 个匹配章节：\n';
-        matches.forEach(function(ch, idx){
-          msg += (idx+1) + '. #' + (ch.number||'?') + ' ' + (ch.title||'') + ' (' + (ch.wordCount||0) + '字)\n';
-        });
-        alert(msg);
-      }else{
-        alert('未找到包含「' + q + '」的章节');
-      }
-    }
+    // 打开搜索面板
+    handleToolClick('search');
+    // 如果面板已折叠则展开
+    if(panelCollapsed) togglePanel();
+    // 聚焦到搜索输入框
+    setTimeout(function(){
+      var input = document.getElementById('searchInput');
+      if(input) input.focus();
+    }, 200);
   }
 
   document.addEventListener('keydown', function(e){
@@ -3182,10 +3548,19 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     editorSaveStatus.textContent = '📄 ' + (ch.title || '第' + (ch.number || index+1) + '章');
     editorSaveStatus.className = 'editor-status saved';
     updateChapterNav();
+    updateBinderActive();
     // Switch to editor mode if not already
     if(!editorMode) editorToggleBtn.click();
     editorTextarea.focus();
   };
+
+  function updateBinderActive(){
+    var els = document.querySelectorAll('.binder-chapter');
+    els.forEach(function(el){
+      var idx = parseInt(el.dataset.idx);
+      el.classList.toggle('active', idx === currentChapterIndex);
+    });
+  }
 
   // Bind nav buttons
   document.getElementById('navPrev').addEventListener('click', function(){

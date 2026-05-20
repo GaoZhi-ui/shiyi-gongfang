@@ -17,7 +17,7 @@ import re
 import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from routers.sanitize import sanitize_text
@@ -160,6 +160,24 @@ class ChapterUpdate(BaseModel):
 
 class ChapterRename(BaseModel):
     new_filename: str = Field(..., min_length=1, description="新文件名，如 第41章_新的开始.md")
+
+
+class SearchRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="搜索关键词")
+    scope: Literal["all"] | list[str] = Field("all", description="搜索范围：'all' 或文件名列表")
+
+
+class MatchItem(BaseModel):
+    line: int
+    content: str
+    index: int
+
+
+class SearchResultItem(BaseModel):
+    filename: str
+    title: str
+    matches: list[MatchItem]
+    match_count: int
 
 
 # ─── 帮助函数 ───
@@ -360,6 +378,69 @@ def rename_chapter(filename: str, body: ChapterRename):
         "old_filename": filename,
         "new_filename": new_name,
     }
+
+
+# ─── 搜索 ───
+
+
+@router.post("/search")
+def search_chapters(body: SearchRequest):
+    """全局搜索章节内容"""
+    query_lower = body.query.lower()
+
+    # 确定搜索范围
+    if body.scope == "all":
+        files = sorted(CHAPTERS_DIR.glob("*.md"))
+    else:
+        files = []
+        for name in body.scope:
+            try:
+                p = _safe_chapter_path(name)
+                if p.exists():
+                    files.append(p)
+            except (ChapterPathTraversalError, ChapterFileTypeError):
+                continue
+
+    results: list[dict] = []
+
+    for filepath in files:
+        try:
+            text = filepath.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            continue
+
+        lines = text.split("\n")
+        matches: list[dict] = []
+
+        for line_no, line in enumerate(lines, 1):
+            idx = line.lower().find(query_lower)
+            if idx == -1:
+                continue
+            # 收集该行所有匹配位置
+            search_from = 0
+            while True:
+                pos = line.lower().find(query_lower, search_from)
+                if pos == -1:
+                    break
+                matches.append({
+                    "line": line_no,
+                    "content": line.strip(),
+                    "index": pos,
+                })
+                search_from = pos + len(query_lower)
+
+        if not matches:
+            continue
+
+        parsed = _parse_filename(filepath.name)
+        results.append({
+            "filename": filepath.name,
+            "title": parsed["title"],
+            "matches": matches,
+            "match_count": len(matches),
+        })
+
+    return {"results": results, "total": len(results)}
 
 
 # ─── 批量操作请求体 ───
