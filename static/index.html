@@ -188,6 +188,110 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .status-bar-right{margin-left:auto;display:flex;gap:16px}
 .status-bar-right .model-tag{color:#555}
 
+/* ========== Markdown 编辑器 ========== */
+.editor-bar{display:flex;align-items:center;gap:8px;padding:6px 16px;border-bottom:1px solid #252525;background:#151515;flex-shrink:0}
+.editor-bar .toggle-btn{padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .12s;background:transparent;border:1px solid #252525;color:#888}
+.editor-bar .toggle-btn:hover{border-color:#3a3a3a;color:#d4d4d4}
+.editor-bar .toggle-btn.active{background:rgba(232,168,76,0.1);color:#e8a84c;border-color:#e8a84c}
+.editor-bar .editor-label{font-size:12px;color:#666}
+.editor-bar .editor-spacer{flex:1}
+.editor-area{display:none;flex:1;flex-direction:column;min-height:0}
+.editor-area.active{display:flex}
+.editor-area textarea{flex:1;width:100%;background:#1a1a1a;border:none;padding:16px 20px;color:#ccc;font-size:14px;line-height:1.7;resize:none;font-family:inherit;tab-size:4}
+.editor-area textarea:focus{outline:none}
+.editor-area textarea::placeholder{color:#444}
+.editor-footer{display:flex;align-items:center;gap:12px;padding:6px 16px;border-top:1px solid #252525;background:#151515;flex-shrink:0}
+.editor-footer .editor-char-count{font-size:11px;color:#666}
+.editor-footer .editor-char-count .num{color:#d4d4d4;font-weight:500}
+.editor-footer .editor-save-btn{padding:5px 16px;background:#e8a84c;border:none;border-radius:5px;color:#111;font-size:12px;cursor:pointer;font-weight:500;transition:all .12s;margin-left:auto}
+.editor-footer .editor-save-btn:hover{background:#f0b85c}
+.editor-footer .editor-save-btn:disabled{opacity:.4;cursor:not-allowed}
+.editor-footer .editor-status{font-size:10px;color:#555}
+
+/* ========== 写作目标 ========== */
+.goal-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.goal-stat-card{background:#1e1e1e;border-radius:8px;padding:14px;text-align:center}
+.goal-stat-card .num{font-size:22px;color:#d4d4d4;font-weight:600}
+.goal-stat-card .label{font-size:11px;color:#666;margin-top:4px}
+.goal-stat-card.accent{background:rgba(232,168,76,0.08);border:1px solid rgba(232,168,76,0.15)}
+.goal-stat-card.accent .num{color:#e8a84c}
+.goal-progress{background:#1e1e1e;border-radius:8px;padding:14px;margin-bottom:16px}
+.goal-progress .gp-header{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-bottom:6px}
+.goal-progress .gp-bar{height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden}
+.goal-progress .gp-bar-fill{height:100%;background:#e8a84c;border-radius:3px;transition:width .4s ease}
+.goal-streak{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#1e1e1e;border-radius:8px;margin-bottom:16px}
+.goal-streak .fire{font-size:20px}
+.goal-streak .streak-num{font-size:24px;font-weight:600;color:#f0ad4e}
+.goal-streak .streak-label{font-size:11px;color:#888}
+.goal-form{border-top:1px solid #252525;padding-top:14px}
+.goal-form .gf-title{font-size:11px;color:#888;margin-bottom:10px;letter-spacing:1px}
+.goal-form .gf-field{margin-bottom:10px}
+.goal-form .gf-field label{display:block;font-size:10px;color:#666;margin-bottom:3px;letter-spacing:.5px}
+.goal-form .gf-field input{width:100%;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:7px 10px;color:#ccc;font-size:13px;transition:border-color .12s}
+.goal-form .gf-field input:focus{border-color:#e8a84c}
+.goal-form .gf-submit{width:100%;padding:8px;background:#e8a84c;border:none;border-radius:6px;color:#111;font-size:12px;cursor:pointer;font-weight:500;transition:all .12s}
+.goal-form .gf-submit:hover{background:#f0b85c}
+
+/* ========== Corkboard 看板 ========== */
+.corkboard-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.corkboard-header .cb-title{font-size:12px;color:#888;flex:1}
+.corkboard-header .cb-count{font-size:10px;color:#555}
+.corkboard-list{display:flex;flex-direction:column;gap:6px}
+.cb-card{padding:10px 12px;background:#1e1e1e;border:1px solid #252525;border-radius:8px;cursor:grab;transition:all .12s;user-select:none}
+.cb-card:hover{border-color:#3a3a3a;background:#212121}
+.cb-card:active{cursor:grabbing}
+.cb-card.dragging{opacity:.4;border-color:#e8a84c;border-style:dashed}
+.cb-card.drag-over{border-color:#e8a84c;background:rgba(232,168,76,0.08);margin-bottom:12px}
+.cb-card .cb-row{display:flex;align-items:center;gap:8px}
+.cb-card .cb-num{font-size:10px;color:#555;background:#252525;padding:1px 6px;border-radius:4px;flex-shrink:0}
+.cb-card .cb-title-text{flex:1;font-size:13px;color:#d4d4d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-card .cb-wordcount{font-size:10px;color:#555;flex-shrink:0}
+.cb-card .cb-status{font-size:9px;padding:1px 6px;border-radius:4px;flex-shrink:0}
+.cb-card .cb-status.draft{background:rgba(240,173,78,0.12);color:#f0ad4e}
+.cb-card .cb-status.review{background:rgba(91,192,222,0.12);color:#5bc0de}
+.cb-card .cb-status.complete{background:rgba(92,184,92,0.12);color:#5cb85c}
+.cb-card .cb-drag-handle{font-size:14px;color:#444;cursor:grab;flex-shrink:0}
+.cb-card:active .cb-drag-handle{cursor:grabbing}
+.cb-empty-state{text-align:center;padding:40px 0;color:#555;font-size:13px}
+
+/* ========== 角色关系图 ========== */
+.char-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.char-toolbar .ct-title{font-size:12px;color:#888;flex:1}
+.char-toolbar .ct-view-toggle{display:flex;gap:2px;background:#1e1e1e;border-radius:6px;padding:2px}
+.char-toolbar .ct-view-btn{padding:4px 10px;font-size:11px;border:none;background:transparent;color:#888;cursor:pointer;border-radius:4px;transition:all .12s}
+.char-toolbar .ct-view-btn.active{background:#2a2a2a;color:#d4d4d4}
+.char-list{display:flex;flex-direction:column;gap:6px}
+.char-card{padding:10px 12px;background:#1e1e1e;border:1px solid #252525;border-radius:8px;cursor:pointer;transition:all .12s}
+.char-card:hover{border-color:#3a3a3a;background:#212121}
+.char-card .cc-row{display:flex;align-items:center;gap:8px}
+.char-card .cc-color{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.char-card .cc-name{font-size:13px;color:#d4d4d4;font-weight:500}
+.char-card .cc-desc{font-size:11px;color:#666;margin-top:2px;margin-left:18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.char-card .cc-edit{position:relative}
+.char-edit-form{padding:10px 12px;background:#252525;border:1px solid #3a3a3a;border-radius:8px;margin-top:4px}
+.char-edit-form .ce-field{margin-bottom:8px}
+.char-edit-form .ce-field label{display:block;font-size:10px;color:#666;margin-bottom:2px}
+.char-edit-form .ce-field input,.char-edit-form .ce-field textarea{width:100%;background:#1e1e1e;border:1px solid #333;border-radius:4px;padding:5px 8px;color:#ccc;font-size:12px}
+.char-edit-form .ce-field textarea{height:50px;resize:vertical;font-family:inherit}
+.char-edit-form .ce-field input:focus,.char-edit-form .ce-field textarea:focus{border-color:#e8a84c}
+.char-edit-form .ce-actions{display:flex;gap:6px;justify-content:flex-end}
+.char-edit-form .ce-actions button{padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;transition:all .12s}
+.char-edit-form .ce-actions .ce-save{background:#e8a84c;border:none;color:#111}
+.char-edit-form .ce-actions .ce-save:hover{background:#f0b85c}
+.char-edit-form .ce-actions .ce-cancel{background:transparent;border:1px solid #333;color:#888}
+.char-edit-form .ce-actions .ce-cancel:hover{background:#2a2a2a;color:#ccc}
+.char-graph-canvas{width:100%;height:260px;background:#151515;border:1px solid #252525;border-radius:8px;margin-top:8px;display:block}
+.char-graph-container{position:relative}
+.char-graph-container .graph-hint{font-size:10px;color:#444;text-align:center;margin-top:4px}
+.char-empty-state{text-align:center;padding:40px 0;color:#555;font-size:13px}
+.char-color-picker{display:flex;gap:4px;margin-top:4px}
+.char-color-picker .ccp-swatch{width:16px;height:16px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .1s}
+.char-color-picker .ccp-swatch:hover{border-color:#d4d4d4}
+.char-color-picker .ccp-swatch.selected{border-color:#e8a84c}
+
+/* 拖拽占位符 */
+.cb-drag-placeholder{height:3px;background:rgba(232,168,76,0.3);border-radius:2px;margin:2px 0;transition:all .15s}
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal-box{background:#1a1a1a;border:1px solid #252525;border-radius:10px;width:520px;max-height:80vh;display:flex;flex-direction:column}
@@ -268,16 +372,18 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="tool-item" data-tool="kb"><span class="icon">📁</span><span class="label">知识库</span></div>
     <div class="tool-item" data-tool="tools"><span class="icon">📚</span><span class="label">工具箱一览</span></div>
     <div class="tool-item" data-tool="style"><span class="icon">✍️</span><span class="label">写作风格速查</span></div>
-    <div class="tool-item" data-tool="characters"><span class="icon">👥</span><span class="label">人物档案</span></div>
+    <div class="tool-item" data-tool="characters"><span class="icon">👥</span><span class="label">角色</span><span class="badge" id="char-badge">0</span></div>
 
     <div class="tool-group-title">章节管理</div>
     <div class="tool-item" data-tool="outline"><span class="icon">🗺️</span><span class="label">全卷细纲</span></div>
     <div class="tool-item" data-tool="timeline"><span class="icon">📅</span><span class="label">时间线表</span></div>
     <div class="tool-item" data-tool="foreshadow"><span class="icon">🔗</span><span class="label">伏笔追踪</span></div>
+    <div class="tool-item" data-tool="corkboard"><span class="icon">📇</span><span class="label">看板</span></div>
 
     <div class="tool-group-title">快捷操作</div>
     <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
     <div class="tool-item" data-tool="export"><span class="icon">📥</span><span class="label">导出草稿</span></div>
+    <div class="tool-item" data-tool="goal"><span class="icon">🎯</span><span class="label">写作目标</span></div>
 
     <div class="tool-group-title">工具</div>
     <div class="tool-item" data-tool="toolsBrowser"><span class="icon">🔧</span><span class="label">工具浏览器</span></div>
@@ -314,6 +420,22 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
     <div class="topbar-spacer"></div>
     <button class="api-btn" id="apiSettingsBtn">⚙ 设置</button>
+  </div>
+
+  <div class="editor-bar" id="editorBar">
+    <button class="toggle-btn" id="editorToggleBtn">✏️ 编辑</button>
+    <span class="editor-label">切换至 Markdown 编辑器</span>
+    <span class="editor-spacer"></span>
+    <span style="font-size:10px;color:#555" id="editorModeHint">对话模式</span>
+  </div>
+
+  <div class="editor-area" id="editorArea">
+    <textarea id="editorTextarea" placeholder="在此撰写或粘贴章节内容…&#10;&#10;支持 Markdown 格式。"></textarea>
+    <div class="editor-footer">
+      <span class="editor-char-count">已写 <span class="num" id="editorCharCount">0</span> 字</span>
+      <span class="editor-status" id="editorSaveStatus"></span>
+      <button class="editor-save-btn" id="editorSaveBtn">💾 保存到当前章节</button>
+    </div>
   </div>
 
   <div class="chat-area" id="chatArea">
@@ -1195,11 +1317,16 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       </div>`;
     }else if(type==='characters'){
       panelIcon.textContent = '👥';
-      panelTitle.textContent = '人物档案';
-      panelBody.innerHTML = `<div style="font-size:13px;color:#999">
-        <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#d4d4d4">沈默</span><br><span style="font-size:11px;color:#666">退役武警 · 程序员 · 历史爱好者</span></div>
-        <div style="padding:8px 0">更多人物信息可通过对话调取</div>
-      </div>`;
+      panelTitle.textContent = '角色';
+      loadCharactersView();
+    }else if(type==='goal'){
+      panelIcon.textContent = '🎯';
+      panelTitle.textContent = '写作目标';
+      renderGoalView();
+    }else if(type==='corkboard'){
+      panelIcon.textContent = '📇';
+      panelTitle.textContent = '看板';
+      loadCorkboard();
     }else if(type==='outline'){
       panelIcon.textContent = '🗺️';
       panelTitle.textContent = '全卷细纲';
@@ -1661,11 +1788,485 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     updateInputCharCount();
   });
 
+  // ========== 编辑器模块 ==========
+  var editorMode = false;
+  var editorToggleBtn = document.getElementById('editorToggleBtn');
+  var editorArea = document.getElementById('editorArea');
+  var editorTextarea = document.getElementById('editorTextarea');
+  var editorCharCount = document.getElementById('editorCharCount');
+  var editorSaveBtn = document.getElementById('editorSaveBtn');
+  var editorSaveStatus = document.getElementById('editorSaveStatus');
+  var editorModeHint = document.getElementById('editorModeHint');
+  var editorInputArea = document.querySelector('.input-area');
+  var editorStatusBar = document.querySelector('.status-bar');
+
+  editorToggleBtn.addEventListener('click', function(){
+    editorMode = !editorMode;
+    editorToggleBtn.classList.toggle('active', editorMode);
+    editorToggleBtn.textContent = editorMode ? '💬 对话' : '✏️ 编辑';
+    editorArea.classList.toggle('active', editorMode);
+    editorModeHint.textContent = editorMode ? '编辑模式' : '对话模式';
+    document.getElementById('chatArea').style.display = editorMode ? 'none' : '';
+    if(editorInputArea) editorInputArea.style.display = editorMode ? 'none' : '';
+    if(editorStatusBar) editorStatusBar.style.display = editorMode ? 'none' : '';
+    if(editorMode) editorTextarea.focus();
+  });
+
+  editorTextarea.addEventListener('input', function(){
+    var len = editorTextarea.value.replace(/[\s\n\r]/g,'').length;
+    editorCharCount.textContent = len.toLocaleString();
+  });
+
+  editorTextarea.addEventListener('keydown', function(e){
+    if((e.ctrlKey || e.metaKey) && e.key==='s'){
+      e.preventDefault();
+      editorSaveBtn.click();
+    }
+  });
+
+  editorSaveBtn.addEventListener('click', async function(){
+    var content = editorTextarea.value.trim();
+    if(!content){
+      editorSaveStatus.textContent = '⚠ 内容不能为空';
+      editorSaveStatus.style.color = '#f0ad4e';
+      return;
+    }
+    if(!currentProjectId){
+      editorSaveStatus.textContent = '⚠ 请先选择或创建项目';
+      editorSaveStatus.style.color = '#f0ad4e';
+      return;
+    }
+    editorSaveBtn.disabled = true;
+    editorSaveStatus.textContent = '⏳ 保存中…';
+    editorSaveStatus.style.color = '#888';
+    try{
+      var ep = apiBase()+'/api/v1/projects/'+currentProjectId+'/chapters';
+      var res = await fetch(ep, {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({title:'新章节', content:content, status:'draft'})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      editorSaveStatus.textContent = '✓ 已保存';
+      editorSaveStatus.style.color = '#5cb85c';
+      setTimeout(function(){ editorSaveStatus.textContent = ''; }, 3000);
+    }catch(e){
+      editorSaveStatus.textContent = '✗ 保存失败: '+e.message;
+      editorSaveStatus.style.color = '#d9534f';
+    }finally{
+      editorSaveBtn.disabled = false;
+    }
+  });
+
+  // ========== 写作目标模块 ==========
+  var goalState = { todayTarget: 2000, todayWritten: 835, streak: 3 };
+
+  function renderGoalView(){
+    var pct = Math.min(100, Math.round(goalState.todayWritten / goalState.todayTarget * 100));
+    panelBody.innerHTML = '<div class="goal-stat-grid">'+
+      '<div class="goal-stat-card accent"><div class="num">'+goalState.todayTarget.toLocaleString()+'</div><div class="label">今日目标</div></div>'+
+      '<div class="goal-stat-card"><div class="num">'+goalState.todayWritten.toLocaleString()+'</div><div class="label">已写</div></div>'+
+    '</div>'+
+    '<div class="goal-progress"><div class="gp-header"><span>进度</span><span>'+pct+'%</span></div><div class="gp-bar"><div class="gp-bar-fill" style="width:'+pct+'%"></div></div></div>'+
+    '<div class="goal-streak"><span class="fire">🔥</span><span class="streak-num">'+goalState.streak+'</span><span class="streak-label">连续打卡天数</span></div>'+
+    '<div class="goal-form">'+
+      '<div class="gf-title">新建写作目标</div>'+
+      '<div class="gf-field"><label>目标名称</label><input type="text" id="gfName" placeholder="如：完成第31章"></div>'+
+      '<div class="gf-field"><label>目标字数</label><input type="number" id="gfTarget" placeholder="2000" value="2000"></div>'+
+      '<div class="gf-field"><label>截止日期</label><input type="date" id="gfDeadline"></div>'+
+      '<button class="gf-submit" id="gfSubmitBtn">🎯 设定目标</button>'+
+    '</div>';
+    var gfSub = document.getElementById('gfSubmitBtn');
+    if(gfSub) gfSub.addEventListener('click', submitGoal);
+    var df = document.getElementById('gfDeadline');
+    if(df){
+      var tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate()+1);
+      df.value = tomorrow.toISOString().split('T')[0];
+    }
+  }
+
+  function submitGoal(){
+    var gfNameEl = document.getElementById('gfName');
+    var gfTargetEl = document.getElementById('gfTarget');
+    var gfDeadlineEl = document.getElementById('gfDeadline');
+    var name = (gfNameEl||{}).value;
+    var target = parseInt((gfTargetEl||{}).value) || 2000;
+    if(!name) name = '写作目标';
+    goalState.todayTarget = target;
+    renderGoalView();
+    // 模拟往 API 发
+    if(currentProjectId){
+      fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/goals', {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({title:name, wordTarget:target, deadline:(gfDeadlineEl||{}).value||''})
+      }).catch(function(){});
+    }
+  }
+
+  // 实时从 API 拉写作目标数据
+  async function refreshGoalFromApi(){
+    if(!currentProjectId) return;
+    try{
+      var res = await fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/goals', {headers:apiHeaders()});
+      if(!res.ok) return;
+      var data = await res.json();
+      if(data && data.todayTarget) goalState.todayTarget = data.todayTarget;
+      if(data && data.todayWritten !== undefined) goalState.todayWritten = data.todayWritten;
+      if(data && data.streak !== undefined) goalState.streak = data.streak;
+      if(lastToolClicked==='goal') renderGoalView();
+    }catch(e){}
+  }
+
+  // ========== Corkboard 看板模块 ==========
+  var corkboardChapters = [];
+  var corkboardDragSrc = null;
+
+  async function loadCorkboard(){
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div class="cb-empty-state">请先选择项目</div>';
+      return;
+    }
+    try{
+      var res = await fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/chapters', {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      corkboardChapters = await res.json();
+      if(!Array.isArray(corkboardChapters)) corkboardChapters = [];
+    }catch(e){
+      // 用模拟数据
+      corkboardChapters = [
+        {id:1, number:25, title:'尚未抵达', wordCount:2450, status:'complete'},
+        {id:2, number:26, title:'灰烬与烟', wordCount:2600, status:'complete'},
+        {id:3, number:27, title:'裂隙', wordCount:2380, status:'review'},
+        {id:4, number:28, title:'地下四十六米', wordCount:2520, status:'draft'},
+        {id:5, number:29, title:'回声', wordCount:2700, status:'draft'},
+        {id:6, number:30, title:'龙门的女人', wordCount:2410, status:'draft'}
+      ];
+    }
+    renderCorkboard();
+  }
+
+  function renderCorkboard(){
+    var statusMap = {draft:'草稿', review:'审查', complete:'完成'};
+    var statusCls = {draft:'draft', review:'review', complete:'complete'};
+    var html = '<div class="corkboard-header"><span class="cb-title">章节卡片</span><span class="cb-count">共 '+corkboardChapters.length+' 章</span></div><div class="corkboard-list" id="corkboardList">';
+    corkboardChapters.forEach(function(ch, idx){
+      var st = ch.status || 'draft';
+      html += '<div class="cb-card" draggable="true" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">'+
+        '<div class="cb-row">'+
+          '<span class="cb-drag-handle">⠿</span>'+
+          '<span class="cb-num">#'+(ch.number||idx+1)+'</span>'+
+          '<span class="cb-title-text">'+escHtml(ch.title||'未命名章节')+'</span>'+
+          '<span class="cb-wordcount">'+(ch.wordCount||0).toLocaleString()+'字</span>'+
+          '<span class="cb-status '+statusCls[st]+'">'+statusMap[st]+'</span>'+
+        '</div></div>';
+    });
+    html += '</div>';
+    panelBody.innerHTML = html;
+    bindCorkboardDragEvents();
+  }
+
+  function bindCorkboardDragEvents(){
+    var cards = document.querySelectorAll('.cb-card');
+    cards.forEach(function(card){
+      card.addEventListener('dragstart', function(e){
+        corkboardDragSrc = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.idx);
+      });
+      card.addEventListener('dragend', function(){
+        this.classList.remove('dragging');
+        document.querySelectorAll('.cb-card').forEach(function(c){ c.classList.remove('drag-over'); });
+        corkboardDragSrc = null;
+      });
+      card.addEventListener('dragover', function(e){
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        document.querySelectorAll('.cb-card').forEach(function(c){ c.classList.remove('drag-over'); });
+        if(corkboardDragSrc !== this) this.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', function(){
+        this.classList.remove('drag-over');
+      });
+      card.addEventListener('drop', function(e){
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if(corkboardDragSrc === this) return;
+        var fromIdx = parseInt(corkboardDragSrc.dataset.idx);
+        var toIdx = parseInt(this.dataset.idx);
+        if(isNaN(fromIdx) || isNaN(toIdx)) return;
+        // 移动数组
+        var item = corkboardChapters.splice(fromIdx, 1)[0];
+        corkboardChapters.splice(toIdx, 0, item);
+        renderCorkboard();
+        // 发送到 reorder API
+        var ids = corkboardChapters.map(function(c){ return c.id; });
+        if(currentProjectId){
+          fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/chapters/reorder', {
+            method:'POST',
+            headers:apiHeaders(),
+            body:JSON.stringify({chapter_ids:ids})
+          }).catch(function(){});
+        }
+      });
+    });
+  }
+
+  // ========== 角色关系图模块 ==========
+  var charactersData = [];
+  var relationsData = [];
+  var charViewMode = 'list'; // 'list' or 'graph'
+
+  // 预设颜色
+  var charColors = ['#e8a84c','#5cb85c','#5bc0de','#d9534f','#f0ad4e','#9370db','#ff69b4','#20b2aa','#f08080','#87ceeb'];
+
+  async function loadCharactersView(){
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      var [cRes, rRes] = await Promise.all([
+        fetch(apiBase()+'/api/v1/characters', {headers:apiHeaders()}),
+        fetch(apiBase()+'/api/v1/relations', {headers:apiHeaders()})
+      ]);
+      if(cRes.ok) charactersData = await cRes.json();
+      else throw new Error('characters');
+      if(rRes.ok) relationsData = await rRes.json();
+      else relationsData = [];
+      if(!Array.isArray(charactersData)) charactersData = [];
+      if(!Array.isArray(relationsData)) relationsData = [];
+    }catch(e){
+      // 模拟数据
+      charactersData = [
+        {id:1, name:'沈默', description:'退役武警，前程序员，历史爱好者。地球穿越者，罗德岛外勤干员。', colorIndex:0, tags:['主角','穿越者']},
+        {id:2, name:'Dr.██', description:'罗德岛博士，战术指挥官。性格冷淡，但意外地可靠。', colorIndex:3, tags:['罗德岛','指挥官']},
+        {id:3, name:'阿米娅', description:'罗德岛公开领袖，年轻的卡特斯/奇美拉。', colorIndex:1, tags:['罗德岛','领袖']},
+        {id:4, name:'凯尔希', description:'罗德岛医疗部门负责人，Mon3tr 操控者。', colorIndex:4, tags:['罗德岛','医疗']},
+        {id:5, name:'陈', description:'龙门近卫局高级警司。', colorIndex:2, tags:['龙门','近卫局']},
+      ];
+      relationsData = [
+        {source:1, target:2, label:'战友', type:'friend'},
+        {source:1, target:3, label:'信赖', type:'friend'},
+        {source:1, target:4, label:'审视', type:'neutral'},
+        {source:2, target:3, label:'上下级', type:'neutral'},
+        {source:3, target:4, label:'监护', type:'friend'},
+        {source:1, target:5, label:'旧识', type:'friend'}
+      ];
+    }
+    var badge = document.getElementById('char-badge');
+    if(badge) badge.textContent = charactersData.length;
+    renderCharactersView();
+  }
+
+  function renderCharactersView(){
+    var html = '<div class="char-toolbar">'+
+      '<span class="ct-title">共 '+charactersData.length+' 个角色</span>'+
+      '<div class="ct-view-toggle">'+
+        '<button class="ct-view-btn'+(charViewMode==='list'?' active':'')+'" data-view="list">列表</button>'+
+        '<button class="ct-view-btn'+(charViewMode==='graph'?' active':'')+'" data-view="graph">关系图</button>'+
+      '</div></div>';
+    if(charViewMode==='list'){
+      html += '<div class="char-list">';
+      charactersData.forEach(function(ch, idx){
+        var color = charColors[ch.colorIndex % charColors.length] || '#888';
+        html += '<div class="char-card" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
+        html += '<div class="cc-row"><span class="cc-color" style="background:'+color+'"></span><span class="cc-name">'+escHtml(ch.name)+'</span></div>';
+        html += '<div class="cc-desc">'+escHtml(ch.description||'暂无描述')+'</div>';
+        html += '<div class="cc-edit" id="charEditForm_'+idx+'"></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }else{
+      // 关系图模式
+      html += '<div class="char-graph-container"><canvas class="char-graph-canvas" id="charGraphCanvas"></canvas>';
+      html += '<div class="graph-hint">• 节点=角色 · 连线=关系 · 拖动滚动查看</div></div>';
+      html += '<div class="char-list" style="margin-top:10px">';
+      html += '<div style="font-size:11px;color:#888;margin-bottom:6px">角色列表</div>';
+      charactersData.forEach(function(ch, idx){
+        var color = charColors[ch.colorIndex % charColors.length] || '#888';
+        html += '<div class="char-card" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
+        html += '<div class="cc-row"><span class="cc-color" style="background:'+color+'"></span><span class="cc-name">'+escHtml(ch.name)+'</span></div>';
+        html += '<div class="cc-desc">'+escHtml(ch.description||'暂无描述')+'</div>';
+        html += '<div class="cc-edit" id="charEditForm2_'+idx+'"></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    panelBody.innerHTML = html;
+    bindCharEvents();
+    if(charViewMode==='graph') drawCharGraph();
+  }
+
+  function bindCharEvents(){
+    // 视图切换
+    document.querySelectorAll('.ct-view-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        charViewMode = this.dataset.view;
+        renderCharactersView();
+      });
+    });
+    // 卡片点击 -> 编辑
+    document.querySelectorAll('.char-card').forEach(function(card){
+      card.addEventListener('click', function(e){
+        if(e.target.closest('.ce-actions') || e.target.closest('.char-edit-form')) return;
+        var idx = parseInt(this.dataset.idx);
+        if(isNaN(idx)) return;
+        showCharEditForm(idx);
+      });
+    });
+  }
+
+  function showCharEditForm(idx){
+    var ch = charactersData[idx];
+    if(!ch) return;
+    var formId = charViewMode==='list' ? 'charEditForm_'+idx : 'charEditForm2_'+idx;
+    var container = $(formId);
+    if(!container) return;
+    var existingForm = container.querySelector('.char-edit-form');
+    if(existingForm){
+      existingForm.remove();
+      return;
+    }
+    container.innerHTML = '<div class="char-edit-form">'+
+      '<div class="ce-field"><label>姓名</label><input type="text" id="ceName_'+idx+'" value="'+escHtml(ch.name)+'"></div>'+
+      '<div class="ce-field"><label>描述</label><textarea id="ceDesc_'+idx+'">'+escHtml(ch.description||'')+'</textarea></div>'+
+      '<div class="ce-field"><label>标签颜色</label><div class="char-color-picker" id="ceColor_'+idx+'">'+
+        charColors.map(function(c, ci){ return '<span class="ccp-swatch'+(ci===ch.colorIndex?' selected':'')+'" style="background:'+c+'" data-ci="'+ci+'"></span>'; }).join('')+
+      '</div></div>'+
+      '<div class="ce-actions">'+
+        '<button class="ce-cancel" id="ceCancel_'+idx+'">取消</button>'+
+        '<button class="ce-save" id="ceSave_'+idx+'">保存</button>'+
+      '</div></div>';
+    // 颜色选择
+    container.querySelectorAll('.ccp-swatch').forEach(function(sw){
+      sw.addEventListener('click', function(){
+        this.parentElement.querySelectorAll('.ccp-swatch').forEach(function(s){ s.classList.remove('selected'); });
+        this.classList.add('selected');
+      });
+    });
+    // 取消
+    var cancelBtn = document.getElementById('ceCancel_'+idx);
+    if(cancelBtn) cancelBtn.addEventListener('click', function(){ container.innerHTML = ''; });
+    // 保存
+    var saveBtn = document.getElementById('ceSave_'+idx);
+    if(saveBtn) saveBtn.addEventListener('click', function(){ saveCharEdit(idx); });
+  }
+
+  async function saveCharEdit(idx){
+    var ch = charactersData[idx];
+    if(!ch) return;
+    var nameEl = document.getElementById('ceName_'+idx);
+    var descEl = document.getElementById('ceDesc_'+idx);
+    var name = (nameEl||{}).value;
+    var desc = (descEl||{}).value;
+    var selectedSwatch = document.querySelector('#ceColor_'+idx+' .ccp-swatch.selected');
+    var colorIndex = selectedSwatch ? parseInt(selectedSwatch.dataset.ci) : (ch.colorIndex||0);
+    ch.name = name || ch.name;
+    ch.description = desc || ch.description;
+    ch.colorIndex = colorIndex;
+    renderCharactersView();
+    // 保存到 API
+    try{
+      await fetch(apiBase()+'/api/v1/characters/'+ch.id, {
+        method:'PUT',
+        headers:apiHeaders(),
+        body:JSON.stringify({name:ch.name, description:ch.description, colorIndex:ch.colorIndex})
+      });
+    }catch(e){}
+  }
+
+  function drawCharGraph(){
+    var canvas = document.getElementById('charGraphCanvas');
+    if(!canvas || charactersData.length===0) return;
+    // 自适应宽高
+    var rect = canvas.getBoundingClientRect();
+    if(rect.width > 0){
+      canvas.width = Math.round(rect.width);
+      canvas.height = Math.round(rect.height);
+    }
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width;
+    var H = canvas.height;
+    if(W===0 || H===0) return;
+    ctx.clearRect(0, 0, W, H);
+
+    // 布局节点：环形排列
+    var cx = W / 2, cy = H / 2 - 10;
+    var radius = Math.min(W, H) * 0.3;
+    var nodePositions = {};
+    var nodeRadius = 22;
+
+    charactersData.forEach(function(ch, idx){
+      var angle = (idx / charactersData.length) * Math.PI * 2 - Math.PI / 2;
+      var x = cx + radius * Math.cos(angle);
+      var y = cy + radius * Math.sin(angle);
+      nodePositions[ch.id] = {x:x, y:y};
+    });
+
+    // 绘制连线
+    ctx.save();
+    relationsData.forEach(function(rel){
+      var src = nodePositions[rel.source];
+      var tgt = nodePositions[rel.target];
+      if(!src || !tgt) return;
+      ctx.beginPath();
+      ctx.moveTo(src.x, src.y);
+      ctx.lineTo(tgt.x, tgt.y);
+      // 根据关系类型设置颜色
+      if(rel.type==='friend') ctx.strokeStyle = 'rgba(92,184,92,0.4)';
+      else if(rel.type==='rival') ctx.strokeStyle = 'rgba(217,83,79,0.4)';
+      else ctx.strokeStyle = 'rgba(136,136,136,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // 标签
+      if(rel.label){
+        var mx = (src.x + tgt.x) / 2;
+        var my = (src.y + tgt.y) / 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(rel.label, mx, my - 5);
+      }
+    });
+
+    // 绘制节点
+    charactersData.forEach(function(ch, idx){
+      var pos = nodePositions[ch.id];
+      if(!pos) return;
+      var color = charColors[ch.colorIndex % charColors.length] || '#888';
+      // 阴影
+      ctx.beginPath();
+      ctx.arc(pos.x+1, pos.y+2, nodeRadius, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)';
+      ctx.fill();
+      // 圆
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI*2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // 名字缩写
+      var shortName = ch.name.length > 2 ? ch.name.slice(0,2) : ch.name;
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(shortName, pos.x, pos.y);
+    });
+
+    ctx.restore();
+  }
+
   // ========== 初始化 ==========
   renderChecklist(checklistState);
   document.querySelector('.tool-item[data-tool="checklist"]').classList.add('active');
   updateStats();
   loadProjects();
+  // 周期性刷新写作目标
+  setInterval(refreshGoalFromApi, 60000);
 
   window.addEventListener('click', function(e){
     if(e.target.classList.contains('modal-overlay')){
