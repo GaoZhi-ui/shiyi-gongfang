@@ -30,6 +30,7 @@ foreshadowing/
 scenes/
 snapshots/
 project_id.txt
+config.yaml
 
 # 系统
 .DS_Store

@@ -1,5 +1,5 @@
 """
-拾遗工坊 — 跨平台 PyInstaller 构建脚本
+写作助手工坊 — 跨平台 PyInstaller 构建脚本
 用法: python build.py [--clean] [--debug] [--onedir]
 """
 
@@ -133,7 +133,7 @@ def build(clean: bool = False, debug: bool = False, onedir: bool = False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="拾遗工坊 PyInstaller 构建脚本")
+    parser = argparse.ArgumentParser(description="写作助手工坊 PyInstaller 构建脚本")
     parser.add_argument("--clean", action="store_true", help="构建前清理旧产物")
     parser.add_argument("--debug", action="store_true", help="启用调试模式")
     parser.add_argument("--onedir", action="store_true", help="使用目录模式打包（默认单文件）")

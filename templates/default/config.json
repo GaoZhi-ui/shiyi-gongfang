@@ -1,0 +1,15 @@
+{
+  "name": "新项目",
+  "template": "default",
+  "description": "",
+  "created_at": "",
+  "updated_at": "",
+  "review_rules": {
+    "word_count_baseline": 2500,
+    "word_count_tolerance": 300,
+    "sentence_density_target": 5.0,
+    "sentence_density_tolerance": 1.0,
+    "diary_min_chars": 80,
+    "diary_max_chars": 120
+  }
+}

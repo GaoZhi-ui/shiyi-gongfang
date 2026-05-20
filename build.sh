@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# 拾遗工坊 — Linux/macOS 构建脚本
+# 写作助手工坊 — Linux/macOS 构建脚本
 # 用法: chmod +x build.sh && ./build.sh [--clean] [--debug]
 #
 
 set -euo pipefail
 
-APP_NAME="拾遗工坊"
+APP_NAME="写作助手工坊"
 ENTRY="main.py"
 DIST_DIR="dist"
 

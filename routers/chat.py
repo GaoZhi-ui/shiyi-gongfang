@@ -80,8 +80,8 @@ def _ensure_knowledge_base():
         except Exception:
             pass
     candidates = [
-        BASE / "knowledge" / "泰拉拾遗录",
-        Path("E:/openhanako-work/knowledge_base/泰拉拾遗录"),
+        BASE / "knowledge",
+        Path("knowledge"),
     ]
     for d in candidates:
         if d.is_dir():
@@ -128,7 +128,7 @@ class ChatRequest(BaseModel):
     temperature: float = Field(0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(4096, ge=1, le=32768)
     system_prompt: str = Field(
-        "你是《泰拉拾遗录》的专属写作助手。回答简洁、直接，不啰嗦。",
+        "你是专业的写作助手。回答简洁、直接，不啰嗦。",
         description="系统提示词",
     )
     messages: list[ChatMessage] = Field(..., min_length=1)
@@ -249,7 +249,7 @@ PROVIDER_CONFIGS = {
     },
 }
 
-DEFAULT_SYSTEM = "你是《泰拉拾遗录》的专属写手。放下日常的对话风格，切换到作家模式。回答简洁、直接、不啰嗦。"
+DEFAULT_SYSTEM = "你是专业的写作助手。回答简洁、直接、不啰嗦。"
 
 MODE_SYSTEM_PROMPTS = {
     "chat": DEFAULT_SYSTEM,
@@ -635,7 +635,7 @@ def export_history():
             "message": "没有聊天记录可导出",
         })
 
-    lines = ["# 拾遗工坊 · 聊天记录导出", "", f"导出时间：{datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')}", ""]
+    lines = ["# 写作助手工坊 · 聊天记录导出", "", f"导出时间：{datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')}", ""]
     for msg in history:
         role_label = "🧑 你" if msg["role"] == "user" else "🤖 助手"
         timestamp = msg.get("timestamp", "")

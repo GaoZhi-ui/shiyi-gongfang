@@ -131,7 +131,7 @@ def _export_title(chapters_param: list[str] | str, custom_title: str | None) -> 
     if custom_title:
         return custom_title
     now = datetime.now(timezone.utc).astimezone()
-    return f"拾遗工坊_导出_{now.strftime('%Y%m%d_%H%M')}"
+    return f"写作助手_导出_{now.strftime('%Y%m%d_%H%M')}"
 
 
 def _safe_filename(title: str, ext: str) -> str:

@@ -115,8 +115,8 @@ def _resolve_knowledge_base() -> Path:
 
     # 回退链
     candidates = [
-        BASE / "knowledge" / "泰拉拾遗录",
-        Path("E:/openhanako-work/knowledge_base/泰拉拾遗录"),
+        BASE / "knowledge",
+        Path("knowledge"),
         BASE / "knowledge",
     ]
     for d in candidates:

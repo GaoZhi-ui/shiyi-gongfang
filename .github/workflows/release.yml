@@ -98,7 +98,7 @@ jobs:
       - name: Generate release notes
         run: |
           cat > release-notes.md <<- EOF
-          # 拾遗工坊 v${VERSION}
+          # 写作助手工坊 v${VERSION}
 
           ## 下载
 
@@ -115,7 +115,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          name: 拾遗工坊 v${{ env.VERSION }}
+          name: 写作助手工坊 v${{ env.VERSION }}
           body_path: release-notes.md
           files: artifacts/**/*.zip
           draft: false

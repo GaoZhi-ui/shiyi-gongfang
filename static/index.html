@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>拾遗工坊 · 泰拉拾遗录</title>
+<title>写作助手工坊</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;height:100vh;background:#141416;color:#c8c3b8;display:flex;overflow:hidden;font-size:14px}
@@ -407,7 +407,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 <div class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <span class="logo">✦</span>
-    <h1>拾遗工坊</h1>
+    <h1>写作助手工坊</h1>
     <span class="beta">v1.0</span>
   </div>
   <div class="toolbox" id="toolbox">
@@ -493,8 +493,8 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="msg" data-role="system">
       <div class="msg-avatar system">✦</div>
       <div class="msg-body">
-        <div class="msg-author">拾遗工坊</div>
-        <div class="msg-bubble system">你好，我是拾遗工坊。<br><br>你可以：<br>• <b>检查当前章节</b> — 粘贴正文，我来审读<br>• <b>运行审查</b> — 12项自检，逐项评分<br>• <b>调取知识库</b> — 风格速查、人物档案、伏笔状态<br><br>或者直接在下方输入你想说的。</div>
+        <div class="msg-author">写作助手工坊</div>
+        <div class="msg-bubble system">你好，我是写作助手工坊。<br><br>你可以：<br>• <b>检查当前章节</b> — 粘贴正文，我来审读<br>• <b>运行审查</b> — 12项自检，逐项评分<br>• <b>调取知识库</b> — 风格速查、人物档案、伏笔状态<br><br>或者直接在下方输入你想说的。</div>
         <div class="msg-time">刚刚</div>
       </div>
     </div>
@@ -807,7 +807,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       if(!Array.isArray(projects)) projects = [];
     }catch(e){
       // 离线降级
-      projects = [{id:'default',name:'泰拉拾遗录',template:'novel'}];
+      projects = [{id:'default',name:'新项目',template:'novel'}];
     }
     if(!currentProjectId && projects.length>0){
       currentProjectId = projects[0].id;
@@ -866,7 +866,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     welcome.className = 'msg';
     welcome.dataset.role = 'system';
     const pname = projects.find(p=>p.id===pid)?.name||'项目';
-    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system">已切换到项目「${escHtml(pname)}」。<br><br>知识库和写作规则已同步更新。</div><div class="msg-time">刚刚</div></div>`;
+    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">写作助手工坊</div><div class="msg-bubble system">已切换到项目「${escHtml(pname)}」。<br><br>知识库和写作规则已同步更新。</div><div class="msg-time">刚刚</div></div>`;
     chatArea.appendChild(welcome);
     updateStats();
     kbFiles = [];
@@ -1536,7 +1536,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     div.className = 'msg';
     div.dataset.role = role;
     const avatar = role==='system'?'✦':'你';
-    const author = role==='system'?'拾遗工坊':'你';
+    const author = role==='system'?'写作助手工坊':'你';
     const bubbleClass = role==='system'?'system':'user';
 
     let extra = '';
@@ -1550,7 +1550,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     }
 
     if(options.loading){
-      div.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
+      div.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">写作助手工坊</div><div class="msg-bubble system"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
       chatArea.appendChild(div);
       chatArea.scrollTop = chatArea.scrollHeight;
       return div;
@@ -1857,7 +1857,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     const welcome = document.createElement('div');
     welcome.className = 'msg';
     welcome.dataset.role = 'system';
-    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system">新会话已开始。随时告诉我你想做什么。</div><div class="msg-time">刚刚</div></div>`;
+    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">写作助手工坊</div><div class="msg-bubble system">新会话已开始。随时告诉我你想做什么。</div><div class="msg-time">刚刚</div></div>`;
     chatArea.appendChild(welcome);
     updateStats();
   });

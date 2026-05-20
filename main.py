@@ -1,5 +1,5 @@
 """
-泰拉拾遗录·写作工坊 — FastAPI 后端
+写作助手工坊 — FastAPI 后端
 运行: uvicorn main:app --reload --port 8000
 """
 
@@ -28,7 +28,7 @@ from routers.export import router as export_router
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
 
-app = FastAPI(title="拾遗工坊")
+app = FastAPI(title="写作助手工坊")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(health_router, prefix="/api/v1")
