@@ -5,3 +5,4 @@ cryptography>=42.0.0
 pyyaml>=6.0
 python-multipart>=0.0.9
 aiofiles>=23.0.0
+fpdf2>=2.8.0

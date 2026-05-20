@@ -243,6 +243,194 @@ class TxtConsumer(BaseConsumer):
         return filepath
 
 
+# ─── PDF 消费者 ───
+
+
+def _find_cjk_font() -> str | None:
+    """查找系统中可用的 CJK 字体，按平台依次尝试。"""
+    import platform as _platform
+    from pathlib import Path
+
+    system = _platform.system()
+
+    candidates: list[str] = []
+    if system == "Windows":
+        candidates = [
+            r"C:\Windows\Fonts\msyh.ttc",        # 微软雅黑
+            r"C:\Windows\Fonts\simsun.ttc",       # 宋体
+            r"C:\Windows\Fonts\simhei.ttf",       # 黑体
+            r"C:\Windows\Fonts\deng.ttf",         # 等线
+            r"C:\Windows\Fonts\yahei.ttf",        # 雅黑（备选）
+        ]
+    elif system == "Darwin":
+        candidates = [
+            "/System/Library/Fonts/PingFang.ttc",
+            "/System/Library/Fonts/STHeiti Light.ttc",
+            "/Library/Fonts/Arial Unicode.ttf",
+        ]
+    else:  # Linux
+        candidates = [
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+            "/usr/share/fonts/wqy-zenhei/wqy-zenhei.ttc",
+        ]
+
+    for path in candidates:
+        p = Path(path)
+        if p.exists():
+            return str(p)
+    return None
+
+
+class PdfConsumer(BaseConsumer):
+    """将 FormattedDocument 渲染为 PDF 文件。
+
+    使用 fpdf2 库（纯 Python，无系统依赖）。
+    包含标题页、章节标题、正文、自动分页。
+    """
+
+    def __init__(
+        self,
+        export_dir: str | Path,
+        font_path: str | None = None,
+        font_name: str = "CJK",
+        title_font_size: int = 24,
+        chapter_font_size: int = 16,
+        body_font_size: int = 11,
+    ):
+        super().__init__(export_dir)
+        self.font_name = font_name
+        self.title_font_size = title_font_size
+        self.chapter_font_size = chapter_font_size
+        self.body_font_size = body_font_size
+
+        # 解析字体路径
+        self.font_path = font_path or _find_cjk_font()
+        if not self.font_path:
+            raise RuntimeError(
+                "未找到系统 CJK 字体。请通过 font_path 参数指定中文字体路径，"
+                "或安装 Noto Sans CJK / 微软雅黑等字体。"
+            )
+
+    def _init_pdf(self) -> any:
+        """初始化 FPDF 实例并注册字体"""
+        from fpdf import FPDF
+
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=20)
+
+        # TTC 字体集需要指定索引
+        font_path_lower = self.font_path.lower()
+        if font_path_lower.endswith(".ttc"):
+            pdf.add_font(self.font_name, "", self.font_path, collection_font_number=0)
+        else:
+            pdf.add_font(self.font_name, "", self.font_path)
+        return pdf
+
+    def _add_title_page(self, pdf: any, document: any) -> None:
+        """生成标题页"""
+        from datetime import datetime, timezone
+
+        pdf.add_page()
+        pdf.ln(50)  # 垂直居中
+
+        # 书名
+        pdf.set_font(self.font_name, size=self.title_font_size)
+        pdf.cell(w=0, text=document.title, align="C", new_x="LMARGIN", new_y="NEXT")
+
+        pdf.ln(10)
+
+        # 元信息
+        pdf.set_font(self.font_name, size=11)
+        now_str = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M")
+        pdf.cell(w=0, text=f"共 {document.chapter_count} 章", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(w=0, text=f"导出时间: {now_str}", align="C", new_x="LMARGIN", new_y="NEXT")
+
+    def _render_tokens(self, pdf: any, tokens: list[ChapterToken]) -> None:
+        """将 Token 列表渲染到 PDF"""
+        diary_mode = False
+
+        for token in tokens:
+            if token.type == "heading":
+                if token.level <= 2:
+                    pdf.set_font(self.font_name, size=self.chapter_font_size)
+                    pdf.ln(4)
+                    for item in token.content:
+                        pdf.multi_cell(w=0, text=item)
+                    pdf.ln(3)
+                else:
+                    pdf.set_font(self.font_name, size=self.body_font_size + 2)
+                    pdf.ln(2)
+                    for item in token.content:
+                        pdf.multi_cell(w=0, text=item)
+                    pdf.ln(2)
+
+            elif token.type == "paragraph":
+                pdf.set_font(self.font_name, size=self.body_font_size)
+                for line in token.content:
+                    stripped = line.strip()
+                    if stripped:
+                        pdf.multi_cell(w=0, text=stripped)
+                        pdf.ln(1)
+                pdf.ln(2)
+
+            elif token.type == "list":
+                pdf.set_font(self.font_name, size=self.body_font_size)
+                for item in token.content:
+                    pdf.multi_cell(w=0, text=f"  · {item}")
+                    pdf.ln(1)
+                pdf.ln(2)
+
+            elif token.type == "blank":
+                pass
+
+            elif token.type == "diary":
+                if not diary_mode:
+                    diary_mode = True
+                    pdf.ln(3)
+                    pdf.set_font(self.font_name, size=self.body_font_size)
+                    pdf.set_text_color(100, 100, 100)
+                    pdf.multi_cell(w=0, text="—— 章末日记 ——")
+                    pdf.ln(2)
+
+                for line in token.content:
+                    stripped = line.strip()
+                    if stripped:
+                        pdf.set_font(self.font_name, size=self.body_font_size)
+                        pdf.set_text_color(80, 80, 80)
+                        pdf.multi_cell(w=0, text=stripped)
+                        pdf.ln(1)
+
+                pdf.set_text_color(0, 0, 0)
+
+    def consume(self, document: FormattedDocument) -> Path:
+        """生成 .pdf 文件，返回文件路径"""
+        pdf = self._init_pdf()
+
+        # 标题页
+        self._add_title_page(pdf, document)
+
+        # 各章节
+        for i, (filename, tokens) in enumerate(document.chapters):
+            pdf.add_page()
+
+            # 章节标题
+            chapter_title = filename.replace(".md", "")
+            pdf.set_font(self.font_name, size=self.chapter_font_size)
+            pdf.multi_cell(w=0, text=chapter_title)
+            pdf.ln(4)
+
+            # 渲染内容
+            self._render_tokens(pdf, tokens)
+
+        filename = _safe_filename(document.title, ".pdf")
+        filepath = self.export_dir / filename
+        pdf.output(str(filepath))
+        return filepath
+
+
 # ─── Markdown 消费者 ───
 
 

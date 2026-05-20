@@ -3,7 +3,7 @@
 运行: uvicorn main:app --reload --port 8000
 """
 
-import os, json, re
+import logging, os, json, re
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,11 +26,20 @@ from routers.snapshots import router as snapshots_router
 from routers.export import router as export_router
 from routers.stats import router as stats_router
 from routers.backup import router as backup_router
+from routers.style_check import router as style_router
+from routers.plugins import router as plugins_router
+from core.plugin_manager import plugin_manager, logger as plugin_logger
+
+# 插件日志设置
+plugin_logger.setLevel(logging.INFO)
+sh = logging.StreamHandler()
+sh.setFormatter(logging.Formatter("[%(name)s] %(levelname)s: %(message)s"))
+plugin_logger.addHandler(sh)
 
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
 
-app = FastAPI(title="写作助手工坊")
+app = FastAPI(title="写作助手工坊", on_startup=[lambda: plugin_manager.load_all(app, BASE / "plugins")])
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(health_router, prefix="/api/v1")
@@ -50,6 +59,8 @@ app.include_router(snapshots_router, prefix="/api/v1")
 app.include_router(export_router, prefix="/api/v1")
 app.include_router(stats_router, prefix="/api/v1")
 app.include_router(backup_router, prefix="/api/v1")
+app.include_router(style_router, prefix="/api/v1")
+app.include_router(plugins_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")

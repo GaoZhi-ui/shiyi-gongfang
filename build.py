@@ -92,6 +92,7 @@ def build(clean: bool = False, debug: bool = False, onedir: bool = False):
     cmd.append("--hidden-import=uvicorn.loops.auto")
     cmd.append("--hidden-import=uvicorn.protocols.http.auto")
     cmd.append("--hidden-import=docx")
+    cmd.append("--hidden-import=fpdf2")
     cmd.append("--hidden-import=pydantic")
     cmd.append("--hidden-import=multipart")
 

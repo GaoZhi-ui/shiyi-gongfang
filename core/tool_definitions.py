@@ -819,3 +819,34 @@ def register_all_tools() -> None:
         },
         handler=_style_analyze_handler,
     ))
+
+    # 14. export — 导出文稿
+    registry.register(Tool(
+        name="export",
+        description=(
+            "导出文稿为指定格式文件。支持格式："
+            "docx (Word 文档), txt (纯文本), pdf (PDF 文档), markdown (Markdown 压缩包)。"
+            "导出后通过 REST API 端点 POST /api/v1/export/{format} 获取文件。"
+        ),
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "format": {
+                    "type": "string",
+                    "enum": ["docx", "txt", "pdf", "markdown"],
+                    "description": "导出格式：docx / txt / pdf / markdown",
+                },
+                "chapters": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "要导出的章节文件名列表，或传 ['all'] 表示全部",
+                },
+                "title": {"type": "string", "description": "导出文件标题（可选）"},
+            },
+            "required": ["format"],
+        },
+        handler=lambda args: {
+            "content": [{"type": "text", "text": f"调用 POST /api/v1/export/{args.get('format', 'docx')} 导出，参数：章节={args.get('chapters', 'all')}，标题={args.get('title', '默认')}"}],
+            "meta": {"endpoint": f"/api/v1/export/{args.get('format', 'docx')}"},
+        },
+    ))

@@ -21,7 +21,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from core.export_engine import build_document
-from core.export_consumers import DocxConsumer, TxtConsumer, MarkdownConsumer
+from core.export_consumers import DocxConsumer, TxtConsumer, PdfConsumer, MarkdownConsumer
 
 router = APIRouter(prefix="/export", tags=["export"])
 BASE = Path(__file__).resolve().parent.parent
@@ -156,6 +156,13 @@ def _export_txt(chapters: list[tuple[str, str]], title: str) -> Path:
     return consumer.consume(doc)
 
 
+def _export_pdf(chapters: list[tuple[str, str]], title: str) -> Path:
+    """Token化 → PdfConsumer 管线"""
+    doc = build_document(title, chapters)
+    consumer = PdfConsumer(export_dir=EXPORT_DIR)
+    return consumer.consume(doc)
+
+
 def _export_markdown_zip(chapters: list[tuple[str, str]], title: str) -> Path:
     """Token化 → MarkdownConsumer 管线"""
     doc = build_document(title, chapters)
@@ -205,6 +212,21 @@ def export_markdown(body: ExportBody):
     return {
         "status": "ok",
         "format": "zip",
+        "filename": filepath.name,
+        "chapter_count": len(chapters),
+        "download_url": f"/export/{filepath.name}",
+    }
+
+
+@router.post("/pdf", status_code=201)
+def export_pdf(body: ExportBody):
+    """导出为 PDF 文档"""
+    chapters = _collect_chapters(body.chapters)
+    title = _export_title(body.chapters, body.title)
+    filepath = _export_pdf(chapters, title)
+    return {
+        "status": "ok",
+        "format": "pdf",
         "filename": filepath.name,
         "chapter_count": len(chapters),
         "download_url": f"/export/{filepath.name}",
