@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import json
 import importlib
 import inspect
 import pkgutil
@@ -130,16 +131,114 @@ class RuleRegistry:
         """列出所有已注册规则的元数据"""
         return [rule.to_dict() for rule in self._rules.values()]
 
+    # ── 忽略偏好 ──
+
+    @staticmethod
+    def _resolve_guide_path(project_id: str) -> Path | None:
+        """获取项目 writing-guide.json 的路径"""
+        try:
+            base = Path(__file__).resolve().parent.parent
+            candidates = [
+                base / "projects" / project_id / "writing-guide.json",
+                Path.cwd() / "projects" / project_id / "writing-guide.json",
+                Path(f"projects/{project_id}/writing-guide.json"),
+            ]
+            for p in candidates:
+                if p.exists():
+                    return p
+            # 如果文件不存在，返回第一个有效路径以便创建
+            for p in candidates:
+                parent = p.parent
+                try:
+                    parent.mkdir(parents=True, exist_ok=True)
+                    return p
+                except (OSError, PermissionError):
+                    continue
+            return None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _load_ignored(project_id: str) -> list[str]:
+        """从 writing-guide.json 加载已忽略规则列表"""
+        path = RuleRegistry._resolve_guide_path(project_id)
+        if not path or not path.exists():
+            return []
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return data.get("ignored_rules", [])
+        except (json.JSONDecodeError, OSError):
+            return []
+
+    @staticmethod
+    def _save_ignored(project_id: str, ignored: list[str]):
+        """将已忽略规则列表保存到 writing-guide.json"""
+        path = RuleRegistry._resolve_guide_path(project_id)
+        if not path:
+            return
+        try:
+            if path.exists():
+                data = json.loads(path.read_text(encoding="utf-8"))
+            else:
+                data = {}
+            data["ignored_rules"] = ignored
+            path.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    def ignore_rule(self, rule_name: str, project_id: str) -> bool:
+        """为指定项目忽略某条规则。返回 True 表示成功。"""
+        if rule_name not in self._rules:
+            return False
+        ignored = self._load_ignored(project_id)
+        if rule_name not in ignored:
+            ignored.append(rule_name)
+            self._save_ignored(project_id, ignored)
+        return True
+
+    def unignore_rule(self, rule_name: str, project_id: str) -> bool:
+        """为指定项目取消忽略某条规则。返回 True 表示成功。"""
+        ignored = self._load_ignored(project_id)
+        if rule_name in ignored:
+            ignored.remove(rule_name)
+            self._save_ignored(project_id, ignored)
+            return True
+        return False
+
+    def is_ignored(self, rule_name: str, project_id: str) -> bool:
+        """检查某条规则是否被指定项目忽略"""
+        ignored = self._load_ignored(project_id)
+        return rule_name in ignored
+
+    def get_ignored_rules(self, project_id: str) -> list[dict]:
+        """获取指定项目已忽略的规则列表（含元数据）"""
+        ignored_names = self._load_ignored(project_id)
+        result = []
+        for name in ignored_names:
+            rule = self._rules.get(name)
+            if rule:
+                result.append(rule.to_dict())
+            else:
+                result.append({"name": name, "description": "(规则已移除)", "severity": "info"})
+        return result
+
+    # ── 带忽略过滤的 check_all ──
+
     def check_all(
         self,
         text: str,
         rule_names: list[str] | None = None,
+        project_id: str | None = None,
     ) -> list[WritingIssue]:
-        """对所有（或指定）规则执行检查。
+        """对所有（或指定）规则执行检查，自动过滤被忽略的规则。
 
         Args:
             text: 要检查的文本
             rule_names: 要启用的规则名称列表，None 表示全部
+            project_id: 项目 ID，用于过滤被忽略的规则
 
         Returns:
             按行号排序的 WritingIssue 列表
@@ -147,11 +246,20 @@ class RuleRegistry:
         if not text or not text.strip():
             return []
 
+        # 获取忽略列表
+        ignored_names: set[str] = set()
+        if project_id:
+            ignored_names = set(self._load_ignored(project_id))
+
         if rule_names is None:
-            targets = list(self._rules.values())
+            targets = [
+                rule for name, rule in self._rules.items()
+                if name not in ignored_names
+            ]
         else:
             targets = [
-                self._rules[name] for name in rule_names if name in self._rules
+                self._rules[name] for name in rule_names
+                if name in self._rules and name not in ignored_names
             ]
 
         issues: list[WritingIssue] = []

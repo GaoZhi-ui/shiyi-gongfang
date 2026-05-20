@@ -11,9 +11,10 @@ POST /api/v1/snapshots/{id}/restore      — 恢复到指定快照
 """
 
 import json, re, shutil
+import difflib
 from pathlib import Path
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/snapshots", tags=["snapshots"])
@@ -192,6 +193,129 @@ def list_snapshots():
             for s in reversed(snapshots)
         ],
     }
+
+
+# ─── 差异分析模型 ───
+
+
+class DiffParagraph(BaseModel):
+    type: str  # same | added | removed | modified
+    content: str
+    old_content: str | None = None
+
+
+class ChapterDiff(BaseModel):
+    filename: str
+    paragraphs: list[DiffParagraph]
+    has_changes: bool
+
+
+class DiffResponse(BaseModel):
+    compare_from: str
+    compare_to: str
+    chapters: list[ChapterDiff]
+    total_changes: int
+
+
+@router.get("/{snapshot_id}/diff")
+def snapshot_diff(
+    snapshot_id: str,
+    compare_to: str = Query("current", description="对比目标：快照 ID 或 'current'"),
+):
+    """比较两个快照之间（或快照与当前文件之间）的段落级差异"""
+    project_id = _resolve_project_id()
+    snapshots = _load_snapshots(project_id)
+
+    # 查找源快照
+    source = None
+    for s in snapshots:
+        if s["id"] == snapshot_id:
+            source = s
+            break
+    if source is None:
+        raise HTTPException(404, detail={
+            "code": "SNAPSHOT_NOT_FOUND",
+            "message": f"快照 {snapshot_id} 不存在",
+        })
+
+    source_chapters: dict[str, str] = source.get("chapters", {})
+
+    # 获取目标内容
+    if compare_to == "current":
+        target_chapters = _collect_chapter_snapshot()
+        target_label = "当前版本"
+    else:
+        target = None
+        for s in snapshots:
+            if s["id"] == compare_to:
+                target = s
+                break
+        if target is None:
+            raise HTTPException(404, detail={
+                "code": "TARGET_NOT_FOUND",
+                "message": f"对比目标快照 {compare_to} 不存在",
+            })
+        target_chapters = target.get("chapters", {})
+        target_label = target.get("label", compare_to)
+
+    # 合并所有文件名
+    all_filenames = sorted(set(list(source_chapters.keys()) + list(target_chapters.keys())))
+
+    chapter_diffs = []
+    total_changes = 0
+
+    for filename in all_filenames:
+        src_text = source_chapters.get(filename, "")
+        tgt_text = target_chapters.get(filename, "")
+
+        paragraphs = _compute_paragraph_diff(src_text, tgt_text)
+        has_changes = any(p.type != "same" for p in paragraphs)
+        if has_changes:
+            total_changes += 1
+
+        chapter_diffs.append(ChapterDiff(
+            filename=filename,
+            paragraphs=paragraphs,
+            has_changes=has_changes,
+        ))
+
+    return DiffResponse(
+        compare_from=source.get("label", snapshot_id),
+        compare_to=target_label,
+        chapters=chapter_diffs,
+        total_changes=total_changes,
+    )
+
+
+def _compute_paragraph_diff(src: str, tgt: str) -> list[DiffParagraph]:
+    """使用 difflib 比较两段文本的段落级差异"""
+    src_paras = [p.strip() for p in src.split("\n") if p.strip()]
+    tgt_paras = [p.strip() for p in tgt.split("\n") if p.strip()]
+
+    matcher = difflib.SequenceMatcher(None, src_paras, tgt_paras)
+    result = []
+
+    for op, i1, i2, j1, j2 in matcher.get_opcodes():
+        if op == "equal":
+            for idx in range(i1, i2):
+                result.append(DiffParagraph(type="same", content=src_paras[idx]))
+        elif op == "replace":
+            for idx in range(i1, i2):
+                result.append(DiffParagraph(
+                    type="modified",
+                    content=tgt_paras[j1 + (idx - i1)] if (j1 + (idx - i1)) < j2 else "",
+                    old_content=src_paras[idx],
+                ))
+            for idx in range(j1 + (i2 - i1), j2):
+                result.append(DiffParagraph(type="added", content=tgt_paras[idx]))
+        elif op == "delete":
+            for idx in range(i1, i2):
+                result.append(DiffParagraph(type="removed", content=src_paras[idx]))
+        elif op == "insert":
+            for idx in range(j1, j2):
+                result.append(DiffParagraph(type="added", content=tgt_paras[idx]))
+
+    return result
 
 
 @router.post("/{snapshot_id}/restore")

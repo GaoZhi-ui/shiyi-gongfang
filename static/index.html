@@ -6,7 +6,7 @@
 <title>写作助手工坊</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;height:100vh;background:#141416;color:#c8c3b8;display:flex;overflow:hidden;font-size:14px}
+body{font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;height:100vh;background:linear-gradient(135deg,#141416 0%,#161519 50%,#141416 100%);color:#e8e6e3;display:flex;overflow:hidden;font-size:14px}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
@@ -477,6 +477,42 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .tb-result-success{background:#0d1f0d;border:1px solid #1e3a1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#8bc34a;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
 .tb-result-error{background:#1f0d0d;border:1px solid #3a1e1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#ef5350;font-family:monospace;white-space:pre-wrap;word-break:break-word}
 
+/* ===== 今日面板 ===== */
+.today-panel{margin:-4px 0 6px;padding:10px 12px;background:linear-gradient(135deg,rgba(212,160,64,0.06) 0%,rgba(212,160,64,0.02) 100%);border-bottom:1px solid #2a2825;border-top:1px solid #2a2825}
+.today-panel .tp-header{display:flex;align-items:center;gap:6px;font-size:11px;color:#d4a040;letter-spacing:1px;margin-bottom:6px}
+.today-panel .tp-header span{opacity:.7}
+.today-panel .tp-project{font-size:13px;color:#e8e6e3;font-weight:500;margin-bottom:2px}
+.today-panel .tp-chapter{font-size:12px;color:#b8b0a0;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .12s;display:inline-block;margin-bottom:4px}
+.today-panel .tp-chapter:hover{background:rgba(212,160,64,0.12);color:#d4a040}
+.today-panel .tp-chapter .tp-ch-wordcount{color:#888;font-size:11px;font-weight:400}
+.today-panel .tp-progress{margin-top:6px}
+.today-panel .tp-progress-row{display:flex;justify-content:space-between;font-size:10px;color:#888;margin-bottom:3px}
+.today-panel .tp-progress-bar{height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden}
+.today-panel .tp-progress-bar .tp-fill{height:100%;background:#d4a040;border-radius:2px;transition:width .3s}
+.today-panel .tp-empty{font-size:12px;color:#666;text-align:center;padding:6px 0}
+
+/* ===== 灵感悬浮窗 ===== */
+.inspiration-float-btn{position:absolute;bottom:44px;right:12px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(212,160,64,0.15);border:1px solid rgba(212,160,64,0.3);color:#d4a040;font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all .15s;user-select:none;line-height:1}
+.inspiration-float-btn:hover{background:rgba(212,160,64,0.25);border-color:#d4a040;transform:scale(1.08)}
+.inspiration-float-btn.active{background:rgba(212,160,64,0.2);border-color:#d4a040}
+.editor-area.active .inspiration-float-btn{display:flex}
+.inspiration-float-window{position:absolute;bottom:88px;right:12px;z-index:30;width:300px;max-height:340px;background:#1a1a1a;border:1px solid #2a2825;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;cursor:grab}
+.inspiration-float-window.active{display:flex}
+.inspiration-float-window .ifw-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #2a2825;cursor:grab;user-select:none}
+.inspiration-float-window .ifw-header .ifw-title{font-size:12px;color:#d4a040;font-weight:500;flex:1}
+.inspiration-float-window .ifw-header .ifw-close{font-size:14px;color:#666;cursor:pointer;background:none;border:none;padding:2px 6px;border-radius:4px;transition:color .1s}
+.inspiration-float-window .ifw-header .ifw-close:hover{color:#d9534f}
+.inspiration-float-window .ifw-list{flex:1;overflow-y:auto;padding:6px 0}
+.inspiration-float-window .ifw-item{padding:8px 12px;border-bottom:1px solid #1e1e1e;display:flex;flex-direction:column;gap:4px;cursor:default}
+.inspiration-float-window .ifw-item:last-child{border-bottom:none}
+.inspiration-float-window .ifw-item .ifw-text{font-size:12px;color:#c8c3b8;line-height:1.5;word-break:break-word}
+.inspiration-float-window .ifw-item .ifw-footer{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.inspiration-float-window .ifw-item .ifw-time{font-size:10px;color:#555}
+.inspiration-float-window .ifw-item .ifw-insert{font-size:10px;color:#d4a040;background:rgba(212,160,64,0.1);border:1px solid rgba(212,160,64,0.2);border-radius:4px;padding:2px 8px;cursor:pointer;transition:all .12s}
+.inspiration-float-window .ifw-item .ifw-insert:hover{background:rgba(212,160,64,0.2);border-color:#d4a040}
+.inspiration-float-window .ifw-empty{padding:30px 0;text-align:center;color:#555;font-size:12px}
+.inspiration-float-window .ifw-empty .icon{font-size:24px;margin-bottom:6px}
+
 /* ===== Focus Mode ===== */
 .focus-btn{background:transparent;border:1px solid #2a2825;border-radius:6px;color:#d4a040;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .12s;white-space:nowrap}
 .focus-btn:hover{background:rgba(212,160,64,0.1);border-color:#d4a040}
@@ -508,7 +544,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .editor-area textarea{
   position:relative;z-index:2;
   color:transparent;caret-color:#c8c3b8;
-  background:transparent
+  background:linear-gradient(135deg,#141416 0%,#161519 50%,#141416 100%)
 }
 .editor-area textarea::selection{background:rgba(212,160,64,0.25)}
 
@@ -523,6 +559,23 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .tw-toggle{background:transparent;border:1px solid #2a2825;border-radius:5px;color:#888;padding:3px 8px;font-size:11px;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap}
 .tw-toggle:hover{background:#242424;color:#d4d4d4}
 .tw-toggle.active{background:rgba(212,160,64,0.1);color:#d4a040;border-color:rgba(212,160,64,0.3)}
+.stuck-toggle{background:transparent;border:1px solid #6b4f3a;border-radius:5px;color:#d4a87c;padding:3px 8px;font-size:11px;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap}
+.stuck-toggle:hover{background:rgba(212,160,64,0.12);border-color:#d4a040;color:#d4a040}
+.stuck-toggle.loading{opacity:.6;pointer-events:none}
+
+/* ===== Stuck Suggestions ===== */
+.stuck-popup{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:520px;max-width:95vw;background:#1e1e1e;border:1px solid #3a3028;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.6);z-index:300;padding:16px 20px;animation:fadeIn .2s ease}
+.stuck-popup-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2a2825}
+.stuck-popup-header .sp-title{font-size:14px;color:#d4d4d4;font-weight:500;flex:1}
+.stuck-popup-header .sp-close{background:transparent;border:none;color:#888;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .1s}
+.stuck-popup-header .sp-close:hover{background:#2a2825;color:#d4d4d4}
+.stuck-loading{text-align:center;padding:30px 0;color:#888;font-size:13px}
+.stuck-suggestion{padding:10px 12px;background:#242422;border:1px solid #2a2825;border-radius:8px;margin-bottom:8px;transition:all .12s}
+.stuck-suggestion:hover{border-color:#3a3a3a}
+.stuck-suggestion .ss-title{font-size:13px;color:#d4a040;font-weight:500;margin-bottom:4px}
+.stuck-suggestion .ss-summary{font-size:12px;color:#b0a898;line-height:1.5;margin-bottom:8px}
+.stuck-suggestion .ss-apply{background:rgba(212,160,64,0.12);border:1px solid rgba(212,160,64,0.3);border-radius:5px;color:#d4a040;padding:3px 10px;font-size:11px;cursor:pointer;transition:all .12s}
+.stuck-suggestion .ss-apply:hover{background:rgba(212,160,64,0.2)}
 
 /* ===== Chapter Navigator ===== */
 .chapter-nav{display:flex;align-items:center;gap:8px}
@@ -571,6 +624,30 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 
 /* ===== Status Filter ===== */
 .statusfilter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.diff-container{display:flex;flex-direction:column;gap:10px;height:100%}
+.diff-chapter{border:1px solid #2a2825;border-radius:8px;overflow:hidden}
+.diff-chapter-header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#1a1a1a;border-bottom:1px solid #2a2825;cursor:pointer;transition:background .12s;font-size:12px;color:#999}
+.diff-chapter-header:hover{background:#242424}
+.diff-chapter-header .dc-arrow{font-size:8px;color:#666;transition:transform .15s}
+.diff-chapter-header .dc-arrow.open{transform:rotate(90deg)}
+.diff-chapter-header .dc-name{flex:1;color:#d4d4d4;font-weight:500}
+.diff-chapter-header .dc-status{font-size:10px;padding:1px 6px;border-radius:4px}
+.diff-chapter-header .dc-status.changed{background:rgba(212,160,64,0.12);color:#d4a040}
+.diff-chapter-header .dc-status.unchanged{background:rgba(136,136,136,0.1);color:#666}
+.diff-body{display:none;padding:8px 12px;background:#161616}
+.diff-body.open{display:block}
+.diff-para{padding:4px 8px;margin:2px 0;border-radius:3px;font-size:12px;line-height:1.5;font-family:inherit;white-space:pre-wrap;word-break:break-word}
+.diff-para.same{color:#888;background:transparent}
+.diff-para.added{color:#8bc34a;background:rgba(139,195,74,0.08);border-left:3px solid #8bc34a}
+.diff-para.removed{color:#ef5350;background:rgba(239,83,80,0.08);border-left:3px solid #ef5350;text-decoration:line-through}
+.diff-para.modified{color:#d4a040;background:rgba(212,160,64,0.08);border-left:3px solid #d4a040}
+.diff-meta{font-size:10px;color:#666;padding:6px 12px;background:#1a1a1a}
+.diff-empty{text-align:center;padding:40px 0;color:#555;font-size:13px}
+.diff-selector{display:flex;gap:8px;margin-bottom:12px}
+.diff-select{flex:1;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;padding:7px 10px;font-size:12px;cursor:pointer}
+.diff-reload-btn{background:transparent;border:1px solid #2a2825;border-radius:6px;color:#888;padding:4px 10px;font-size:13px;cursor:pointer;transition:all .12s}
+.diff-reload-btn:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+
 .statusfilter-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:12px;font-size:11px;color:#999;background:#1e1e1e;border:1px solid #2a2825;cursor:pointer;transition:all .12s;user-select:none}
 .statusfilter-pill:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
 .statusfilter-pill.active{background:rgba(92,184,92,0.12);color:#5cb85c;border-color:rgba(92,184,92,0.3)}
@@ -605,7 +682,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   .topbar .focus-btn,.topbar .api-btn,.topbar .shortcut-btn{font-size:11px;padding:4px 8px}
   .editor-area.active textarea{font-size:15px;line-height:1.8;padding:12px 14px}
   .editor-area .editor-toolbar{padding:4px 10px;flex-wrap:wrap;gap:4px}
-  .editor-area .editor-toolbar .tw-toggle,.editor-area .editor-toolbar .preview-toggle{font-size:10px;padding:2px 6px}
+  .editor-area .editor-toolbar .tw-toggle,.editor-area .editor-toolbar .preview-toggle,.editor-area .editor-toolbar .stuck-toggle{font-size:10px;padding:2px 6px}
   .editor-area .editor-footer{padding:8px 12px;flex-wrap:wrap;gap:6px}
   .editor-area .editor-footer .editor-char-count{font-size:11px}
   .editor-area .editor-footer .editor-save-btn{font-size:11px;padding:5px 10px}
@@ -641,6 +718,12 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <h1>写作助手工坊</h1>
     <span class="beta">v1.0</span>
   </div>
+  <div class="today-panel" id="todayPanel">
+    <div class="tp-header"><span>📋</span> 今日</div>
+    <div id="todayContent">
+      <div class="tp-empty">选择一个项目开始写作</div>
+    </div>
+  </div>
   <div class="toolbox" id="toolbox">
     <div class="tool-group-title">写作流程</div>
     <div class="tool-item" data-tool="flow"><span class="icon">📋</span><span class="label">9阶段流程</span></div>
@@ -659,6 +742,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="foreshadow"><span class="icon">🔗</span><span class="label">伏笔追踪</span></div>
     <div class="tool-item" data-tool="corkboard"><span class="icon">📇</span><span class="label">看板</span></div>
     <div class="tool-item" data-tool="split"><span class="icon">🔄</span><span class="label">分屏对照</span></div>
+    <div class="tool-item" data-tool="diff"><span class="icon">📋</span><span class="label">版本对比</span></div>
     <div class="tool-item" data-tool="tagfilter"><span class="icon">🏷️</span><span class="label">标签筛选</span></div>
     <div class="tool-item" data-tool="search"><span class="icon">🔍</span><span class="label">搜索</span></div>
 
@@ -723,6 +807,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="editor-toolbar">
       <span class="tw-toggle" id="twToggle">⏳ 打字机滚动</span>
       <span class="preview-toggle" id="previewToggle">📄 预览</span>
+      <span class="stuck-toggle" id="stuckToggle">🚧 卡住了</span>
       <div class="toolbar-spacer"></div>
       <div class="chapter-nav" id="chapterNav">
         <button class="nav-arrow" id="navPrev" title="上一章 (Ctrl+↑)">▲</button>
@@ -768,6 +853,14 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="highlight-layer" id="highlightLayer"></div>
     <textarea id="editorTextarea" placeholder="在此撰写或粘贴章节内容…&#10;&#10;支持 Markdown 格式。"></textarea>
     <div class="preview-panel" id="previewPanel"></div>
+    <div class="inspiration-float-btn" id="inspirationFloatBtn" title="灵感">💡</div>
+    <div class="inspiration-float-window" id="inspirationFloatWindow">
+      <div class="ifw-header">
+        <span class="ifw-title">💡 灵感</span>
+        <button class="ifw-close" id="inspirationFloatClose">✕</button>
+      </div>
+      <div class="ifw-list" id="inspirationFloatList"></div>
+    </div>
     <div class="editor-footer">
       <span class="editor-char-count">已写 <span class="num" id="editorCharCount">0</span> 字</span>
       <span class="editor-status" id="editorSaveStatus"></span>
@@ -1106,6 +1199,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     updateProjectTrigger();
     // 加载当前项目配置
     if(currentProjectId) loadWritingConfig(currentProjectId);
+    updateTodayPanel();
   }
 
   function renderProjectList(){
@@ -1130,6 +1224,62 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     });
   }
 
+  function updateTodayPanel(){
+    var panel = document.getElementById('todayPanel');
+    var content = document.getElementById('todayContent');
+    if(!panel || !content) return;
+    if(!currentProjectId || !projects.length){
+      content.innerHTML = '<div class="tp-empty">选择一个项目开始写作</div>';
+      return;
+    }
+    var proj = projects.find(function(p){ return p.id === currentProjectId; });
+    var projName = proj ? proj.name : '未命名项目';
+    // 获取最后一章（非空章节）
+    var lastCh = null;
+    if(corkboardChapters && corkboardChapters.length > 0){
+      for(var i = corkboardChapters.length - 1; i >= 0; i--){
+        var c = corkboardChapters[i];
+        if(c.wordCount && c.wordCount > 0){
+          lastCh = c;
+          break;
+        }
+      }
+      if(!lastCh) lastCh = corkboardChapters[corkboardChapters.length - 1];
+    }
+    var pct = Math.min(100, Math.round(goalState.todayWritten / goalState.todayTarget * 100));
+    var html = '<div class="tp-project">'+escHtml(projName)+'</div>';
+    if(lastCh){
+      var chIdx = -1;
+      for(var j = 0; j < corkboardChapters.length; j++){
+        if(corkboardChapters[j] === lastCh){ chIdx = j; break; }
+      }
+      var chNum = lastCh.number || (chIdx + 1);
+      var chTitle = lastCh.title || '第' + chNum + '章';
+      html += '<div class="tp-chapter" data-idx="'+chIdx+'" title="点击加载到编辑器">' +
+        escHtml(chTitle) +
+        ' <span class="tp-ch-wordcount">' + (lastCh.wordCount || 0).toLocaleString() + '字</span>' +
+      '</div>';
+    }
+    html += '<div class="tp-progress">' +
+      '<div class="tp-progress-row"><span>今日目标</span><span>' + goalState.todayWritten.toLocaleString() + '/' + goalState.todayTarget.toLocaleString() + ' (' + pct + '%)</span></div>' +
+      '<div class="tp-progress-bar"><div class="tp-fill" style="width:' + pct + '%"></div></div>' +
+    '</div>';
+    content.innerHTML = html;
+    // 绑定章节点击
+    var chEl = content.querySelector('.tp-chapter');
+    if(chEl){
+      chEl.addEventListener('click', function(e){
+        e.stopPropagation();
+        var idx = parseInt(this.dataset.idx);
+        if(!isNaN(idx) && idx >= 0 && idx < corkboardChapters.length){
+          // 先切换到编辑器模式
+          if(!editorMode && editorToggleBtn) editorToggleBtn.click();
+          switchToChapter(idx);
+        }
+      });
+    }
+  }
+  
   function updateProjectTrigger(){
     const cur = projects.find(p=>p.id===currentProjectId);
     const nameEl = $('projectCurrentName');
@@ -1173,6 +1323,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         editorSaveStatus.className = 'editor-status';
       }
     }
+    updateTodayPanel();
   }
 
   async function createProject(name, template){
@@ -1749,6 +1900,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '🔄';
       panelTitle.textContent = '分屏对照';
       renderSplitPanel();
+    }else if(type==='diff'){
+      panelIcon.textContent = '📋';
+      panelTitle.textContent = '版本对比';
+      renderDiffPanel();
     }else if(type==='tagfilter'){
       panelIcon.textContent = '🏷️';
       panelTitle.textContent = '标签筛选';
@@ -2412,6 +2567,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     if(!name) name = '写作目标';
     goalState.todayTarget = target;
     renderGoalView();
+    updateTodayPanel();
     // 模拟往 API 发
     if(currentProjectId){
       fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/goals', {
@@ -2572,6 +2728,87 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         loadInspirationList();
       });
     }
+  }
+
+  // ========== 灵感悬浮窗 ==========
+  var inspirationFloatOpen = false;
+  var inspirationFloatDragging = false;
+  var inspirationFloatDragOffset = {x:0, y:0};
+
+  function loadInspirationFloatList(){
+    var list = document.getElementById('inspirationFloatList');
+    if(!list) return;
+    var projectKey = currentProjectId || 'default';
+    var storageKey = 'inspiration_' + projectKey;
+    var inspirations = [];
+    try{ var raw = localStorage.getItem(storageKey); if(raw) inspirations = JSON.parse(raw); }catch(e){}
+    if(!Array.isArray(inspirations)) inspirations = [];
+    if(inspirations.length === 0){
+      list.innerHTML = '<div class="ifw-empty"><div class="icon">💡</div><div>还没有灵感</div></div>';
+      return;
+    }
+    // 取最近5条
+    var recent = inspirations.slice(-5).reverse();
+    list.innerHTML = recent.map(function(item, i){
+      var time = item.time || '';
+      var text = escHtml(item.text || '');
+      // 计算实际在完整数组中的索引（用于插入完整文本）
+      var fullIdx = inspirations.length - 1 - i;
+      return '<div class="ifw-item">'+
+        '<div class="ifw-text">'+text+'</div>'+
+        '<div class="ifw-footer">'+
+          '<span class="ifw-time">'+time+'</span>'+
+          '<button class="ifw-insert" data-text="'+escAttr(item.text)+'">插入</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+    list.querySelectorAll('.ifw-insert').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var text = this.dataset.text;
+        if(!text || !editorTextarea) return;
+        var ta = editorTextarea;
+        var start = ta.selectionStart;
+        var end = ta.selectionEnd;
+        var val = ta.value;
+        ta.value = val.substring(0, start) + text + val.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + text.length;
+        ta.focus();
+        ta.dispatchEvent(new Event('input', {bubbles:true}));
+        // 更新字数
+        var len = ta.value.replace(/[\s\n\r]/g,'').length;
+        editorCharCount.textContent = len.toLocaleString();
+        // 关闭悬浮窗
+        closeInspirationFloat();
+      });
+    });
+  }
+
+  function escAttr(s){
+    if(typeof s!=='string') return '';
+    return s.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function openInspirationFloat(){
+    inspirationFloatOpen = true;
+    var btn = document.getElementById('inspirationFloatBtn');
+    var win = document.getElementById('inspirationFloatWindow');
+    if(btn) btn.classList.add('active');
+    if(win) win.classList.add('active');
+    loadInspirationFloatList();
+  }
+
+  function closeInspirationFloat(){
+    inspirationFloatOpen = false;
+    var btn = document.getElementById('inspirationFloatBtn');
+    var win = document.getElementById('inspirationFloatWindow');
+    if(btn) btn.classList.remove('active');
+    if(win) win.classList.remove('active');
+  }
+
+  function toggleInspirationFloat(){
+    if(inspirationFloatOpen) closeInspirationFloat();
+    else openInspirationFloat();
   }
 
   // ========== 写作规范 ==========
@@ -2762,6 +2999,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       ];
     }
     renderCorkboard();
+    setTimeout(function(){ updateTodayPanel(); }, 100);
   }
 
   function renderCorkboard(){
@@ -2783,6 +3021,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     panelBody.innerHTML = html;
     bindCorkboardDragEvents();
     updateChapterNav();
+    setTimeout(function(){ updateTodayPanel(); }, 50);
   }
 
   function bindCorkboardDragEvents(){
@@ -2935,6 +3174,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 
     // 绑定事件
     bindBinderEvents();
+    setTimeout(function(){ updateTodayPanel(); }, 50);
   }
 
   function renderBinderChapter(ch, idx){
@@ -3295,6 +3535,118 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       })
       .catch(function(){
         sel.innerHTML = '<option value="">加载失败，点击 ↻ 重试</option>';
+      });
+  }
+
+  // ========== 版本对比 ==========
+  var diffSnapshots = [];
+
+  function renderDiffPanel(){
+    panelBody.innerHTML = '<div class="diff-container">'+
+      '<div class="diff-selector">'+
+        '<select class="diff-select" id="diffSnapshotFrom"><option value="">— 选择旧版本 —</option></select>'+
+        '<select class="diff-select" id="diffSnapshotTo"><option value="current" selected>当前版本</option></select>'+
+        '<button class="diff-reload-btn" id="diffCompareBtn">对比</button>'+
+      '</div>'+
+      '<div class="diff-meta" id="diffMeta">选择两个版本后点击「对比」</div>'+
+      '<div id="diffResults" style="flex:1;overflow-y:auto"><div class="diff-empty"><div style="font-size:32px;margin-bottom:8px">📋</div><div>选择版本后对比差异</div></div></div>'+
+    '</div>';
+    loadDiffSnapshots();
+    document.getElementById('diffCompareBtn').addEventListener('click', function(){
+      var fromId = document.getElementById('diffSnapshotFrom').value;
+      var toId = document.getElementById('diffSnapshotTo').value;
+      if(!fromId || !toId) return;
+      var meta = document.getElementById('diffMeta');
+      if(meta) meta.textContent = '加载中…';
+      loadSnapshotDiff(fromId, toId);
+    });
+  }
+
+  function loadDiffSnapshots(){
+    var sel = document.getElementById('diffSnapshotFrom');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">⏳ 加载中…</option>';
+    fetch(apiBase()+'/api/v1/snapshots', {headers:apiHeaders()})
+      .then(function(res){ return res.ok ? res.json() : Promise.reject('HTTP '+res.status); })
+      .then(function(data){
+        var list = data.snapshots || data || [];
+        if(Array.isArray(data)) list = data;
+        diffSnapshots = list;
+        sel.innerHTML = '<option value="">— 选择旧版本 —</option>';
+        list.forEach(function(s){
+          var label = s.label || s.title || s.name || '快照';
+          if(s.created_at) label += ' ('+formatTime(s.created_at)+')';
+          sel.innerHTML += '<option value="'+escAttr(s.id||'')+'">'+escHtml(label)+'</option>';
+        });
+        if(list.length===0) sel.innerHTML = '<option value="">暂无快照，请先创建</option>';
+      })
+      .catch(function(){
+        sel.innerHTML = '<option value="">加载失败</option>';
+      });
+  }
+
+  function loadSnapshotDiff(fromId, toId){
+    var resultsEl = document.getElementById('diffResults');
+    var metaEl = document.getElementById('diffMeta');
+    if(!resultsEl) return;
+    resultsEl.innerHTML = '<div class="diff-empty"><div class="spinner" style="margin:0 auto"></div><div style="margin-top:8px">正在比对…</div></div>';
+    fetch(apiBase()+'/api/v1/snapshots/'+encodeURIComponent(fromId)+'/diff?compare_to='+encodeURIComponent(toId), {headers:apiHeaders()})
+      .then(function(res){ return res.ok ? res.json() : Promise.reject('HTTP '+res.status); })
+      .then(function(data){
+        if(metaEl){
+          metaEl.textContent = '对比: '+(data.compare_from||'旧版本')+' ↔ '+(data.compare_to||'当前版本')+' | '+data.total_changes+' 个章节有差异';
+        }
+        var chapters = data.chapters || [];
+        if(chapters.length===0){
+          resultsEl.innerHTML = '<div class="diff-empty">无章节数据</div>';
+          return;
+        }
+        var changedCount = chapters.filter(function(c){ return c.has_changes; }).length;
+        if(changedCount===0){
+          resultsEl.innerHTML = '<div class="diff-empty"><div style="font-size:32px;margin-bottom:8px">✅</div><div>两个版本完全一致，没有差异</div></div>';
+          return;
+        }
+        var html = '';
+        chapters.forEach(function(ch, idx){
+          var hasChanges = ch.has_changes;
+          var statusText = hasChanges ? '有改动' : '无变化';
+          var statusClass = hasChanges ? 'changed' : 'unchanged';
+          html += '<div class="diff-chapter">'+
+            '<div class="diff-chapter-header" data-idx="'+idx+'">'+
+              '<span class="dc-arrow">▶</span>'+
+              '<span class="dc-name">'+escHtml(ch.filename||'章节')+'</span>'+
+              '<span class="dc-status '+statusClass+'">'+statusText+'</span>'+
+            '</div>'+
+            '<div class="diff-body" id="diffBody'+idx+'">';
+          if(hasChanges){
+            ch.paragraphs.forEach(function(p){
+              var cls = p.type;
+              var content = escHtml(p.content||'');
+              html += '<div class="diff-para '+cls+'">'+content+'</div>';
+            });
+          }else{
+            html += '<div style="color:#555;font-size:12px;padding:8px;text-align:center">无变化</div>';
+          }
+          html += '</div></div>';
+        });
+        resultsEl.innerHTML = html;
+        // 绑定展开/折叠事件
+        resultsEl.querySelectorAll('.diff-chapter-header').forEach(function(header){
+          header.addEventListener('click', function(){
+            var idx = this.dataset.idx;
+            var body = document.getElementById('diffBody'+idx);
+            var arrow = this.querySelector('.dc-arrow');
+            if(body){
+              body.classList.toggle('open');
+              if(arrow) arrow.classList.toggle('open');
+            }
+          });
+        });
+      })
+      .catch(function(e){
+        var errMsg = e.message || e;
+        resultsEl.innerHTML = '<div class="diff-empty" style="color:#d9534f">⚠ 加载失败: '+escHtml(errMsg)+'</div>';
+        if(metaEl) metaEl.textContent = '对比失败';
       });
   }
 
@@ -4032,6 +4384,99 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }
   }
 
+  // ========== 卡住了 ==========
+  var stuckToggle = document.getElementById('stuckToggle');
+  var stuckPopup = null;
+
+  function closeStuckPopup(){
+    if(stuckPopup && stuckPopup.parentNode){
+      stuckPopup.parentNode.removeChild(stuckPopup);
+    }
+    stuckPopup = null;
+    stuckToggle.classList.remove('loading');
+  }
+
+  function applySuggestion(text){
+    closeStuckPopup();
+    if(editorTextarea){
+      editorTextarea.value += (editorTextarea.value.trim() ? '\n\n' : '') + text;
+      var len = editorTextarea.value.replace(/[\s\n\r]/g,'').length;
+      editorCharCount.textContent = len.toLocaleString();
+      editorTextarea.dispatchEvent(new Event('input'));
+    }
+  }
+
+  stuckToggle.addEventListener('click', async function(){
+    if(stuckPopup) { closeStuckPopup(); return; }
+    stuckToggle.classList.add('loading');
+
+    var chapterContent = editorTextarea ? editorTextarea.value : '';
+    if(!chapterContent.trim()){
+      stuckToggle.classList.remove('loading');
+      return;
+    }
+
+    // 构建弹窗
+    stuckPopup = document.createElement('div');
+    stuckPopup.className = 'stuck-popup';
+    stuckPopup.innerHTML = '<div class="stuck-popup-header"><span class="sp-title">🚧 续写方向</span><button class="sp-close" id="stuckCloseBtn">✕</button></div><div class="stuck-loading"><div class="spinner" style="margin:0 auto"></div><div style="margin-top:8px">AI 正在思考…</div></div>';
+    document.body.appendChild(stuckPopup);
+
+    document.getElementById('stuckCloseBtn').addEventListener('click', closeStuckPopup);
+
+    try{
+      var res = await fetch(apiBase()+'/api/v1/chat/stuck', {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({
+          project_id: currentProjectId || '',
+          chapter_content: chapterContent,
+          characters: [],
+          foreshadowing: []
+        })
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var data = await res.json();
+      var suggestions = data.suggestions || [];
+
+      var contentHtml = '';
+      suggestions.forEach(function(s, i){
+        contentHtml += '<div class="stuck-suggestion">'+
+          '<div class="ss-title">'+(i+1)+'. '+escHtml(s.title||'方向'+(i+1))+'</div>'+
+          '<div class="ss-summary">'+escHtml(s.summary||'')+'</div>'+
+          '<button class="ss-apply" data-text="'+escAttr(s.summary||s.title||'')+'">以此续写</button>'+
+        '</div>';
+      });
+
+      var header = stuckPopup.querySelector('.stuck-popup-header');
+      var loadingEl = stuckPopup.querySelector('.stuck-loading');
+      if(loadingEl) loadingEl.remove();
+
+      var bodyWrap = document.createElement('div');
+      bodyWrap.innerHTML = contentHtml;
+      stuckPopup.appendChild(bodyWrap);
+
+      stuckPopup.querySelectorAll('.ss-apply').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          applySuggestion(this.dataset.text);
+        });
+      });
+    }catch(e){
+      var header = stuckPopup.querySelector('.stuck-popup-header');
+      var loadingEl = stuckPopup.querySelector('.stuck-loading');
+      if(loadingEl) loadingEl.innerHTML = '<div style="text-align:center;padding:20px;color:#d9534f">⚠ 获取建议失败，请稍后重试</div>';
+    }finally{
+      stuckToggle.classList.remove('loading');
+    }
+  });
+
+  // 点击弹窗外关闭
+  document.addEventListener('click', function(e){
+    if(stuckPopup && !stuckPopup.contains(e.target) && e.target !== stuckToggle){
+      closeStuckPopup();
+    }
+  });
+
   previewToggle.addEventListener('click', function(){
     previewMode = !previewMode;
     previewToggle.classList.toggle('active', previewMode);
@@ -4210,6 +4655,99 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 
   // 初始高亮
   setTimeout(function(){ updateHighlight(); }, 100);
+
+  // ========== 灵感悬浮窗绑定 ==========
+  var inspFloatBtn = document.getElementById('inspirationFloatBtn');
+  var inspFloatWin = document.getElementById('inspirationFloatWindow');
+  var inspFloatClose = document.getElementById('inspirationFloatClose');
+
+  if(inspFloatBtn){
+    inspFloatBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      toggleInspirationFloat();
+    });
+  }
+
+  if(inspFloatClose){
+    inspFloatClose.addEventListener('click', function(e){
+      e.stopPropagation();
+      closeInspirationFloat();
+    });
+  }
+
+  // 点击外部关闭
+  document.addEventListener('click', function(e){
+    if(!inspirationFloatOpen) return;
+    if(inspFloatWin && !inspFloatWin.contains(e.target) && e.target !== inspFloatBtn){
+      closeInspirationFloat();
+    }
+  });
+
+  // Esc 关闭
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && inspirationFloatOpen){
+      closeInspirationFloat();
+    }
+  });
+
+  // 拖拽功能
+  if(inspFloatWin){
+    var dragHandle = inspFloatWin.querySelector('.ifw-header');
+    if(dragHandle){
+      dragHandle.addEventListener('mousedown', function(e){
+        if(e.target.closest('.ifw-close')) return;
+        inspirationFloatDragging = true;
+        var rect = inspFloatWin.getBoundingClientRect();
+        inspirationFloatDragOffset.x = e.clientX - rect.left;
+        inspirationFloatDragOffset.y = e.clientY - rect.top;
+        inspFloatWin.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+    }
+
+    document.addEventListener('mousemove', function(e){
+      if(!inspirationFloatDragging || !inspFloatWin || !inspFloatWin.classList.contains('active')) return;
+      var editorAreaRect = document.getElementById('editorArea').getBoundingClientRect();
+      var x = e.clientX - editorAreaRect.left - inspirationFloatDragOffset.x;
+      var y = e.clientY - editorAreaRect.top - inspirationFloatDragOffset.y;
+      // 限制在 editor-area 内
+      x = Math.max(0, Math.min(x, editorAreaRect.width - inspFloatWin.offsetWidth));
+      y = Math.max(0, Math.min(y, editorAreaRect.height - inspFloatWin.offsetHeight - 44));
+      inspFloatWin.style.left = x + 'px';
+      inspFloatWin.style.top = y + 'px';
+      inspFloatWin.style.right = 'auto';
+      inspFloatWin.style.bottom = 'auto';
+    });
+
+    document.addEventListener('mouseup', function(){
+      if(inspirationFloatDragging){
+        inspirationFloatDragging = false;
+        if(inspFloatWin) inspFloatWin.style.cursor = 'grab';
+      }
+    });
+  }
+
+  // ========== 今日面板初始化与更新 ==========
+  // 首次加载
+  setTimeout(function(){ updateTodayPanel(); }, 300);
+
+  // 编辑器切换时更新今日面板
+  editorToggleBtn.addEventListener('click', function(){ setTimeout(function(){ updateTodayPanel(); }, 50); });
+
+  // 保存章节时更新今日面板
+  editorSaveBtn.addEventListener('click', function(){ setTimeout(function(){ updateTodayPanel(); }, 300); });
+
+  // 切换章节时更新今日面板
+  // switchToChapter 内部已通过 updatedTodayPanel 调用更新 binder
+  // 添加统一的章节切换后更新
+  var _origSwitchToChapter = switchToChapter;
+  window.switchToChapter = function(index){ _origSwitchToChapter(index); setTimeout(function(){ updateTodayPanel(); }, 100); };
+
+  // 每5分钟自动刷新今日面板（含目标数据）
+  setInterval(function(){ refreshGoalFromApi(); }, 300000);
+
+  // 首次更新目标
+  setTimeout(function(){ refreshGoalFromApi(); }, 1000);
 })();
 </script>
 </body>

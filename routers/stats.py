@@ -15,6 +15,7 @@ GET /stats/{project_id} — 返回项目写作统计
 
 import json
 import re
+import subprocess
 from pathlib import Path
 from datetime import datetime, date, timezone, timedelta
 from fastapi import APIRouter, HTTPException
@@ -165,6 +166,64 @@ async def get_project_stats(project_id: str):
         daily_dates.add(datetime.strptime(d, "%Y-%m-%d").date())
     streak_days = _compute_streak(daily_dates)
 
+    # ─── 写作专注时长估算（P2） ───
+    focus_minutes_today = 0
+    today_key = date.today().strftime("%Y-%m-%d")
+
+    if today_key in daily_map:
+        today_info = daily_map[today_key]
+        modified_names = list(today_info["chapters_modified"])
+
+        if modified_names:
+            git_dir = proj_dir
+            git_path = git_dir / ".git"
+            git_available = git_path.exists()
+
+            total_estimated_minutes = 0
+
+            for name in modified_names:
+                cf = chapters_dir / name
+                if not cf.exists():
+                    continue
+
+                words_added = 0
+
+                # 优先用 git diff 算字数增量，更准确
+                if git_available:
+                    try:
+                        rel_path = f"chapters/{name}"
+                        result = subprocess.run(
+                            ["git", "diff", "--word-diff=porcelain", "HEAD", "--", rel_path],
+                            capture_output=True, text=True, timeout=5,
+                            cwd=git_dir,
+                        )
+                        for line in result.stdout.split('\n'):
+                            if line.startswith('+') and not line.startswith('+++'):
+                                # 跳过 frontmatter 行变化
+                                if line.startswith('+---') or line == '+':
+                                    continue
+                                words_added += len(line[1:].split())
+                    except subprocess.TimeoutExpired:
+                        pass
+                    except Exception:
+                        pass
+
+                # 没有 git diff 或第一次提交 → 用文件总字数保守估算
+                if words_added == 0:
+                    try:
+                        content = cf.read_text(encoding="utf-8")
+                        wc = _count_words(content)
+                        # 假设今日贡献了总字数的 1/5（保守）
+                        words_added = max(wc // 5, 50)
+                    except (OSError, UnicodeDecodeError):
+                        words_added = 50  # 最低基线
+
+                # 写作速度估算：~15 词/分钟
+                minutes_for_chapter = max(10, round(words_added / 15))
+                total_estimated_minutes += minutes_for_chapter
+
+            focus_minutes_today = min(total_estimated_minutes, 720)
+
     return {
         "total_chapters": total_chapters,
         "total_words": total_words,
@@ -175,5 +234,6 @@ async def get_project_stats(project_id: str):
         "average_words_per_chapter": average_words_per_chapter,
         "longest_chapter": longest_chapter,
         "shortest_chapter": shortest_chapter,
-        "streak_days": streak_days
+        "streak_days": streak_days,
+        "focus_minutes_today": focus_minutes_today
     }

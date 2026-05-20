@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
+import yaml
 from routers.sanitize import sanitize_text
 from core.enums import ChapterStatus
 
@@ -34,7 +35,6 @@ def _resolve_chapters_dir() -> Path:
     yaml_path = BASE / "config.yaml"
     if yaml_path.exists():
         try:
-            import yaml
             cfg = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
             active = cfg.get("active_project", "")
             proj = cfg.get("projects", {}).get(active, {})
@@ -121,6 +121,97 @@ def _parse_filename(name: str) -> dict:
             info["chapter_end"] = int(m.group(2))
         info["title"] = m.group(3)
     return info
+
+
+# ─── Frontmatter 管理 ───
+
+
+def _count_words(text: str) -> int:
+    """统计中英文字数。
+    CJK 字符每个计 1 字，英文按空白分词计词。
+    自动跳过 YAML frontmatter 区域。
+    """
+    if not text:
+        return 0
+    # 移除 frontmatter 后再统计
+    body = re.sub(r'^---\s*\n.*?\n---\s*\n', '', text, flags=re.DOTALL)
+    cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', body))
+    non_cjk = re.sub(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', ' ', body)
+    english_words = len(non_cjk.split())
+    return cjk + english_words
+
+
+def _extract_frontmatter(content: str) -> tuple[dict | None, str]:
+    """提取 YAML frontmatter。
+
+    返回 (fm_dict, body)，如果内容不以 '---' 开头则返回 (None, content)。
+    """
+    if not content.startswith('---'):
+        return None, content
+    parts = content.split('---', 2)
+    if len(parts) < 3:
+        return None, content
+    try:
+        fm = yaml.safe_load(parts[1])
+        if isinstance(fm, dict):
+            return fm, parts[2].lstrip('\n')
+    except yaml.YAMLError:
+        pass
+    return None, content
+
+
+def _build_frontmatter(
+    title: str,
+    content: str,
+    existing_fm: dict | None = None,
+    status: str | None = None,
+) -> str:
+    """构建 YAML frontmatter 字符串。
+
+    参数：
+      title: 章节展示标题（如 '第41章_新的开始'）
+      content: 正文内容（不含 frontmatter）
+      existing_fm: 已有的 frontmatter 字典（合并字段用）
+      status: 章节状态（新建时指定）
+    """
+    words = _count_words(content)
+
+    fm: dict = {
+        "title": title,
+        "scene": None,
+        "timeline": None,
+        "status": status or "draft",
+        "words": words,
+        "target": None,
+        "connected_scenes": [],
+    }
+
+    if existing_fm:
+        # 用户手动设置的元数据字段 → 保留
+        for key in ("title", "scene", "timeline", "target"):
+            if existing_fm.get(key):
+                fm[key] = existing_fm[key]
+        if existing_fm.get("status"):
+            fm["status"] = existing_fm["status"]
+        if existing_fm.get("connected_scenes"):
+            fm["connected_scenes"] = existing_fm["connected_scenes"]
+        # words 始终重新统计，不保留旧值
+        fm["words"] = words
+
+    # 自定义 YAML Dumper：None 值输出为空（不写 'null'）
+    class _FmDumper(yaml.Dumper):
+        pass
+    _FmDumper.add_representer(
+        type(None),
+        lambda d, _: d.represent_scalar('tag:yaml.org,2002:null', ''),
+    )
+
+    return (
+        "---\n"
+        + yaml.dump(fm, Dumper=_FmDumper, allow_unicode=True,
+                     default_flow_style=False, sort_keys=False)
+        + "---\n"
+    )
 
 
 # ─── Pydantic 模型 ───
@@ -297,7 +388,21 @@ def create_chapter(body: ChapterCreate):
         })
 
     content = body.content or f"# {Path(filename).stem}\n\n"
-    target.write_text(content, encoding="utf-8")
+
+    # 自动写入 frontmatter
+    stem = Path(filename).stem
+    if stem.startswith(TMP_PREFIX):
+        display_title = stem[len(TMP_PREFIX):]
+    else:
+        display_title = stem
+    fm_text = _build_frontmatter(
+        title=display_title,
+        content=content,
+        existing_fm=None,
+        status=body.status.value if isinstance(body.status, ChapterStatus) else str(body.status),
+    )
+    target.write_text(fm_text + content, encoding="utf-8")
+
     parsed = _parse_filename(filename)
 
     return {
@@ -311,7 +416,7 @@ def create_chapter(body: ChapterCreate):
 
 @router.put("/{filename}")
 def update_chapter(filename: str, body: ChapterUpdate):
-    """覆盖写入章节文件"""
+    """覆盖写入章节文件（自动管理 YAML frontmatter）"""
     try:
         target = _safe_chapter_path(filename)
     except ChapterPathTraversalError:
@@ -320,13 +425,41 @@ def update_chapter(filename: str, body: ChapterUpdate):
         raise HTTPException(400, detail={"code": "FILE_TYPE_ERROR", "message": "仅支持 .md 文件"})
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(body.content, encoding="utf-8")
 
-    cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', body.content))
+    # 从请求内容中提取 frontmatter（如果前端传回了含 frontmatter 的全文）
+    req_fm, clean_content = _extract_frontmatter(body.content)
+
+    # 如果请求中没有携带 frontmatter，尝试从磁盘上已有文件获取
+    existing_fm = req_fm
+    if existing_fm is None and target.exists():
+        disk_content = target.read_text(encoding="utf-8")
+        disk_fm, _ = _extract_frontmatter(disk_content)
+        existing_fm = disk_fm
+
+    # 从前端传的正文中或者文件名中提取标题
+    if req_fm and req_fm.get("title"):
+        title = req_fm["title"]
+    else:
+        stem = Path(filename).stem
+        if stem.startswith(TMP_PREFIX):
+            title = stem[len(TMP_PREFIX):]
+        else:
+            title = stem
+
+    fm_text = _build_frontmatter(
+        title=title,
+        content=clean_content,
+        existing_fm=existing_fm,
+    )
+
+    final_content = fm_text + clean_content
+    target.write_text(final_content, encoding="utf-8")
+
+    cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', clean_content))
     return {
         "status": "ok",
         "filename": filename,
-        "size": len(body.content.encode("utf-8")),
+        "size": len(final_content.encode("utf-8")),
         "cjk_chars": cjk,
     }
 

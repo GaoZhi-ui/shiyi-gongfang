@@ -8,6 +8,8 @@ POST   /chat/history/export     — 导出聊天记录为 Markdown
 
 路径前缀 /api/v1/chat
 
+POST   /chat/stuck             — 卡住时获取续写建议
+
 SSE 流式格式：
   data: {"type": "text", "content": "..."}
   data: {"type": "thinking", "content": "..."}
@@ -704,3 +706,102 @@ def export_history():
     export_path.write_text(content, encoding="utf-8")
 
     return ExportResponse(status="ok", content=content, filename=filename)
+
+
+# ─── 卡住了路由 ───
+
+
+class StuckRequest(BaseModel):
+    project_id: str | None = None
+    chapter_content: str = Field(..., description="当前章节文本")
+    characters: list[str] = Field(default_factory=list, description="活跃角色列表")
+    foreshadowing: list[str] = Field(default_factory=list, description="待回收伏笔列表")
+
+
+class StuckSuggestion(BaseModel):
+    title: str
+    summary: str
+
+
+class StuckResponse(BaseModel):
+    suggestions: list[StuckSuggestion]
+
+
+@router.post("/stuck")
+async def stuck_suggestions(req: StuckRequest):
+    """用户卡住时，根据当前章节内容、活跃角色和伏笔，给出续写建议"""
+    provider = "deepseek"  # 默认模型
+    api_key, provider_cfg = _get_api_info(provider)
+
+    # 构建提示词
+    prompt_parts = ["你是写作助手。用户卡住了。"]
+    prompt_parts.append(f"当前章节内容：{req.chapter_content[:2000]}")
+    if req.characters:
+        prompt_parts.append(f"活跃角色：{'、'.join(req.characters)}")
+    if req.foreshadowing:
+        prompt_parts.append(f"待回收伏笔：{'、'.join(req.foreshadowing)}")
+    prompt_parts.append("请给出3个不同的续写方向，每个方向用一句话概括。每行格式：标题：内容")
+    prompt = "\n".join(prompt_parts)
+
+    payload = {
+        "model": provider_cfg["default_model"],
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.8,
+        "max_tokens": 1024,
+        "stream": False,
+    }
+
+    url = provider_cfg["base_url"].rstrip("/") + provider_cfg["chat_endpoint"]
+    headers = provider_cfg["auth_header"](api_key)
+    headers["Content-Type"] = provider_cfg["content_type"]
+
+    try:
+        result = await _non_stream_chat(payload, provider_cfg, headers)
+        content = result.get("content", "")
+    except Exception as e:
+        # 降级：返回格式化建议
+        content = _fallback_stuck_suggestions(req)
+
+    # 解析响应，提取3个建议
+    suggestions = _parse_stuck_suggestions(content)
+    return StuckResponse(suggestions=suggestions)
+
+
+def _parse_stuck_suggestions(text: str) -> list[StuckSuggestion]:
+    """解析 AI 返回的文本，提取结构化的续写建议"""
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    suggestions = []
+    for line in lines:
+        if ":" in line:
+            title, summary = line.split(":", 1)
+            suggestions.append(StuckSuggestion(
+                title=title.strip(),
+                summary=summary.strip(),
+            ))
+        elif "：" in line:
+            title, summary = line.split("：", 1)
+            suggestions.append(StuckSuggestion(
+                title=title.strip(),
+                summary=summary.strip(),
+            ))
+    if len(suggestions) >= 3:
+        return suggestions[:3]
+    # 如果解析出的不够，补默认
+    while len(suggestions) < 3:
+        idx = len(suggestions) + 1
+        suggestions.append(StuckSuggestion(
+            title=f"方向{idx}",
+            summary=f"从当前章节的自然走向出发，继续推进故事情节。",
+        ))
+    return suggestions[:3]
+
+
+def _fallback_stuck_suggestions(req: StuckRequest) -> str:
+    """API 不可用时，返回格式化的默认建议"""
+    chars = "、".join(req.characters) if req.characters else "当前角色"
+    fores = "、".join(req.foreshadowing) if req.foreshadowing else "已有的伏笔"
+    return f"""方向一：回到冲突核心：让{chars}在当前场景中最紧张的关系上再推一步。
+方向二：伏笔回收：找一个机会自然地带出{fores}，不必明说，让读者隐约感知。
+方向三：留一扇窗：在章节结尾留出一个未回答的问题，为下一章制造悬念。"""
