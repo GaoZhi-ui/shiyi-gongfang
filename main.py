@@ -76,5 +76,12 @@ async def index():
     return HTMLResponse(html)
 
 if __name__ == "__main__":
+    import sys
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    if "--gui" in sys.argv:
+        # GUI 模式：启动服务器并打开原生窗口
+        from run_gui import main as gui_main
+        gui_main()
+    else:
+        # 标准模式：仅启动服务器
+        uvicorn.run(app, host="127.0.0.1", port=8000)

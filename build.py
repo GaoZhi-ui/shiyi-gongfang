@@ -10,6 +10,7 @@ from pathlib import Path
 
 APP_NAME = "shiyi-gongfang"
 ENTRY = "main.py"
+GUI_ENTRY = "run_gui.py"
 BASE = Path(__file__).resolve().parent
 DIST_DIR = BASE / "dist"
 BUILD_DIR = BASE / "build"
@@ -38,14 +39,17 @@ def detect_platform() -> str:
         sys.exit(1)
 
 
-def build(clean: bool = False, debug: bool = False, onedir: bool = False):
+def build(clean: bool = False, debug: bool = False, onedir: bool = False, gui: bool = False):
     platform = detect_platform()
     sep = ";" if platform == "windows" else ":"
+    entry = GUI_ENTRY if gui else ENTRY
     
     print(f">>> Platform: {platform}")
     print(f">>> App: {APP_NAME}")
-    print(f">>> Entry: {ENTRY}")
+    print(f">>> Entry: {entry}")
     print(f">>> Mode: {'onedir' if onedir else 'onefile'}")
+    if gui:
+        print(">>> GUI mode: native window (no browser needed)")
 
     # 清理旧构建
     if clean:
@@ -103,8 +107,18 @@ def build(clean: bool = False, debug: bool = False, onedir: bool = False):
         cmd.append("--debug")
         cmd.append("all")
 
-    cmd.append("--console")
-    cmd.append(str(BASE / ENTRY))
+    if gui:
+        cmd.append("--windowed")  # 无控制台窗口
+        cmd.append("--hidden-import=webview")
+        cmd.append("--hidden-import=bottle")
+        cmd.append("--hidden-import=proxy_tools")
+    else:
+        cmd.append("--console")
+    if gui:
+        # GUI 入口
+        cmd.append(str(BASE / GUI_ENTRY))
+    else:
+        cmd.append(str(BASE / ENTRY))
 
     print(">>> Building...")
     subprocess.check_call(cmd)
@@ -138,5 +152,6 @@ if __name__ == "__main__":
     parser.add_argument("--clean", action="store_true", help="构建前清理旧产物")
     parser.add_argument("--debug", action="store_true", help="启用调试模式")
     parser.add_argument("--onedir", action="store_true", help="使用目录模式打包（默认单文件）")
+    parser.add_argument("--gui", action="store_true", help="构建GUI版本（原生窗口，无需浏览器）")
     args = parser.parse_args()
-    build(clean=args.clean, debug=args.debug, onedir=args.onedir)
+    build(clean=args.clean, debug=args.debug, onedir=args.onedir, gui=args.gui)
