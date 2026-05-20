@@ -38,11 +38,77 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .topbar .model-select{background:#1e1e1e;border:1px solid #252525;border-radius:6px;color:#ccc;padding:5px 10px;font-size:12px;cursor:pointer;transition:border-color .12s}
 .topbar .model-select:hover{border-color:#3a3a3a}
 .topbar .model-select:focus{border-color:#e8a84c}
-.topbar .chapter-badge{font-size:12px;color:#888;padding:4px 10px;background:#1e1e1e;border-radius:4px;border:1px solid #252525}
-.topbar .chapter-badge .num{color:#d4d4d4}
 .topbar-spacer{flex:1}
 .topbar .api-btn{background:transparent;border:1px solid #252525;border-radius:6px;color:#888;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .12s}
 .topbar .api-btn:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+
+/* 项目选择器 */
+.project-selector{position:relative;cursor:pointer;user-select:none}
+.project-trigger{display:flex;align-items:center;gap:6px;padding:4px 10px;background:#1e1e1e;border:1px solid #252525;border-radius:6px;color:#d4d4d4;font-size:12px;transition:border-color .12s;white-space:nowrap}
+.project-trigger:hover{border-color:#3a3a3a}
+.project-trigger .arrow{font-size:8px;color:#666;transition:transform .15s}
+.project-trigger.open .arrow{transform:rotate(180deg)}
+.project-dropdown{position:absolute;top:100%;left:0;margin-top:4px;background:#1a1a1a;border:1px solid #252525;border-radius:8px;min-width:220px;max-height:280px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:50}
+.project-dropdown.open{display:block}
+.project-dropdown .dd-header{font-size:10px;color:#666;padding:8px 12px 4px;letter-spacing:1px;border-bottom:1px solid #1e1e1e}
+.project-dropdown .dd-item{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:#999;transition:all .1s}
+.project-dropdown .dd-item:hover{background:#242424;color:#d4d4d4}
+.project-dropdown .dd-item.active{color:#e8a84c}
+.project-dropdown .dd-item .dd-icon{font-size:12px;width:16px;text-align:center;flex-shrink:0}
+.project-dropdown .dd-item .dd-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-dropdown .dd-item .dd-check{color:#e8a84c;font-size:10px;visibility:hidden}
+.project-dropdown .dd-item.active .dd-check{visibility:visible}
+.project-dropdown .dd-divider{border-top:1px solid #252525;margin:4px 8px}
+.project-dropdown .dd-new{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:#e8a84c;transition:all .1s;cursor:pointer}
+.project-dropdown .dd-new:hover{background:#242424}
+
+/* 知识库 */
+.kb-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.kb-header .title-part{flex:1;font-size:12px;color:#888}
+.kb-header .kb-new-btn{padding:4px 10px;background:transparent;border:1px solid #252525;border-radius:5px;color:#e8a84c;font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.kb-header .kb-new-btn:hover{background:rgba(232,168,76,0.1);border-color:#e8a84c}
+.kb-file-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;transition:all .1s;font-size:13px;color:#999}
+.kb-file-item:hover{background:#242424;color:#d4d4d4}
+.kb-file-item.active{background:rgba(232,168,76,0.08);color:#e8a84c}
+.kb-file-item .kbf-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.kb-file-item .kbf-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kb-file-item .kbf-time{font-size:10px;color:#555;flex-shrink:0}
+.kb-empty{text-align:center;padding:40px 0;color:#555;font-size:13px}
+
+.kb-viewer .kb-viewer-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #252525}
+.kb-viewer .kb-viewer-header .kb-vtitle{flex:1;font-size:13px;color:#d4d4d4;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kb-viewer .kb-viewer-header .kb-vbtn{padding:3px 10px;background:transparent;border:1px solid #252525;border-radius:5px;color:#888;font-size:11px;cursor:pointer;transition:all .12s}
+.kb-viewer .kb-viewer-header .kb-vbtn:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+.kb-viewer .kb-viewer-header .kb-vbtn.primary{color:#e8a84c;border-color:#3a3a3a}
+.kb-viewer .kb-viewer-header .kb-vbtn.primary:hover{background:rgba(232,168,76,0.1);border-color:#e8a84c}
+.kb-viewer .kb-viewer-content{padding:6px 0;font-size:13px;color:#ccc;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif}
+.kb-viewer textarea.kb-edit-area{width:100%;height:300px;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:10px;color:#ccc;font-size:13px;line-height:1.7;resize:vertical;font-family:inherit}
+.kb-viewer textarea.kb-edit-area:focus{border-color:#e8a84c}
+.kb-viewer .kb-edit-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.kb-viewer .kb-edit-actions button{padding:5px 14px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .12s}
+.kb-viewer .kb-edit-actions .kb-save-btn{background:#e8a84c;border:none;color:#111;font-weight:500}
+.kb-viewer .kb-edit-actions .kb-save-btn:hover{background:#f0b85c}
+.kb-viewer .kb-edit-actions .kb-cancel-btn{background:transparent;border:1px solid #252525;color:#888}
+.kb-viewer .kb-edit-actions .kb-cancel-btn:hover{background:#242424;color:#ccc}
+.kb-loading{text-align:center;padding:30px 0;color:#555}
+
+/* 模态框选项卡 */
+.modal-tabs{display:flex;gap:0;border-bottom:1px solid #252525;margin:0 20px}
+.modal-tab{padding:8px 16px;font-size:12px;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:all .12s;user-select:none;margin-bottom:-1px}
+.modal-tab:hover{color:#d4d4d4}
+.modal-tab.active{color:#e8a84c;border-bottom-color:#e8a84c}
+.modal-tab-content{display:none}
+.modal-tab-content.active{display:block}
+.modal-body .modal-tab-body{padding:16px 20px}
+
+/* 写作设置 */
+.writing-settings .ws-field{margin-bottom:16px}
+.writing-settings .ws-field label{display:block;font-size:11px;color:#888;margin-bottom:5px;letter-spacing:1px}
+.writing-settings .ws-field .ws-row{display:flex;gap:8px;align-items:center}
+.writing-settings .ws-field .ws-row input{width:80px;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:6px 10px;color:#ccc;font-size:13px;text-align:center;transition:border-color .12s}
+.writing-settings .ws-field .ws-row input:focus{border-color:#e8a84c}
+.writing-settings .ws-field .ws-row span{font-size:12px;color:#666}
+.writing-settings .ws-field .hint{font-size:11px;color:#555;margin-top:3px}
 
 .chat-area{flex:1;overflow-y:auto;padding:16px 20px;scroll-behavior:smooth}
 .chat-area .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#555;gap:8px}
@@ -124,12 +190,13 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal-box{background:#1a1a1a;border:1px solid #252525;border-radius:10px;width:480px;max-height:80vh;display:flex;flex-direction:column}
+.modal-box{background:#1a1a1a;border:1px solid #252525;border-radius:10px;width:520px;max-height:80vh;display:flex;flex-direction:column}
+.modal-box.modal-sm{width:420px}
 .modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #252525}
 .modal-header h2{font-size:15px;color:#d4d4d4;font-weight:500}
 .modal-header .close-btn{background:transparent;border:none;color:#666;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px}
 .modal-header .close-btn:hover{color:#d4d4d4;background:#242424}
-.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-body{padding:0;overflow-y:auto;flex:1}
 .modal-body .field{margin-bottom:14px}
 .modal-body .field label{display:block;font-size:11px;color:#888;margin-bottom:4px;letter-spacing:1px}
 .modal-body .field input,.modal-body .field select{width:100%;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:8px 12px;color:#ccc;font-size:13px;transition:border-color .12s}
@@ -169,6 +236,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="tool-item" data-tool="review"><span class="icon">🔍</span><span class="label">自动审查</span></div>
 
     <div class="tool-group-title">知识库</div>
+    <div class="tool-item" data-tool="kb"><span class="icon">📁</span><span class="label">知识库</span></div>
     <div class="tool-item" data-tool="tools"><span class="icon">📚</span><span class="label">工具箱一览</span></div>
     <div class="tool-item" data-tool="style"><span class="icon">✍️</span><span class="label">写作风格速查</span></div>
     <div class="tool-item" data-tool="characters"><span class="icon">👥</span><span class="label">人物档案</span></div>
@@ -198,9 +266,22 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       <option value="moonshot">Kimi K2.6</option>
       <option value="zhipu">GLM-5.1</option>
     </select>
-    <span class="chapter-badge"><span class="num">卷二</span> · 归途未定 · 第31章</span>
+
+    <div class="project-selector" id="projectSelector">
+      <div class="project-trigger" id="projectTrigger">
+        <span id="projectCurrentName">📁 加载中…</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="project-dropdown" id="projectDropdown">
+        <div class="dd-header">项目列表</div>
+        <div id="projectList"></div>
+        <div class="dd-divider"></div>
+        <div class="dd-new" id="projectNewBtn">＋ 新建项目</div>
+      </div>
+    </div>
+
     <div class="topbar-spacer"></div>
-    <button class="api-btn" id="apiSettingsBtn">⚙ API设置</button>
+    <button class="api-btn" id="apiSettingsBtn">⚙ 设置</button>
   </div>
 
   <div class="chat-area" id="chatArea">
@@ -239,14 +320,14 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <span class="stat-item">📊 字数 <span class="val" id="statusWordCount">0</span></span>
     <span class="stat-item">📝 消息 <span class="val" id="statusMsgCount">0</span></span>
     <div class="status-bar-right">
-      <span class="model-tag" id="statusModel">Claude 3.5 Sonnet</span>
+      <span class="model-tag" id="statusModel">GPT-5.4</span>
     </div>
   </div>
 </div>
 
 <div class="right-panel" id="rightPanel">
   <div class="panel-header">
-    <span class="panel-icon">✅</span>
+    <span class="panel-icon" id="panelIcon">✅</span>
     <span class="title" id="panelTitle">自检清单</span>
     <button class="collapse-btn" id="collapsePanelBtn">◀</button>
   </div>
@@ -254,77 +335,148 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   </div>
 </div>
 
+<!-- 设置弹窗 -->
 <div class="modal-overlay" id="apiModal">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>⚙ API 设置</h2>
+      <h2>⚙ 设置</h2>
       <button class="close-btn" id="apiModalClose">✕</button>
     </div>
+    <div class="modal-tabs" id="modalTabs">
+      <div class="modal-tab active" data-tab="api">API 设置</div>
+      <div class="modal-tab" data-tab="writing">写作设置</div>
+    </div>
+    <div class="modal-body" id="apiModalBody">
+      <div class="modal-tab-content active" id="tabApi">
+        <div class="modal-tab-body">
+          <div class="field">
+            <label>API 端点</label>
+            <input type="text" id="apiEndpoint" value="http://localhost:8000/api/v1" placeholder="http://localhost:8000/api/v1">
+          </div>
+          <div class="field">
+            <label>API Key</label>
+            <input type="password" id="apiKey" value="sk-demo" placeholder="输入 API Key">
+          </div>
+          <div class="field">
+            <label>默认模型</label>
+            <select id="apiModel">
+              <optgroup label="DeepSeek">
+                <option value="deepseek-v4-flash" selected>DeepSeek V4 Flash</option>
+                <option value="deepseek-v4-pro">DeepSeek V4 Pro</option>
+                <option value="deepseek-chat">DeepSeek Chat (2026/07 弃用)</option>
+                <option value="deepseek-reasoner">DeepSeek Reasoner (2026/07 弃用)</option>
+              </optgroup>
+              <optgroup label="OpenAI">
+                <option value="gpt-5.5">GPT-5.5</option>
+                <option value="gpt-5.4">GPT-5.4</option>
+                <option value="gpt-5.4-mini">GPT-5.4 Mini</option>
+                <option value="gpt-4.1">GPT-4.1</option>
+                <option value="gpt-4o">GPT-4o</option>
+              </optgroup>
+              <optgroup label="Anthropic Claude">
+                <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                <option value="claude-opus-4-20260514">Claude Opus 4</option>
+                <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+              </optgroup>
+              <optgroup label="Google Gemini">
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
+                <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+              </optgroup>
+              <optgroup label="月之暗面 Kimi">
+                <option value="kimi-k2.6">Kimi K2.6</option>
+                <option value="kimi-k2.5">Kimi K2.5</option>
+                <option value="moonshot-v1-128k">Moonshot V1 (128K)</option>
+                <option value="moonshot-v1-32k">Moonshot V1 (32K)</option>
+              </optgroup>
+              <optgroup label="智谱 GLM">
+                <option value="glm-5.1">GLM-5.1</option>
+                <option value="glm-5">GLM-5</option>
+                <option value="glm-4.7">GLM-4.7</option>
+                <option value="glm-4.7-flash">GLM-4.7 Flash</option>
+                <option value="glm-4.5-air">GLM-4.5 Air</option>
+              </optgroup>
+              <optgroup label="零一万物 Yi">
+                <option value="yi-lightning">Yi-Lightning</option>
+                <option value="yi-large">Yi-Large</option>
+              </optgroup>
+            </select>
+            <div class="hint">所有请求发送至 {endpoint}/chat/completions</div>
+          </div>
+          <div class="field">
+            <label>连接测试</label>
+            <button id="testConnectionBtn" style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;color:#ccc;padding:8px 14px;font-size:12px;cursor:pointer;width:100%;text-align:center">测试连接</button>
+            <div id="testResult" style="margin-top:6px;font-size:11px;color:#888"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-tab-content" id="tabWriting">
+        <div class="modal-tab-body writing-settings">
+          <div class="ws-field">
+            <label>字数目标</label>
+            <div class="ws-row">
+              <input type="number" id="wsWordMin" value="2000" min="500" max="5000">
+              <span>—</span>
+              <input type="number" id="wsWordMax" value="2800" min="500" max="5000">
+              <span>字</span>
+            </div>
+            <div class="hint">每章基线字数范围</div>
+          </div>
+          <div class="ws-field">
+            <label>句号密度上限</label>
+            <div class="ws-row">
+              <input type="number" id="wsPeriodDensity" value="6" min="1" max="20">
+              <span>句/千字</span>
+            </div>
+            <div class="hint">每千字句号数量上限，防止碎句</div>
+          </div>
+          <div class="ws-field">
+            <label>"他"字上限</label>
+            <div class="ws-row">
+              <input type="number" id="wsTaLimit" value="15" min="1" max="50">
+              <span>次/千字</span>
+            </div>
+            <div class="hint">每千字"他"出现次数上限</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="border-top:none">
+      <button class="btn-secondary" id="apiModalCancel">取消</button>
+      <button class="btn-primary" id="apiModalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建项目弹窗 -->
+<div class="modal-overlay" id="newProjectModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>📁 新建项目</h2>
+      <button class="close-btn" id="newProjectClose">✕</button>
+    </div>
     <div class="modal-body">
-      <div class="field">
-        <label>API 端点</label>
-        <input type="text" id="apiEndpoint" value="http://localhost:8000/api/v1" placeholder="http://localhost:8000/api/v1">
-      </div>
-      <div class="field">
-        <label>API Key</label>
-        <input type="password" id="apiKey" value="sk-demo" placeholder="输入 API Key">
-      </div>
-      <div class="field">
-        <label>默认模型</label>
-        <select id="apiModel">
-          <optgroup label="DeepSeek">
-            <option value="deepseek-v4-flash" selected>DeepSeek V4 Flash</option>
-            <option value="deepseek-v4-pro">DeepSeek V4 Pro</option>
-            <option value="deepseek-chat">DeepSeek Chat (2026/07 弃用)</option>
-            <option value="deepseek-reasoner">DeepSeek Reasoner (2026/07 弃用)</option>
-          </optgroup>
-          <optgroup label="OpenAI">
-            <option value="gpt-5.5">GPT-5.5</option>
-            <option value="gpt-5.4">GPT-5.4</option>
-            <option value="gpt-5.4-mini">GPT-5.4 Mini</option>
-            <option value="gpt-4.1">GPT-4.1</option>
-            <option value="gpt-4o">GPT-4o</option>
-          </optgroup>
-          <optgroup label="Anthropic Claude">
-            <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
-            <option value="claude-opus-4-20260514">Claude Opus 4</option>
-            <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
-          </optgroup>
-          <optgroup label="Google Gemini">
-            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-            <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite</option>
-            <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-          </optgroup>
-          <optgroup label="月之暗面 Kimi">
-            <option value="kimi-k2.6">Kimi K2.6</option>
-            <option value="kimi-k2.5">Kimi K2.5</option>
-            <option value="moonshot-v1-128k">Moonshot V1 (128K)</option>
-            <option value="moonshot-v1-32k">Moonshot V1 (32K)</option>
-          </optgroup>
-          <optgroup label="智谱 GLM">
-            <option value="glm-5.1">GLM-5.1</option>
-            <option value="glm-5">GLM-5</option>
-            <option value="glm-4.7">GLM-4.7</option>
-            <option value="glm-4.7-flash">GLM-4.7 Flash</option>
-            <option value="glm-4.5-air">GLM-4.5 Air</option>
-          </optgroup>
-          <optgroup label="零一万物 Yi">
-            <option value="yi-lightning">Yi-Lightning</option>
-            <option value="yi-large">Yi-Large</option>
-          </optgroup>
-        </select>
-        <div class="hint">所有请求发送至 {endpoint}/chat/completions</div>
-      </div>
-      <div class="field">
-        <label>连接测试</label>
-        <button id="testConnectionBtn" style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;color:#ccc;padding:8px 14px;font-size:12px;cursor:pointer;width:100%;text-align:center">测试连接</button>
-        <div id="testResult" style="margin-top:6px;font-size:11px;color:#888"></div>
+      <div class="modal-tab-body">
+        <div class="field">
+          <label>项目名称</label>
+          <input type="text" id="newProjectName" placeholder="输入项目名称" maxlength="50">
+        </div>
+        <div class="field">
+          <label>模板</label>
+          <select id="newProjectTemplate">
+            <option value="novel">小说创作</option>
+            <option value="article">文章写作</option>
+            <option value="notes">笔记整理</option>
+            <option value="empty">空项目</option>
+          </select>
+          <div class="hint">模板决定了初始知识库结构和写作规则</div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" id="apiModalCancel">取消</button>
-      <button class="btn-primary" id="apiModalSave">保存</button>
+      <button class="btn-secondary" id="newProjectCancel">取消</button>
+      <button class="btn-primary" id="newProjectConfirm">创建</button>
     </div>
   </div>
 </div>
@@ -349,7 +501,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   let msgCount = 0;
   let lastToolClicked = 'checklist';
   let panelCollapsed = false;
-  let panelMode = 'tool'; // 'tool' | 'chapter'
+  let panelMode = 'tool';
   let chapterContext = {
     title: '第31章 · 拾遗录',
     volume: '卷二 · 归途未定',
@@ -362,12 +514,22 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     lastEdit: '刚才'
   };
 
+  // 项目状态
+  let projects = [];
+  let currentProjectId = null;
+
+  // 知识库状态
+  let kbFiles = [];
+  let kbViewingFile = null;
+  let kbEditing = false;
+
   const $ = id => document.getElementById(id);
   const chatArea = $('chatArea');
   const chatInput = $('chatInput');
   const sendBtn = $('sendBtn');
   const panelBody = $('panelBody');
   const panelTitle = $('panelTitle');
+  const panelIcon = $('panelIcon');
   const collapseBtn = $('collapsePanelBtn');
   const rightPanel = $('rightPanel');
   const statusWordCount = $('statusWordCount');
@@ -376,6 +538,403 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   const connStatus = $('connStatus');
   const modelSelect = $('modelSelect');
   const checklistBadge = $('checklist-badge');
+
+  // API 通用头
+  function apiHeaders(){
+    const key = ($('apiKey')||{}).value || 'sk-demo';
+    return {'Content-Type':'application/json','Authorization':'Bearer '+key};
+  }
+
+  function apiBase(){
+    const ep = ($('apiEndpoint')||{}).value || 'http://localhost:8000/api/v1';
+    return ep.endsWith('/api/v1') ? ep.replace(/\/api\/v1$/,'') : ep;
+  }
+
+  // ========== 项目管理 ==========
+  async function loadProjects(){
+    try{
+      const res = await fetch(apiBase()+'/api/v1/projects', {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      projects = await res.json();
+      if(!Array.isArray(projects)) projects = [];
+    }catch(e){
+      // 离线降级
+      projects = [{id:'default',name:'泰拉拾遗录',template:'novel'}];
+    }
+    if(!currentProjectId && projects.length>0){
+      currentProjectId = projects[0].id;
+    }
+    renderProjectList();
+    updateProjectTrigger();
+    // 加载当前项目配置
+    if(currentProjectId) loadWritingConfig(currentProjectId);
+  }
+
+  function renderProjectList(){
+    const list = $('projectList');
+    if(!list) return;
+    if(projects.length===0){
+      list.innerHTML = '<div class="dd-item" style="color:#555;cursor:default">暂无项目</div>';
+      return;
+    }
+    list.innerHTML = projects.map(p =>
+      `<div class="dd-item ${p.id===currentProjectId?'active':''}" data-pid="${p.id}">
+        <span class="dd-icon">${p.template==='novel'?'📖':p.template==='article'?'📄':p.template==='notes'?'📓':'📁'}</span>
+        <span class="dd-name">${escHtml(p.name)}</span>
+        <span class="dd-check">✓</span>
+      </div>`
+    ).join('');
+    list.querySelectorAll('.dd-item').forEach(el=>{
+      el.addEventListener('click', function(e){
+        e.stopPropagation();
+        switchProject(this.dataset.pid);
+      });
+    });
+  }
+
+  function updateProjectTrigger(){
+    const cur = projects.find(p=>p.id===currentProjectId);
+    const nameEl = $('projectCurrentName');
+    if(nameEl){
+      nameEl.textContent = cur ? '📁 '+cur.name : '📁 选择项目';
+    }
+  }
+
+  async function switchProject(pid){
+    if(pid===currentProjectId){
+      closeProjectDropdown();
+      return;
+    }
+    currentProjectId = pid;
+    closeProjectDropdown();
+    updateProjectTrigger();
+    renderProjectList();
+    // 重新加载配置
+    loadWritingConfig(pid);
+    // 刷新界面
+    chatArea.innerHTML = '';
+    messages = [];
+    const welcome = document.createElement('div');
+    welcome.className = 'msg';
+    welcome.dataset.role = 'system';
+    const pname = projects.find(p=>p.id===pid)?.name||'项目';
+    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system">已切换到项目「${escHtml(pname)}」。<br><br>知识库和写作规则已同步更新。</div><div class="msg-time">刚刚</div></div>`;
+    chatArea.appendChild(welcome);
+    updateStats();
+    kbFiles = [];
+    kbViewingFile = null;
+    kbEditing = false;
+    if(lastToolClicked==='kb') renderKBFileList();
+  }
+
+  async function createProject(name, template){
+    try{
+      const res = await fetch(apiBase()+'/api/v1/projects', {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({name, template})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const newP = await res.json();
+      projects.push(newP);
+      renderProjectList();
+      await switchProject(newP.id);
+    }catch(e){
+      // 本地降级
+      const fakeId = 'local_' + Date.now();
+      projects.push({id:fakeId, name, template});
+      renderProjectList();
+      await switchProject(fakeId);
+    }
+  }
+
+  function openProjectDropdown(){
+    $('projectDropdown').classList.add('open');
+    $('projectTrigger').classList.add('open');
+    renderProjectList();
+  }
+
+  function closeProjectDropdown(){
+    $('projectDropdown').classList.remove('open');
+    $('projectTrigger').classList.remove('open');
+  }
+
+  function toggleProjectDropdown(){
+    if($('projectDropdown').classList.contains('open')){
+      closeProjectDropdown();
+    }else{
+      openProjectDropdown();
+    }
+  }
+
+  // ========== 写作配置 ==========
+  let writingConfig = {
+    wordMin: 2000,
+    wordMax: 2800,
+    periodDensity: 6,
+    taPerThousand: 15
+  };
+
+  async function loadWritingConfig(pid){
+    try{
+      const res = await fetch(apiBase()+'/api/v1/projects/'+pid+'/config', {headers:apiHeaders()});
+      if(res.ok){
+        const cfg = await res.json();
+        if(cfg && cfg.writing){
+          writingConfig = {
+            wordMin: cfg.writing.wordMin || 2000,
+            wordMax: cfg.writing.wordMax || 2800,
+            periodDensity: cfg.writing.periodDensity || 6,
+            taPerThousand: cfg.writing.taPerThousand || 15
+          };
+        }
+      }
+    }catch(e){}
+    syncWritingConfigUI();
+    // 更新自检清单中的参考值
+    updateChecklistFromConfig();
+  }
+
+  function syncWritingConfigUI(){
+    const wm = $('wsWordMin'), wM = $('wsWordMax'), pd = $('wsPeriodDensity'), tl = $('wsTaLimit');
+    if(wm) wm.value = writingConfig.wordMin;
+    if(wM) wM.value = writingConfig.wordMax;
+    if(pd) pd.value = writingConfig.periodDensity;
+    if(tl) tl.value = writingConfig.taPerThousand;
+  }
+
+  function updateChecklistFromConfig(){
+    const wc = checklistState.find(i=>i.id==='wordcount');
+    if(wc) wc.label = '字数 '+writingConfig.wordMin+'+';
+    const ds = checklistState.find(i=>i.id==='density');
+    if(ds) ds.label = '密度 ≤ '+writingConfig.periodDensity;
+    const ta = checklistState.find(i=>i.id==='ta');
+    if(ta) ta.label = '"他" ≤ '+writingConfig.taPerThousand+'/千字';
+    if(lastToolClicked==='checklist') renderChecklist(checklistState);
+    updateChecklistBadge();
+  }
+
+  async function saveWritingConfigToApi(pid){
+    try{
+      await fetch(apiBase()+'/api/v1/projects/'+pid+'/config', {
+        method:'PUT',
+        headers:apiHeaders(),
+        body:JSON.stringify({writing:writingConfig})
+      });
+    }catch(e){}
+  }
+
+  function readWritingConfigFromUI(){
+    const wm = parseInt($('wsWordMin').value) || 2000;
+    const wM = parseInt($('wsWordMax').value) || 2800;
+    const pd = parseInt($('wsPeriodDensity').value) || 6;
+    const tl = parseInt($('wsTaLimit').value) || 15;
+    writingConfig = {wordMin: Math.min(wm,wM), wordMax: Math.max(wm,wM), periodDensity: pd, taPerThousand: tl};
+  }
+
+  // ========== 知识库 ==========
+  function getKBEndpoint(){
+    if(!currentProjectId) return null;
+    return apiBase()+'/api/v1/projects/'+currentProjectId+'/files';
+  }
+
+  function getKBSingleEndpoint(fileId){
+    if(!currentProjectId) return null;
+    return apiBase()+'/api/v1/projects/'+currentProjectId+'/files/'+fileId;
+  }
+
+  async function loadKBFiles(){
+    const ep = getKBEndpoint();
+    if(!ep) return;
+    try{
+      const res = await fetch(ep, {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      kbFiles = await res.json();
+      if(!Array.isArray(kbFiles)) kbFiles = [];
+    }catch(e){
+      kbFiles = [];
+    }
+    kbViewingFile = null;
+    kbEditing = false;
+    renderKBFileList();
+  }
+
+  function renderKBFileList(){
+    panelIcon.textContent = '📁';
+    panelTitle.textContent = '知识库';
+    if(kbFiles.length===0){
+      panelBody.innerHTML = '<div class="kb-header"><span class="title-part">文件列表</span><button class="kb-new-btn" id="kbNewBtn">＋ 新建文件</button></div><div class="kb-empty">暂无文件<br><span style="font-size:11px;color:#666">点击上方按钮创建</span></div>';
+    }else{
+      let html = '<div class="kb-header"><span class="title-part">文件列表</span><button class="kb-new-btn" id="kbNewBtn">＋ 新建文件</button></div>';
+      kbFiles.forEach(f => {
+        const fn = f.name || '未命名';
+        const ext = fn.includes('.') ? fn.split('.').pop() : '';
+        const iconMap = {md:'📝',txt:'📄',json:'📋',yaml:'⚙',yml:'⚙','':'📄'};
+        const icon = iconMap[ext] || '📄';
+        const time = f.updated_at ? formatTime(f.updated_at) : '';
+        html += `<div class="kb-file-item" data-fid="${f.id}"><span class="kbf-icon">${icon}</span><span class="kbf-name">${escHtml(fn)}</span><span class="kbf-time">${time}</span></div>`;
+      });
+      panelBody.innerHTML = html;
+      panelBody.querySelectorAll('.kb-file-item').forEach(el=>{
+        el.addEventListener('click', function(){ viewKBFile(this.dataset.fid); });
+      });
+    }
+    const nb = $('kbNewBtn');
+    if(nb) nb.addEventListener('click', showKBNewForm);
+    panelCollapsed = false;
+    rightPanel.classList.remove('collapsed');
+    collapseBtn.textContent = '◀';
+  }
+
+  async function viewKBFile(fileId){
+    const ep = getKBSingleEndpoint(fileId);
+    if(!ep) return;
+    kbViewingFile = fileId;
+    kbEditing = false;
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      const res = await fetch(ep, {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      const name = data.name || '未命名';
+      const content = data.content || '';
+      panelBody.innerHTML = renderKBViewer(name, content, fileId);
+      bindKBViewerEvents(fileId);
+    }catch(e){
+      panelBody.innerHTML = '<div class="kb-empty">加载失败<br><span style="font-size:11px;color:#666;cursor:pointer" id="kbRetryBtn">点击重试</span></div>';
+      const rb = $('kbRetryBtn');
+      if(rb) rb.addEventListener('click', ()=>viewKBFile(fileId));
+    }
+  }
+
+  function renderKBViewer(name, content, fileId){
+    return `<div class="kb-viewer">
+      <div class="kb-viewer-header">
+        <span class="kb-vtitle">${escHtml(name)}</span>
+        <button class="kb-vbtn" id="kbBackBtn">← 返回</button>
+        <button class="kb-vbtn primary" id="kbEditBtn">编辑</button>
+      </div>
+      <div class="kb-viewer-content" id="kbViewerContent">${escHtml(content)}</div>
+    </div>`;
+  }
+
+  function bindKBViewerEvents(fileId){
+    const backBtn = $('kbBackBtn');
+    if(backBtn) backBtn.addEventListener('click', ()=>{ renderKBFileList(); loadKBFiles(); });
+    const editBtn = $('kbEditBtn');
+    if(editBtn) editBtn.addEventListener('click', ()=>startKBEdit(fileId));
+  }
+
+  async function startKBEdit(fileId){
+    const ep = getKBSingleEndpoint(fileId);
+    if(!ep) return;
+    kbEditing = true;
+    try{
+      const res = await fetch(ep, {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      const name = data.name || '';
+      const content = data.content || '';
+      panelBody.innerHTML = `<div class="kb-viewer">
+        <div class="kb-viewer-header">
+          <span class="kb-vtitle">编辑：${escHtml(name)}</span>
+          <button class="kb-vbtn" id="kbEditCancelBtn">取消</button>
+          <button class="kb-vbtn primary" id="kbEditSaveBtn">保存</button>
+        </div>
+        <textarea class="kb-edit-area" id="kbEditArea">${escHtml(content)}</textarea>
+        <div class="kb-edit-actions">
+          <button class="kb-cancel-btn" id="kbEditCancelBtn2">取消</button>
+          <button class="kb-save-btn" id="kbEditSaveBtn2">保存修改</button>
+        </div>
+      </div>`;
+      $('kbEditSaveBtn').addEventListener('click', ()=>saveKBEdit(fileId));
+      $('kbEditCancelBtn').addEventListener('click', ()=>viewKBFile(fileId));
+      $('kbEditSaveBtn2').addEventListener('click', ()=>saveKBEdit(fileId));
+      $('kbEditCancelBtn2').addEventListener('click', ()=>viewKBFile(fileId));
+    }catch(e){
+      viewKBFile(fileId);
+    }
+  }
+
+  async function saveKBEdit(fileId){
+    const content = $('kbEditArea').value;
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      const res = await fetch(getKBSingleEndpoint(fileId), {
+        method:'PUT',
+        headers:apiHeaders(),
+        body:JSON.stringify({content})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      kbEditing = false;
+      viewKBFile(fileId);
+    }catch(e){
+      panelBody.innerHTML = '<div class="kb-empty">保存失败<br><span style="font-size:11px;color:#666;cursor:pointer" id="kbRetrySaveBtn">点击重试</span></div>';
+      const rb = $('kbRetrySaveBtn');
+      if(rb) rb.addEventListener('click', ()=>startKBEdit(fileId));
+    }
+  }
+
+  function showKBNewForm(){
+    panelBody.innerHTML = `<div class="kb-viewer">
+      <div class="kb-viewer-header">
+        <span class="kb-vtitle">新建文件</span>
+        <button class="kb-vbtn" id="kbNewBackBtn">← 返回</button>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:11px;color:#888;margin-bottom:4px">文件名</label>
+        <input type="text" id="kbNewFileName" value="新文件.md" style="width:100%;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:8px 12px;color:#ccc;font-size:13px">
+      </div>
+      <label style="display:block;font-size:11px;color:#888;margin-bottom:4px">内容</label>
+      <textarea class="kb-edit-area" id="kbNewContent" style="height:200px" placeholder="输入文件内容…"></textarea>
+      <div class="kb-edit-actions">
+        <button class="kb-cancel-btn" id="kbNewCancelBtn">取消</button>
+        <button class="kb-save-btn" id="kbNewConfirmBtn">创建文件</button>
+      </div>
+    </div>`;
+    $('kbNewBackBtn').addEventListener('click', ()=>{ renderKBFileList(); loadKBFiles(); });
+    $('kbNewCancelBtn').addEventListener('click', ()=>{ renderKBFileList(); loadKBFiles(); });
+    $('kbNewConfirmBtn').addEventListener('click', createKBFile);
+  }
+
+  async function createKBFile(){
+    const name = $('kbNewFileName').value.trim();
+    const content = $('kbNewContent').value;
+    if(!name){
+      $('kbNewFileName').focus();
+      $('kbNewFileName').style.borderColor = '#d9534f';
+      setTimeout(()=>{$('kbNewFileName').style.borderColor = '';},1500);
+      return;
+    }
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      const res = await fetch(getKBEndpoint(), {
+        method:'POST',
+        headers:apiHeaders(),
+        body:JSON.stringify({name, content})
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      await loadKBFiles();
+    }catch(e){
+      panelBody.innerHTML = '<div class="kb-empty">创建失败<br><span style="font-size:11px;color:#666;cursor:pointer" id="kbRetryCreateBtn">点击重试</span></div>';
+      const rb = $('kbRetryCreateBtn');
+      if(rb) rb.addEventListener('click', showKBNewForm);
+    }
+  }
+
+  // ========== 工具函数 ==========
+  function escHtml(s){
+    if(typeof s!=='string') return '';
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatTime(iso){
+    if(!iso) return '';
+    try{
+      const d = new Date(iso);
+      return d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})+'\u00a0'+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    }catch(e){return '';}
+  }
 
   function updateStats(){
     const allText = messages.filter(m=>m.role==='user').map(m=>m.content).join('');
@@ -442,18 +1001,26 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   }
 
   function setPanelContent(type, data){
+    panelMode = 'tool';
     if(type==='checklist'){
-      panelTitle.textContent = '✅ 自检清单';
+      panelIcon.textContent = '✅';
+      panelTitle.textContent = '自检清单';
       renderChecklist(checklistState);
     }else if(type==='flow'){
-      panelTitle.textContent = '📋 9阶段流程';
+      panelIcon.textContent = '📋';
+      panelTitle.textContent = '9阶段流程';
       const stages = ['前置分析','设定基调','草稿写作','12项自检','文笔润色','最终修订','元数据输出','审核禁用词','交付导出'];
       panelBody.innerHTML = stages.map((s,i)=>`<div style="padding:7px 0;border-bottom:1px solid #1e1e1e;font-size:13px;color:#999;display:flex;gap:10px"><span style="color:#e8a84c;width:20px;flex-shrink:0">${i+1}</span><span>${s}</span></div>`).join('');
     }else if(type==='review'){
-      panelTitle.textContent = '🔍 审查结果';
+      panelIcon.textContent = '🔍';
+      panelTitle.textContent = '审查结果';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-size:13px;margin-bottom:6px">暂无审查记录</div><div style="font-size:11px;color:#555">在对话中粘贴章节正文，然后输入"运行审查"</div></div>';
+    }else if(type==='kb'){
+      loadKBFiles();
+      return;
     }else if(type==='tools'){
-      panelTitle.textContent = '📚 工具箱一览';
+      panelIcon.textContent = '📚';
+      panelTitle.textContent = '工具箱一览';
       panelBody.innerHTML = '<div style="text-align:center;padding:24px 0;color:#555"><div style="font-size:13px;margin-bottom:6px">写作工具箱</div><div style="font-size:11px;color:#555">调用中…</div><div class="spinner" style="margin:12px auto"></div></div>';
       setTimeout(()=>{
         panelBody.innerHTML = `<div style="font-size:13px;color:#999">
@@ -463,36 +1030,44 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
         </div>`;
       },600);
     }else if(type==='style'){
-      panelTitle.textContent = '✍️ 写作风格速查';
+      panelIcon.textContent = '✍️';
+      panelTitle.textContent = '写作风格速查';
       panelBody.innerHTML = `<div style="font-size:13px;color:#999">
         <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#d4d4d4">v3 准则</span><br><span style="font-size:11px;color:#666">2500字/章 · 日记80~120字 · 留白优先 · 地震级信息用最短句子</span></div>
         <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#d4d4d4">展示不告诉</span><br><span style="font-size:11px;color:#666">用场景和动作传达情绪，不替读者总结</span></div>
         <div style="padding:8px 0"><span style="color:#d4d4d4">衔接原则</span><br><span style="font-size:11px;color:#666">情绪不归零、不重复，章节间自然过渡</span></div>
       </div>`;
     }else if(type==='characters'){
-      panelTitle.textContent = '👥 人物档案';
+      panelIcon.textContent = '👥';
+      panelTitle.textContent = '人物档案';
       panelBody.innerHTML = `<div style="font-size:13px;color:#999">
         <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#d4d4d4">沈默</span><br><span style="font-size:11px;color:#666">退役武警 · 程序员 · 历史爱好者</span></div>
         <div style="padding:8px 0">更多人物信息可通过对话调取</div>
       </div>`;
     }else if(type==='outline'){
-      panelTitle.textContent = '🗺️ 全卷细纲';
+      panelIcon.textContent = '🗺️';
+      panelTitle.textContent = '全卷细纲';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🗺️</div><div style="font-size:13px;margin-bottom:6px">卷二 · 归途未定</div><div style="font-size:11px;color:#555">第25章 ~ 第40章</div></div>';
     }else if(type==='timeline'){
-      panelTitle.textContent = '📅 时间线表';
+      panelIcon.textContent = '📅';
+      panelTitle.textContent = '时间线表';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📅</div><div style="font-size:13px">时间线数据加载中…</div></div>';
     }else if(type==='foreshadow'){
-      panelTitle.textContent = '🔗 伏笔追踪';
+      panelIcon.textContent = '🔗';
+      panelTitle.textContent = '伏笔追踪';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🔗</div><div style="font-size:13px">伏笔追踪数据加载中…</div></div>';
     }else if(type==='new'){
-      panelTitle.textContent = '📝 开始写作';
+      panelIcon.textContent = '📝';
+      panelTitle.textContent = '开始写作';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📝</div><div style="font-size:13px">准备好写新章节了吗？<br>在对话区输入你的内容吧。</div></div>';
     }else if(type==='export'){
-      panelTitle.textContent = '📥 导出草稿';
+      panelIcon.textContent = '📥';
+      panelTitle.textContent = '导出草稿';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📥</div><div style="font-size:13px;margin-bottom:6px">导出格式</div><div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><span style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">Markdown</span><span style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">DOCX</span></div></div>';
     }else if(type==='chapter'){
+      panelIcon.textContent = '📖';
       const d = chapterContext;
-      panelTitle.textContent = '📖 章节信息';
+      panelTitle.textContent = '章节信息';
       const pct = Math.min(100, Math.round(d.wordCount / d.targetWords * 100));
       const statusMap = {draft:'草稿中', review:'审查中', complete:'已完成'};
       const statusColor = {draft:'#f0ad4e', review:'#5bc0de', complete:'#5cb85c'};
@@ -546,6 +1121,11 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     lastToolClicked = toolId;
     panelMode = 'tool';
     if(panelCollapsed) togglePanel();
+    // KB 特殊处理：如果项目未加载，先确保有项目
+    if(toolId==='kb' && !currentProjectId){
+      loadProjects().then(()=>setPanelContent(toolId));
+      return;
+    }
     setPanelContent(toolId);
   }
 
@@ -682,10 +1262,10 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       return;
     }
 
-    fetch(CHAT_API+'/chat', {
+    fetch(apiBase()+'/api/v1/chat', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:text, model:modelSelect.value, context:{chapter:'卷二·归途未定·第31章'}})
+      headers:apiHeaders(),
+      body:JSON.stringify({message:text, model:modelSelect.value, context:{chapter:'卷二·归途未定·第31章'}, project_id:currentProjectId})
     }).then(r=>r.json()).then(data=>{
       removeLoadingIndicator(loadingEl);
       addMessage('system', data.reply || data.message || '收到。我正在处理你的请求…');
@@ -717,6 +1297,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     textarea.style.height = Math.min(textarea.scrollHeight, 160)+'px';
   }
 
+  // ========== 事件绑定 ==========
   chatInput.addEventListener('input', function(){
     autoResize(this);
   });
@@ -738,15 +1319,71 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
   collapseBtn.addEventListener('click', togglePanel);
 
-  document.getElementById('apiSettingsBtn').addEventListener('click', function(){
-    document.getElementById('apiModal').classList.add('open');
-    $('#apiModel').value = modelSelect.value;
+  // 项目选择器
+  $('projectTrigger').addEventListener('click', function(e){
+    e.stopPropagation();
+    toggleProjectDropdown();
   });
 
-  document.getElementById('apiModalClose').addEventListener('click', ()=>document.getElementById('apiModal').classList.remove('open'));
-  document.getElementById('apiModalCancel').addEventListener('click', ()=>document.getElementById('apiModal').classList.remove('open'));
+  // 点击外部关闭项目下拉
+  document.addEventListener('click', function(e){
+    const sel = $('projectSelector');
+    if(sel && !sel.contains(e.target)){
+      closeProjectDropdown();
+    }
+  });
 
-  document.getElementById('apiModalSave').addEventListener('click', function(){
+  // 新建项目按钮
+  $('projectNewBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeProjectDropdown();
+    $('newProjectModal').classList.add('open');
+    $('newProjectName').value = '';
+    $('newProjectName').focus();
+  });
+
+  // 新建项目弹窗
+  $('newProjectClose').addEventListener('click', ()=>$('newProjectModal').classList.remove('open'));
+  $('newProjectCancel').addEventListener('click', ()=>$('newProjectModal').classList.remove('open'));
+  $('newProjectConfirm').addEventListener('click', async function(){
+    const name = $('newProjectName').value.trim();
+    const template = $('newProjectTemplate').value;
+    if(!name){
+      $('newProjectName').focus();
+      $('newProjectName').style.borderColor = '#d9534f';
+      setTimeout(()=>{$('newProjectName').style.borderColor = '';},1500);
+      return;
+    }
+    $('newProjectModal').classList.remove('open');
+    await createProject(name, template);
+  });
+  $('newProjectName').addEventListener('keydown', function(e){
+    if(e.key==='Enter') $('newProjectConfirm').click();
+  });
+
+  // API 设置弹窗
+  $('apiSettingsBtn').addEventListener('click', function(){
+    $('apiModal').classList.add('open');
+    $('#apiModel').value = modelSelect.value;
+    syncWritingConfigUI();
+  });
+
+  $('apiModalClose').addEventListener('click', ()=>$('apiModal').classList.remove('open'));
+  $('apiModalCancel').addEventListener('click', ()=>$('apiModal').classList.remove('open'));
+
+  // 选项卡切换
+  document.querySelectorAll('.modal-tab').forEach(tab=>{
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.modal-tab-content').forEach(t=>t.classList.remove('active'));
+      this.classList.add('active');
+      const tabId = this.dataset.tab;
+      const contentId = tabId==='api'?'tabApi':'tabWriting';
+      $(contentId).classList.add('active');
+    });
+  });
+
+  $('apiModalSave').addEventListener('click', function(){
     const endpoint = $('#apiEndpoint').value.trim();
     const mdl = $('#apiModel').value;
     modelSelect.value = mdl;
@@ -754,10 +1391,14 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     if(endpoint){
       connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
     }
-    document.getElementById('apiModal').classList.remove('open');
+    // 保存写作设置
+    readWritingConfigFromUI();
+    updateChecklistFromConfig();
+    if(currentProjectId) saveWritingConfigToApi(currentProjectId);
+    $('apiModal').classList.remove('open');
   });
 
-document.getElementById('testConnectionBtn').addEventListener('click', function(){
+  $('testConnectionBtn').addEventListener('click', function(){
     const endpoint = document.getElementById('apiEndpoint').value.trim();
     const res = document.getElementById('testResult');
     res.innerHTML = '... 正在连接…';
@@ -860,9 +1501,11 @@ document.getElementById('testConnectionBtn').addEventListener('click', function(
     updateInputCharCount();
   });
 
+  // ========== 初始化 ==========
   renderChecklist(checklistState);
   document.querySelector('.tool-item[data-tool="checklist"]').classList.add('active');
   updateStats();
+  loadProjects();
 
   window.addEventListener('click', function(e){
     if(e.target.classList.contains('modal-overlay')){
