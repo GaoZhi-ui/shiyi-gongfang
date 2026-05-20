@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拾遗工坊 · 泰拉拾遗录</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;height:100vh;background:#111;color:#ccc;display:flex;overflow:hidden;font-size:14px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:#444}
+::selection{background:rgba(232,168,76,0.25);color:#fff}
+
+input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
+
+.sidebar{width:280px;background:#1a1a1a;border-right:1px solid #2a2a2a;display:flex;flex-direction:column;flex-shrink:0;z-index:10}
+.sidebar-brand{padding:18px 20px 16px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:10px}
+.sidebar-brand .logo{font-size:18px;color:#e8a84c}
+.sidebar-brand h1{font-size:15px;color:#e8a84c;letter-spacing:2px;font-weight:500}
+.sidebar-brand .beta{font-size:9px;color:#666;background:#222;padding:1px 6px;border-radius:3px;letter-spacing:1px;margin-left:auto}
+.toolbox{flex:1;overflow-y:auto;padding:6px 8px}
+.tool-group-title{font-size:10px;color:#888;padding:10px 12px 4px;letter-spacing:1.5px;text-transform:uppercase;font-weight:500}
+.tool-item{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:6px;cursor:pointer;font-size:13px;color:#999;transition:all .12s;user-select:none}
+.tool-item:hover{background:#242424;color:#e0b868}
+.tool-item.active{background:rgba(232,168,76,0.1);color:#e8a84c}
+.tool-item .icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.tool-item .label{flex:1}
+.tool-item .badge{font-size:10px;background:#2a2a2a;color:#888;padding:1px 6px;border-radius:8px}
+.sidebar-footer{padding:8px;border-top:1px solid #2a2a2a;display:flex;gap:6px}
+.sidebar-footer button{flex:1;padding:6px;background:transparent;border:1px solid #2a2a2a;border-radius:6px;color:#888;font-size:11px;cursor:pointer;transition:all .12s}
+.sidebar-footer button:hover{background:#242424;color:#e8a84c;border-color:#333}
+
+.col-main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+.topbar{height:50px;padding:0 16px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#151515}
+.topbar .model-select{background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;color:#ccc;padding:5px 10px;font-size:12px;cursor:pointer;transition:border-color .12s}
+.topbar .model-select:hover{border-color:#444}
+.topbar .model-select:focus{border-color:#e8a84c}
+.topbar .chapter-badge{font-size:12px;color:#888;padding:4px 10px;background:#1e1e1e;border-radius:4px;border:1px solid #2a2a2a}
+.topbar .chapter-badge .num{color:#e8a84c}
+.topbar-spacer{flex:1}
+.topbar .api-btn{background:transparent;border:1px solid #2a2a2a;border-radius:6px;color:#888;padding:5px 10px;font-size:12px;cursor:pointer;transition:all .12s}
+.topbar .api-btn:hover{background:#242424;color:#e8a84c;border-color:#444}
+
+.chat-area{flex:1;overflow-y:auto;padding:16px 20px;scroll-behavior:smooth}
+.chat-area .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#555;gap:8px}
+.chat-area .empty-state .big-icon{font-size:48px;opacity:.5}
+.chat-area .empty-state .hint{font-size:13px;color:#666;text-align:center;line-height:1.6;margin-top:4px}
+
+.msg{display:flex;gap:12px;margin-bottom:20px;animation:msgIn .2s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:30px;height:30px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.msg-avatar.system{background:rgba(232,168,76,0.15);color:#e8a84c}
+.msg-avatar.user{background:#2a2a2a;color:#999}
+.msg-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.msg-author{font-size:11px;color:#666}
+.msg-bubble{padding:10px 14px;border-radius:8px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.msg-bubble.system{background:#1e1e1e;border:1px solid #282828;color:#ccc}
+.msg-bubble.user{background:rgba(232,168,76,0.07);border:1px solid rgba(232,168,76,0.12);color:#ddd;margin-left:auto;max-width:80%}
+.msg-bubble .tag{display:inline-block;font-size:10px;color:#e8a84c;background:rgba(232,168,76,0.1);padding:1px 6px;border-radius:3px;margin-right:6px}
+.msg-bubble .item-pass{color:#5cb85c}
+.msg-bubble .item-fail{color:#d9534f}
+.msg-bubble .item-warn{color:#f0ad4e}
+.msg-bubble .item-info{color:#5bc0de}
+.msg-time{font-size:10px;color:#444;text-align:right;margin-top:2px}
+
+.input-area{flex-shrink:0;padding:12px 16px 14px;border-top:1px solid #2a2a2a;background:#151515}
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.input-wrapper{flex:1;position:relative}
+.input-wrapper textarea{width:100%;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#ccc;font-size:14px;resize:none;min-height:44px;max-height:160px;line-height:1.5;transition:border-color .12s}
+.input-wrapper textarea:focus{border-color:#e8a84c}
+.input-wrapper textarea::placeholder{color:#555}
+.send-btn{width:44px;height:44px;background:#e8a84c;border:none;border-radius:8px;color:#111;font-size:18px;cursor:pointer;flex-shrink:0;transition:all .12s;display:flex;align-items:center;justify-content:center;opacity:.85}
+.send-btn:hover{opacity:1;background:#f0b85c;transform:scale(1.02)}
+.send-btn:active{transform:scale(.96)}
+.send-btn.disabled{opacity:.3;cursor:not-allowed}
+.input-tools{display:flex;gap:12px;padding:6px 4px 0;font-size:11px;color:#555}
+.input-tools span{cursor:pointer;transition:color .12s}
+.input-tools span:hover{color:#e8a84c}
+
+.right-panel{width:360px;background:#1a1a1a;border-left:1px solid #2a2a2a;display:flex;flex-direction:column;flex-shrink:0;transition:width .25s,margin .25s;overflow:hidden}
+.right-panel.collapsed{width:0;margin-left:-1px;border-left:none}
+.right-panel .panel-header{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid #2a2a2a;flex-shrink:0;min-height:50px}
+.right-panel .panel-header .title{font-size:13px;color:#e8a84c;font-weight:500;flex:1}
+.right-panel .panel-header .panel-icon{font-size:16px}
+.right-panel .panel-header .collapse-btn{background:transparent;border:1px solid #2a2a2a;border-radius:4px;color:#666;padding:2px 6px;font-size:12px;cursor:pointer;transition:all .12s;line-height:1.4}
+.right-panel .panel-header .collapse-btn:hover{color:#e8a84c;border-color:#444}
+.right-panel .panel-body{flex:1;overflow-y:auto;padding:14px 18px}
+
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #1e1e1e;font-size:13px;color:#999;cursor:pointer;transition:all .12s}
+.checklist-item:hover{color:#ccc}
+.checklist-item:last-child{border-bottom:none}
+.checklist-item .ckbox{width:16px;height:16px;border:1.5px solid #444;border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .12s}
+.checklist-item .ckbox.checked{background:#e8a84c;border-color:#e8a84c;color:#111}
+.checklist-item .ck-info{flex:1;min-width:0}
+.checklist-item .ck-status{font-size:10px;margin-top:2px}
+.checklist-item .ck-status.pass{color:#5cb85c}
+.checklist-item .ck-status.fail{color:#d9534f}
+.checklist-item .ck-status.warn{color:#f0ad4e}
+.checklist-item.pass{color:#999}
+.checklist-item.pass .ck-info{color:#888;text-decoration:line-through;text-decoration-color:#444}
+.checklist-item.fail{color:#d9534f}
+.checklist-item.warn{color:#f0ad4e}
+
+.status-bar{height:28px;padding:0 16px;border-top:1px solid #2a2a2a;display:flex;align-items:center;gap:20px;flex-shrink:0;background:#151515;font-size:11px;color:#666}
+.status-bar .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.status-bar .dot.green{background:#5cb85c}
+.status-bar .dot.orange{background:#f0ad4e}
+.status-bar .dot.red{background:#d9534f}
+.status-bar .conn-status{display:flex;align-items:center;gap:4px}
+.status-bar .stat-item{display:flex;align-items:center;gap:4px}
+.status-bar .stat-item .val{color:#888}
+.status-bar-right{margin-left:auto;display:flex;gap:16px}
+.status-bar-right .model-tag{color:#555}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;width:480px;max-height:80vh;display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #2a2a2a}
+.modal-header h2{font-size:15px;color:#e8a84c;font-weight:500}
+.modal-header .close-btn{background:transparent;border:none;color:#666;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.modal-header .close-btn:hover{color:#e8a84c;background:#242424}
+.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-body .field{margin-bottom:14px}
+.modal-body .field label{display:block;font-size:11px;color:#888;margin-bottom:4px;letter-spacing:1px}
+.modal-body .field input,.modal-body .field select{width:100%;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;padding:8px 12px;color:#ccc;font-size:13px;transition:border-color .12s}
+.modal-body .field input:focus,.modal-body .field select:focus{border-color:#e8a84c}
+.modal-body .field .hint{font-size:11px;color:#555;margin-top:3px}
+.modal-footer{padding:12px 20px;border-top:1px solid #2a2a2a;display:flex;justify-content:flex-end;gap:8px}
+.modal-footer button{padding:7px 18px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .12s}
+.modal-footer .btn-secondary{background:transparent;border:1px solid #2a2a2a;color:#888}
+.modal-footer .btn-secondary:hover{background:#242424;color:#ccc}
+.modal-footer .btn-primary{background:#e8a84c;border:none;color:#111;font-weight:500}
+.modal-footer .btn-primary:hover{background:#f0b85c}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #444;border-top-color:#e8a84c;border-radius:50%;animation:spin .6s linear infinite}
+.msg-bubble .typing-indicator{display:flex;gap:4px;align-items:center;padding:4px 0}
+.msg-bubble .typing-indicator span{width:6px;height:6px;border-radius:50%;background:#666;animation:bounce 1.2s infinite}
+.msg-bubble .typing-indicator span:nth-child(2){animation-delay:.2s}
+.msg-bubble .typing-indicator span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+
+@media(max-width:1200px){.right-panel{width:320px}}
+@media(max-width:900px){.right-panel{width:0;margin-left:-1px;border-left:none}.right-panel.open{width:320px;margin-left:0;border-left:1px solid #2a2a2a;position:absolute;right:0;top:0;bottom:0;z-index:20;box-shadow:-4px 0 20px rgba(0,0,0,.4)}}
+</style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <span class="logo">✦</span>
+    <h1>拾遗工坊</h1>
+    <span class="beta">v1.0</span>
+  </div>
+  <div class="toolbox" id="toolbox">
+    <div class="tool-group-title">写作流程</div>
+    <div class="tool-item" data-tool="flow"><span class="icon">📋</span><span class="label">9阶段流程</span></div>
+    <div class="tool-item" data-tool="checklist"><span class="icon">✅</span><span class="label">自检清单</span><span class="badge" id="checklist-badge">0/7</span></div>
+    <div class="tool-item" data-tool="review"><span class="icon">🔍</span><span class="label">自动审查</span></div>
+
+    <div class="tool-group-title">知识库</div>
+    <div class="tool-item" data-tool="tools"><span class="icon">📚</span><span class="label">工具箱一览</span></div>
+    <div class="tool-item" data-tool="style"><span class="icon">✍️</span><span class="label">写作风格速查</span></div>
+    <div class="tool-item" data-tool="characters"><span class="icon">👥</span><span class="label">人物档案</span></div>
+
+    <div class="tool-group-title">章节管理</div>
+    <div class="tool-item" data-tool="outline"><span class="icon">🗺️</span><span class="label">全卷细纲</span></div>
+    <div class="tool-item" data-tool="timeline"><span class="icon">📅</span><span class="label">时间线表</span></div>
+    <div class="tool-item" data-tool="foreshadow"><span class="icon">🔗</span><span class="label">伏笔追踪</span></div>
+
+    <div class="tool-group-title">快捷操作</div>
+    <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
+    <div class="tool-item" data-tool="export"><span class="icon">📥</span><span class="label">导出草稿</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <button id="btn-clear-chat">🗑 清空对话</button>
+    <button id="btn-new-session">➕ 新会话</button>
+  </div>
+</div>
+
+<div class="col-main">
+  <div class="topbar">
+    <select class="model-select" id="modelSelect">
+      <option value="gpt4o">GPT-4o</option>
+      <option value="claude35" selected>Claude 3.5 Sonnet</option>
+      <option value="deepseek">DeepSeek V3</option>
+      <option value="gpto1">o1</option>
+    </select>
+    <span class="chapter-badge"><span class="num">卷二</span> · 归途未定 · 第31章</span>
+    <div class="topbar-spacer"></div>
+    <button class="api-btn" id="apiSettingsBtn">⚙ API设置</button>
+  </div>
+
+  <div class="chat-area" id="chatArea">
+    <div class="msg" data-role="system">
+      <div class="msg-avatar system">✦</div>
+      <div class="msg-body">
+        <div class="msg-author">拾遗工坊</div>
+        <div class="msg-bubble system">你好，我是拾遗工坊。<br><br>你可以：<br>• <b>检查当前章节</b> — 粘贴正文，我来审读<br>• <b>运行审查</b> — 12项自检，逐项评分<br>• <b>调取知识库</b> — 风格速查、人物档案、伏笔状态<br><br>或者直接在下方输入你想说的。</div>
+        <div class="msg-time">刚刚</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <div class="input-wrapper">
+        <textarea id="chatInput" rows="1" placeholder="输入写作指令…" autofocus></textarea>
+      </div>
+      <button class="send-btn" id="sendBtn">↵</button>
+    </div>
+    <div class="input-tools">
+      <span id="tool-paste">📋 粘贴草稿</span>
+      <span id="tool-review">🔍 运行审查</span>
+      <span id="tool-clear-input">✕ 清空</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span class="conn-status" id="connStatus"><span class="dot green"></span>API 已连接</span>
+    <span class="stat-item">📊 字数 <span class="val" id="statusWordCount">0</span></span>
+    <span class="stat-item">📝 消息 <span class="val" id="statusMsgCount">0</span></span>
+    <div class="status-bar-right">
+      <span class="model-tag" id="statusModel">Claude 3.5 Sonnet</span>
+    </div>
+  </div>
+</div>
+
+<div class="right-panel" id="rightPanel">
+  <div class="panel-header">
+    <span class="panel-icon">✅</span>
+    <span class="title" id="panelTitle">自检清单</span>
+    <button class="collapse-btn" id="collapsePanelBtn">◀</button>
+  </div>
+  <div class="panel-body" id="panelBody">
+  </div>
+</div>
+
+<div class="modal-overlay" id="apiModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚙ API 设置</h2>
+      <button class="close-btn" id="apiModalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>API 端点</label>
+        <input type="text" id="apiEndpoint" value="http://localhost:8000/api/v1" placeholder="http://localhost:8000/api/v1">
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="apiKey" value="sk-demo" placeholder="输入 API Key">
+      </div>
+      <div class="field">
+        <label>默认模型</label>
+        <select id="apiModel">
+          <option value="deepseek-chat" selected>DeepSeek V3</option>
+          <option value="deepseek-reasoner">DeepSeek R1</option>
+          <option value="gpt-4.1">GPT-4.1</option>
+          <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="o3">o3</option>
+          <option value="claude-sonnet-4">Claude Sonnet 4</option>
+          <option value="claude-3-5-haiku">Claude 3.5 Haiku</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="moonshot-v1">Kimi Moonshot</option>
+          <option value="glm-4">智谱GLM-4</option>
+        </select>
+        <div class="hint">所有请求发送至 {endpoint}/chat/completions</div>
+      </div>
+      <div class="field">
+        <label>连接测试</label>
+        <button id="testConnectionBtn" style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;color:#ccc;padding:8px 14px;font-size:12px;cursor:pointer;width:100%;text-align:center">测试连接</button>
+        <div id="testResult" style="margin-top:6px;font-size:11px;color:#888"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="apiModalCancel">取消</button>
+      <button class="btn-primary" id="apiModalSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const CHAT_API = '/api/v1';
+
+  const DEFAULT_CHECKLIST = [
+    {id:'scene', label:'场景首尾测试', desc:'检查首尾场景是否闭合', passed:null},
+    {id:'show', label:'展示不告诉测试', desc:'检查是否有"告诉"而非"展示"', passed:null},
+    {id:'think', label:'"他心想"压强测试', desc:'检测直接的心理描述', passed:null},
+    {id:'wordcount', label:'字数 2000+', desc:'章节基线字数', passed:null},
+    {id:'density', label:'密度 ≤ 6', desc:'每千字关键事件密度', passed:null},
+    {id:'notAB', label:'"不是A是B" ≤ 2', desc:'检测该句式使用频率', passed:null},
+    {id:'ta', label:'"他" ≤ 15/千字', desc:'检测人称代词密度', passed:null}
+  ];
+
+  let checklistState = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
+  let messages = [];
+  let wordCount = 0;
+  let msgCount = 0;
+  let lastToolClicked = 'checklist';
+  let panelCollapsed = false;
+
+  const $ = id => document.getElementById(id);
+  const chatArea = $('chatArea');
+  const chatInput = $('chatInput');
+  const sendBtn = $('sendBtn');
+  const panelBody = $('panelBody');
+  const panelTitle = $('panelTitle');
+  const collapseBtn = $('collapsePanelBtn');
+  const rightPanel = $('rightPanel');
+  const statusWordCount = $('statusWordCount');
+  const statusMsgCount = $('statusMsgCount');
+  const statusModel = $('statusModel');
+  const connStatus = $('connStatus');
+  const modelSelect = $('modelSelect');
+  const checklistBadge = $('checklist-badge');
+
+  function updateStats(){
+    const allText = messages.filter(m=>m.role==='user').map(m=>m.content).join('');
+    const wc = allText.replace(/[\s\n\r]/g,'').length;
+    const mc = messages.filter(m=>m.role==='user').length;
+    wordCount = wc;
+    msgCount = mc;
+    statusWordCount.textContent = wc;
+    statusMsgCount.textContent = mc;
+  }
+
+  function updateChecklistBadge(){
+    const done = checklistState.filter(i=>i.passed!==null).length;
+    checklistBadge.textContent = done+'/'+checklistState.length;
+  }
+
+  function renderChecklist(items){
+    let html = '';
+    items.forEach(item=>{
+      const checked = item.passed===true?'checked':'';
+      const statusClass = item.passed===true?'pass':item.passed===false?'fail':'';
+      const statusText = item.passed===true?'通过':item.passed===false?'未通过':'等待检查';
+      const statusIcon = item.passed===true?'✓':item.passed===false?'✗':'○';
+      html += `<div class="checklist-item ${statusClass}" data-id="${item.id}">
+        <div class="ckbox ${checked}" data-id="${item.id}">${item.passed===true?'✓':''}</div>
+        <div class="ck-info">
+          <div>${item.label}</div>
+          <div class="ck-status ${statusClass}">${statusIcon} ${statusText}${item.passed===false?' · '+item.desc:''}</div>
+        </div>
+      </div>`;
+    });
+    panelBody.innerHTML = html;
+    document.querySelectorAll('.checklist-item .ckbox').forEach(el=>{
+      el.addEventListener('click',function(e){
+        e.stopPropagation();
+        toggleChecklistItem(this.dataset.id);
+      });
+    });
+    document.querySelectorAll('.checklist-item').forEach(el=>{
+      el.addEventListener('click',function(){
+        toggleChecklistItem(this.dataset.id);
+      });
+    });
+    updateChecklistBadge();
+  }
+
+  function toggleChecklistItem(id){
+    const item = checklistState.find(i=>i.id===id);
+    if(!item) return;
+    if(item.passed===null) item.passed = true;
+    else if(item.passed===true) item.passed = false;
+    else item.passed = null;
+    renderChecklist(checklistState);
+  }
+
+  function setPanelContent(type, data){
+    if(type==='checklist'){
+      panelTitle.textContent = '✅ 自检清单';
+      renderChecklist(checklistState);
+    }else if(type==='flow'){
+      panelTitle.textContent = '📋 9阶段流程';
+      const stages = ['前置分析','设定基调','草稿写作','12项自检','文笔润色','最终修订','元数据输出','审核禁用词','交付导出'];
+      panelBody.innerHTML = stages.map((s,i)=>`<div style="padding:7px 0;border-bottom:1px solid #1e1e1e;font-size:13px;color:#999;display:flex;gap:10px"><span style="color:#e8a84c;width:20px;flex-shrink:0">${i+1}</span><span>${s}</span></div>`).join('');
+    }else if(type==='review'){
+      panelTitle.textContent = '🔍 审查结果';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-size:13px;margin-bottom:6px">暂无审查记录</div><div style="font-size:11px;color:#555">在对话中粘贴章节正文，然后输入"运行审查"</div></div>';
+    }else if(type==='tools'){
+      panelTitle.textContent = '📚 工具箱一览';
+      panelBody.innerHTML = '<div style="text-align:center;padding:24px 0;color:#555"><div style="font-size:13px;margin-bottom:6px">写作工具箱</div><div style="font-size:11px;color:#555">调用中…</div><div class="spinner" style="margin:12px auto"></div></div>';
+      setTimeout(()=>{
+        panelBody.innerHTML = `<div style="font-size:13px;color:#999">
+          <div style="padding:8px 0;border-bottom:1px solid #1e1e1e;display:flex;gap:8px"><span style="color:#e8a84c">✦</span><span><b>terra-writing-skill</b><br><span style="font-size:11px;color:#666">6阶段写作工作流</span></span></div>
+          <div style="padding:8px 0;border-bottom:1px solid #1e1e1e;display:flex;gap:8px"><span style="color:#e8a84c">✦</span><span><b>pipeline-guard</b><br><span style="font-size:11px;color:#666">流水线安全守卫</span></span></div>
+          <div style="padding:8px 0;display:flex;gap:8px"><span style="color:#e8a84c">✦</span><span><b>quiet-musing</b><br><span style="font-size:11px;color:#666">深度推理框架</span></span></div>
+        </div>`;
+      },600);
+    }else if(type==='style'){
+      panelTitle.textContent = '✍️ 写作风格速查';
+      panelBody.innerHTML = `<div style="font-size:13px;color:#999">
+        <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#e8a84c">v3 准则</span><br><span style="font-size:11px;color:#666">2500字/章 · 日记80~120字 · 留白优先 · 地震级信息用最短句子</span></div>
+        <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#e8a84c">展示不告诉</span><br><span style="font-size:11px;color:#666">用场景和动作传达情绪，不替读者总结</span></div>
+        <div style="padding:8px 0"><span style="color:#e8a84c">衔接原则</span><br><span style="font-size:11px;color:#666">情绪不归零、不重复，章节间自然过渡</span></div>
+      </div>`;
+    }else if(type==='characters'){
+      panelTitle.textContent = '👥 人物档案';
+      panelBody.innerHTML = `<div style="font-size:13px;color:#999">
+        <div style="padding:8px 0;border-bottom:1px solid #1e1e1e"><span style="color:#e8a84c">沈默</span><br><span style="font-size:11px;color:#666">退役武警 · 程序员 · 历史爱好者</span></div>
+        <div style="padding:8px 0">更多人物信息可通过对话调取</div>
+      </div>`;
+    }else if(type==='outline'){
+      panelTitle.textContent = '🗺️ 全卷细纲';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🗺️</div><div style="font-size:13px;margin-bottom:6px">卷二 · 归途未定</div><div style="font-size:11px;color:#555">第25章 ~ 第40章</div></div>';
+    }else if(type==='timeline'){
+      panelTitle.textContent = '📅 时间线表';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📅</div><div style="font-size:13px">时间线数据加载中…</div></div>';
+    }else if(type==='foreshadow'){
+      panelTitle.textContent = '🔗 伏笔追踪';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">🔗</div><div style="font-size:13px">伏笔追踪数据加载中…</div></div>';
+    }else if(type==='new'){
+      panelTitle.textContent = '📝 开始写作';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📝</div><div style="font-size:13px">准备好写新章节了吗？<br>在对话区输入你的内容吧。</div></div>';
+    }else if(type==='export'){
+      panelTitle.textContent = '📥 导出草稿';
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📥</div><div style="font-size:13px;margin-bottom:6px">导出格式</div><div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><span style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">Markdown</span><span style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">DOCX</span></div></div>';
+    }
+  }
+
+  function handleToolClick(toolId){
+    document.querySelectorAll('.tool-item').forEach(el=>el.classList.remove('active'));
+    const el = document.querySelector(`.tool-item[data-tool="${toolId}"]`);
+    if(el) el.classList.add('active');
+    lastToolClicked = toolId;
+    if(panelCollapsed) togglePanel();
+    setPanelContent(toolId);
+  }
+
+  function addMessage(role, content, options){
+    options = options||{};
+    const msg = {role, content, time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})};
+    messages.push(msg);
+
+    const div = document.createElement('div');
+    div.className = 'msg';
+    div.dataset.role = role;
+    const avatar = role==='system'?'✦':'你';
+    const author = role==='system'?'拾遗工坊':'你';
+    const bubbleClass = role==='system'?'system':'user';
+
+    let extra = '';
+    if(options.items){
+      extra = '<div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">';
+      options.items.forEach(item=>{
+        const cls = item.status==='pass'?'item-pass':item.status==='fail'?'item-fail':item.status==='warn'?'item-warn':'item-info';
+        extra += `<span style="font-size:12px"><span class="${cls}">${item.status==='pass'?'✓':item.status==='fail'?'✗':'○'}</span> ${item.label}</span>`;
+      });
+      extra += '</div>';
+    }
+
+    if(options.loading){
+      div.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
+      chatArea.appendChild(div);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      return div;
+    }
+
+    div.innerHTML = `<div class="msg-avatar ${bubbleClass}">${avatar}</div><div class="msg-body"><div class="msg-author">${author}</div><div class="msg-bubble ${bubbleClass}">${content}${extra}</div><div class="msg-time">${msg.time}</div></div>`;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    updateStats();
+    return div;
+  }
+
+  function removeLoadingIndicator(loadingEl){
+    if(loadingEl && loadingEl.parentNode){
+      loadingEl.remove();
+    }
+  }
+
+  function simulateReview(){
+    const results = checklistState.map(item=>{
+      const r = Math.random();
+      let passed;
+      if(r<0.4) passed=true;
+      else if(r<0.75) passed=false;
+      else passed=null;
+      return {...item, passed};
+    });
+    const passCount = results.filter(i=>i.passed===true).length;
+    const failCount = results.filter(i=>i.passed===false).length;
+    checklistState = results;
+    renderChecklist(checklistState);
+    return {results, passCount, failCount};
+  }
+
+  async function sendMessage(){
+    const text = chatInput.value.trim();
+    if(!text) return;
+
+    sendBtn.classList.add('disabled');
+    addMessage('user', text);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    updateStats();
+
+    const loadingEl = addMessage('system', '', {loading:true});
+
+    const command = text.toLowerCase();
+
+    if(command.includes('运行审查') || command.includes('审查') || command.includes('自检')){
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        const {passCount, failCount} = simulateReview();
+        const summary = passCount+'/'+checklistState.length+' 项通过'+(failCount>0?'，'+failCount+' 项未通过':'');
+        addMessage('system', '审查完成。'+summary, {items:checklistState.map(i=>({label:i.label,status:i.passed?'pass':i.passed===false?'fail':'pending'}))});
+        sendBtn.classList.remove('disabled');
+      },1200);
+      return;
+    }
+
+    if(command.includes('检查章节') || command.includes('读一下') || command.includes('分析')){
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        const reports = [
+          '章节开头有力，但第三段节奏略拖。建议压缩到 2~3 句。',
+          '第 5 段出现"展示不告诉"问题："沈默意识到这很危险" → 应展示他的身体反应。',
+          '对话标记偏多，部分可以省略或通过动作暗示。',
+          '整体情绪线连贯，结尾留白得当。'
+        ];
+        addMessage('system', '初步审读结果：\n\n'+reports.map((r,i)=>'['+(i+1)+'] '+r).join('\n')+'\n\n需要我逐项展开吗？');
+        sendBtn.classList.remove('disabled');
+      },1500);
+      return;
+    }
+
+    if(command.includes('人物') || command.includes('沈默')){
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        addMessage('system', '**沈默** — 退役武警，前程序员，历史爱好者。\n\n地球穿越至泰拉世界，身份是罗德岛外勤干员。\n\n核心矛盾：用地球人的认知框架理解泰拉，看得比泰拉人更深，但也常常因此陷入孤独。\n\n当前所在章节：第31章「拾遗录」（待写）');
+        sendBtn.classList.remove('disabled');
+      },800);
+      return;
+    }
+
+    if(command.includes('风格') || command.includes('v3')){
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        addMessage('system', '**v3 写作准则快速参考**\n\n• 2500字/章基线，±300浮动\n• 日记80~120字：一个事实+一个观察+一个画面\n• 留白优先：不帮读者总结\n• 地震级信息用最短的句子\n• 章节衔接情绪不归零、不重复');
+        sendBtn.classList.remove('disabled');
+      },600);
+      return;
+    }
+
+    if(command.includes('help') || command.includes('帮助') || command.includes('能做什么')){
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        addMessage('system', '我可以帮你：\n\n• **检查章节** — 粘贴正文，我来审读结构、节奏、风格\n• **运行审查** — 12项自检逐项评分\n• **知识库查询** — 人物档案、风格速查、伏笔状态\n• **写作建议** — 情节走向、对话打磨、节奏调整\n\n直接输入你想问的，或点击左侧工具栏。');
+        sendBtn.classList.remove('disabled');
+      },500);
+      return;
+    }
+
+    fetch(CHAT_API+'/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text, model:modelSelect.value, context:{chapter:'卷二·归途未定·第31章'}})
+    }).then(r=>r.json()).then(data=>{
+      removeLoadingIndicator(loadingEl);
+      addMessage('system', data.reply || data.message || '收到。我正在处理你的请求…');
+      sendBtn.classList.remove('disabled');
+    }).catch(()=>{
+      setTimeout(()=>{
+        removeLoadingIndicator(loadingEl);
+        const fallbacks = [
+          '好，收到。',
+          '我在听。',
+          '收到，我来想想。',
+          '有道理，接着说。',
+          '让我想想这个问题。'
+        ];
+        addMessage('system', fallbacks[Math.floor(Math.random()*fallbacks.length)]+'（API 未响应，本地模式运行中）');
+        sendBtn.classList.remove('disabled');
+      },400);
+    });
+  }
+
+  function togglePanel(){
+    panelCollapsed = !panelCollapsed;
+    rightPanel.classList.toggle('collapsed', panelCollapsed);
+    collapseBtn.textContent = panelCollapsed?'▶':'◀';
+  }
+
+  function autoResize(textarea){
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 160)+'px';
+  }
+
+  chatInput.addEventListener('input', function(){
+    autoResize(this);
+  });
+
+  chatInput.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  document.querySelectorAll('.tool-item').forEach(el=>{
+    el.addEventListener('click', function(){
+      handleToolClick(this.dataset.tool);
+    });
+  });
+
+  collapseBtn.addEventListener('click', togglePanel);
+
+  document.getElementById('apiSettingsBtn').addEventListener('click', function(){
+    document.getElementById('apiModal').classList.add('open');
+    $('#apiModel').value = modelSelect.value;
+  });
+
+  document.getElementById('apiModalClose').addEventListener('click', ()=>document.getElementById('apiModal').classList.remove('open'));
+  document.getElementById('apiModalCancel').addEventListener('click', ()=>document.getElementById('apiModal').classList.remove('open'));
+
+  document.getElementById('apiModalSave').addEventListener('click', function(){
+    const endpoint = $('#apiEndpoint').value.trim();
+    const mdl = $('#apiModel').value;
+    modelSelect.value = mdl;
+    statusModel.textContent = modelSelect.options[modelSelect.selectedIndex].text;
+    if(endpoint){
+      connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
+    }
+    document.getElementById('apiModal').classList.remove('open');
+  });
+
+  $('#testConnectionBtn').addEventListener('click', function(){
+    const endpoint = $('#apiEndpoint').value.trim();
+    const res = $('#testResult');
+    res.innerHTML = '<span class="spinner"></span> 正在连接…';
+    fetch(endpoint+'/health').then(r=>r.json()).then(data=>{
+      res.innerHTML = '<span style="color:#5cb85c">✓ 连接成功</span>';
+      connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
+    }).catch(()=>{
+      res.innerHTML = '<span style="color:#f0ad4e">⚠ 无法连接（本地模式可用）</span>';
+      connStatus.innerHTML = '<span class="dot orange"></span>API 未响应';
+    });
+  });
+
+  modelSelect.addEventListener('change', function(){
+    statusModel.textContent = this.options[this.selectedIndex].text;
+  });
+
+  $('#btn-clear-chat').addEventListener('click', function(){
+    if(confirm('确定清空所有对话？')){
+      const sysMsg = chatArea.querySelector('.msg[data-role="system"]');
+      chatArea.innerHTML = '';
+      if(sysMsg) chatArea.appendChild(sysMsg.cloneNode(true));
+      messages = [];
+      updateStats();
+    }
+  });
+
+  $('#btn-new-session').addEventListener('click', function(){
+    chatArea.innerHTML = '';
+    messages = [];
+    const welcome = document.createElement('div');
+    welcome.className = 'msg';
+    welcome.dataset.role = 'system';
+    welcome.innerHTML = `<div class="msg-avatar system">✦</div><div class="msg-body"><div class="msg-author">拾遗工坊</div><div class="msg-bubble system">新会话已开始。随时告诉我你想做什么。</div><div class="msg-time">刚刚</div></div>`;
+    chatArea.appendChild(welcome);
+    updateStats();
+  });
+
+  $('#tool-paste').addEventListener('click', async function(){
+    try{
+      const text = await navigator.clipboard.readText();
+      chatInput.value = text;
+      autoResize(chatInput);
+    }catch(e){
+      chatInput.focus();
+    }
+  });
+
+  $('#tool-review').addEventListener('click', function(){
+    if(!chatInput.value.trim()){
+      chatInput.value = '运行审查';
+      autoResize(chatInput);
+    }
+    sendMessage();
+  });
+
+  $('#tool-clear-input').addEventListener('click', function(){
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    chatInput.focus();
+  });
+
+  renderChecklist(checklistState);
+  document.querySelector('.tool-item[data-tool="checklist"]').classList.add('active');
+  updateStats();
+
+  window.addEventListener('click', function(e){
+    if(e.target.classList.contains('modal-overlay')){
+      e.target.classList.remove('open');
+    }
+  });
+})();
+</script>
+</body>
+</html>
