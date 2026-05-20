@@ -222,7 +222,7 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
   </div>
 
   <div class="status-bar">
-    <span class="conn-status" id="connStatus"><span class="dot green"></span>API 已连接</span>
+    <span class="conn-status" id="connStatus"><span class="dot orange"></span>API 未连接</span>
     <span class="stat-item">📊 字数 <span class="val" id="statusWordCount">0</span></span>
     <span class="stat-item">📝 消息 <span class="val" id="statusMsgCount">0</span></span>
     <div class="status-bar-right">
@@ -667,17 +667,25 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     document.getElementById('apiModal').classList.remove('open');
   });
 
-  $('#testConnectionBtn').addEventListener('click', function(){
-    const endpoint = $('#apiEndpoint').value.trim();
-    const res = $('#testResult');
-    res.innerHTML = '<span class="spinner"></span> 正在连接…';
-    fetch(endpoint+'/health').then(r=>r.json()).then(data=>{
-      res.innerHTML = '<span style="color:#5cb85c">✓ 连接成功</span>';
-      connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
-    }).catch(()=>{
-      res.innerHTML = '<span style="color:#f0ad4e">⚠ 无法连接（本地模式可用）</span>';
-      connStatus.innerHTML = '<span class="dot orange"></span>API 未响应';
-    });
+document.getElementById('testConnectionBtn').addEventListener('click', function(){
+    const endpoint = document.getElementById('apiEndpoint').value.trim();
+    const res = document.getElementById('testResult');
+    res.innerHTML = '... 正在连接…';
+    const apiUrl = endpoint.endsWith('/api/v1') ? endpoint : endpoint + '/api/v1';
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    fetch(apiUrl + '/health', { signal: controller.signal })
+      .then(r => r.json()).then(data => {
+        clearTimeout(timeout);
+        if (data.status === 'ok') {
+          res.innerHTML = '<span style="color:#5cb85c">OK 连接成功</span>';
+          document.getElementById('connStatus').innerHTML = '<span class="dot green"></span>API 已连接';
+        } else {
+          res.innerHTML = '<span style="color:#f0ad4e">⚠ 服务响应异常</span>';
+        }
+      }).catch(() => {
+        res.innerHTML = '<span style="color:#f0ad4e">⚠ 无法连接，请检查地址</span>';
+      });
   });
 
   modelSelect.addEventListener('change', function(){
