@@ -219,6 +219,35 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 
 @media(max-width:1200px){.right-panel{width:320px}}
 @media(max-width:900px){.right-panel{width:0;margin-left:-1px;border-left:none}.right-panel.open{width:320px;margin-left:0;border-left:1px solid #252525;position:absolute;right:0;top:0;bottom:0;z-index:20;box-shadow:-4px 0 20px rgba(0,0,0,.4)}}
+
+/* 工具浏览器 */
+.tb-tool{border:1px solid #252525;border-radius:8px;margin-bottom:8px;overflow:hidden;background:#1e1e1e}
+.tb-tool-header{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;user-select:none;transition:background .1s}
+.tb-tool-header:hover{background:#242424}
+.tb-tool-icon{font-size:16px;flex-shrink:0}
+.tb-tool-info{flex:1;min-width:0}
+.tb-tool-name{font-size:14px;color:#d4d4d4;font-weight:500}
+.tb-tool-desc{font-size:11px;color:#666;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-tool-arrow{font-size:12px;color:#555;transition:transform .15s;flex-shrink:0}
+.tb-tool-body{display:none;border-top:1px solid #252525;padding:12px 14px}
+.tb-tool-body.open{display:block}
+.tb-schema{display:flex;flex-direction:column;gap:10px}
+.tb-param{display:flex;flex-direction:column;gap:4px}
+.tb-param-label{font-size:11px;color:#888;font-family:monospace}
+.tb-param-input{background:#151515;border:1px solid #2a2a2a;border-radius:5px;padding:7px 10px;color:#ccc;font-size:13px;transition:border-color .12s;font-family:inherit}
+.tb-param-input:focus{border-color:#e8a84c}
+.tb-param-input[type=number]{-moz-appearance:textfield}
+.tb-param-desc{font-size:10px;color:#555}
+.tb-param select.tb-param-input{cursor:pointer}
+.tb-run-row{display:flex;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid #252525}
+.tb-run-btn{background:#e8a84c;border:none;border-radius:6px;color:#111;padding:6px 18px;font-size:12px;font-weight:500;cursor:pointer;transition:all .12s}
+.tb-run-btn:hover{background:#f0b85c;transform:scale(1.02)}
+.tb-run-btn:active{transform:scale(.96)}
+.tb-run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.tb-result{margin-top:8px}
+.tb-loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid #444;border-top-color:#e8a84c;border-radius:50%;animation:spin .6s linear infinite;margin:8px auto}
+.tb-result-success{background:#0d1f0d;border:1px solid #1e3a1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#8bc34a;font-family:monospace;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto}
+.tb-result-error{background:#1f0d0d;border:1px solid #3a1e1e;border-radius:6px;padding:10px 12px;font-size:12px;color:#ef5350;font-family:monospace;white-space:pre-wrap;word-break:break-word}
 </style>
 </head>
 <body>
@@ -249,6 +278,9 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="tool-group-title">快捷操作</div>
     <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
     <div class="tool-item" data-tool="export"><span class="icon">📥</span><span class="label">导出草稿</span></div>
+
+    <div class="tool-group-title">工具</div>
+    <div class="tool-item" data-tool="toolsBrowser"><span class="icon">🔧</span><span class="label">工具浏览器</span></div>
   </div>
   <div class="sidebar-footer">
     <button id="btn-clear-chat">🗑 清空对话</button>
@@ -922,6 +954,130 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     }
   }
 
+  // ========== 工具浏览器 ==========
+  async function loadToolBrowser(){
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      const res = await fetch(apiBase()+'/api/v1/tools', {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const tools = await res.json();
+      if(!Array.isArray(tools)) throw new Error('Invalid response: expected array');
+      renderToolBrowser(tools);
+    }catch(e){
+      panelBody.innerHTML = '<div class="kb-empty">加载工具列表失败<br><span style="font-size:11px;color:#666;cursor:pointer" id="toolsRetryBtn">点击重试</span></div>';
+      const rb = $('toolsRetryBtn');
+      if(rb) rb.addEventListener('click', loadToolBrowser);
+    }
+  }
+
+  function renderToolBrowser(tools){
+    let html = '';
+    tools.forEach((tool, idx) => {
+      const safeName = escHtml(tool.name || 'unknown');
+      const safeDesc = escHtml(tool.description || '');
+      const hasSchema = tool.inputSchema && typeof tool.inputSchema==='object' && tool.inputSchema.properties;
+      html += '<div class="tb-tool" data-tidx="'+idx+'">';
+      html += '<div class="tb-tool-header" data-tidx="'+idx+'">';
+      html += '<span class="tb-tool-icon">🔧</span>';
+      html += '<div class="tb-tool-info"><div class="tb-tool-name">'+safeName+'</div><div class="tb-tool-desc">'+safeDesc+'</div></div>';
+      html += '<span class="tb-tool-arrow">▸</span></div>';
+      html += '<div class="tb-tool-body" id="tbBody'+idx+'">';
+      if(hasSchema){
+        html += renderToolSchema(tool, idx);
+      }else{
+        html += '<div style="padding:4px 0 10px;color:#666;font-size:12px">无需参数</div>';
+      }
+      html += '<div class="tb-run-row"><button class="tb-run-btn" data-tname="'+safeName+'" data-tidx="'+idx+'">▶ 运行</button></div>';
+      html += '<div class="tb-result" id="tbResult'+idx+'"></div>';
+      html += '</div></div>';
+    });
+    panelBody.innerHTML = html || '<div class="kb-empty">暂无可用工具</div>';
+
+    document.querySelectorAll('.tb-tool-header').forEach(function(el){
+      el.addEventListener('click', function(){
+        var tidx = this.dataset.tidx;
+        var body = document.getElementById('tbBody'+tidx);
+        var arrow = this.querySelector('.tb-tool-arrow');
+        if(!body) return;
+        var isOpen = body.classList.contains('open');
+        body.classList.toggle('open');
+        arrow.textContent = isOpen ? '▸' : '▾';
+      });
+    });
+
+    document.querySelectorAll('.tb-run-btn').forEach(function(el){
+      el.addEventListener('click', function(e){
+        e.stopPropagation();
+        var tname = this.dataset.tname;
+        var tidx = this.dataset.tidx;
+        executeTool(tname, tidx);
+      });
+    });
+  }
+
+  function renderToolSchema(tool, idx){
+    var props = tool.inputSchema.properties || {};
+    var required = tool.inputSchema.required || [];
+    var html = '<div class="tb-schema">';
+    for(var key in props){
+      if(!props.hasOwnProperty(key)) continue;
+      var val = props[key];
+      var label = key + (required.indexOf(key)!==-1 ? ' <span style="color:#d9534f">*</span>' : '');
+      var type = val.type || 'string';
+      var desc = val.description ? '<div class="tb-param-desc">'+escHtml(val.description)+'</div>' : '';
+      html += '<div class="tb-param"><label class="tb-param-label">'+label+'</label>';
+      if(type==='boolean'){
+        html += '<select class="tb-param-input" data-pname="'+key+'"><option value="false">false</option><option value="true">true</option></select>';
+      }else if(type==='number' || type==='integer'){
+        html += '<input class="tb-param-input" data-pname="'+key+'" type="number" placeholder="'+escHtml(val.description||'')+'">';
+      }else{
+        html += '<input class="tb-param-input" data-pname="'+key+'" type="text" placeholder="'+escHtml(val.description||'')+'">';
+      }
+      html += desc+'</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  async function executeTool(name, tidx){
+    var body = document.getElementById('tbBody'+tidx);
+    if(!body) return;
+    body.classList.add('open');
+    var arrow = (body.parentElement||{}).querySelector('.tb-tool-arrow');
+    if(arrow) arrow.textContent = '▾';
+
+    var resultEl = document.getElementById('tbResult'+tidx);
+    if(!resultEl) return;
+
+    var params = {};
+    var inputs = body.querySelectorAll('.tb-param-input');
+    inputs.forEach(function(inp){
+      var key = inp.dataset.pname;
+      if(!key) return;
+      if(inp.type==='number'){
+        params[key] = inp.value ? Number(inp.value) : undefined;
+      }else if(inp.tagName==='SELECT'){
+        var v = inp.value;
+        params[key] = v==='true' ? true : (v==='false' ? false : v);
+      }else{
+        params[key] = inp.value || undefined;
+      }
+    });
+
+    resultEl.innerHTML = '<div class="tb-loading-spinner"></div>';
+
+    try{
+      var ep = apiBase()+'/api/v1/tools/'+encodeURIComponent(name)+'/call';
+      var res = await fetch(ep, {method:'POST', headers:apiHeaders(), body:JSON.stringify(params)});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var data = await res.json();
+      var text = typeof data==='string' ? data : JSON.stringify(data, null, 2);
+      resultEl.innerHTML = '<div class="tb-result-success">'+escHtml(text)+'</div>';
+    }catch(e){
+      resultEl.innerHTML = '<div class="tb-result-error">调用失败: '+escHtml(e.message)+'</div>';
+    }
+  }
+
   // ========== 工具函数 ==========
   function escHtml(s){
     if(typeof s!=='string') return '';
@@ -1064,6 +1220,10 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       panelIcon.textContent = '📥';
       panelTitle.textContent = '导出草稿';
       panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555"><div style="font-size:36px;margin-bottom:10px">📥</div><div style="font-size:13px;margin-bottom:6px">导出格式</div><div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><span style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">Markdown</span><span style="background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;color:#ccc">DOCX</span></div></div>';
+    }else if(type==='toolsBrowser'){
+      panelIcon.textContent = '🔧';
+      panelTitle.textContent = '工具浏览器';
+      loadToolBrowser();
     }else if(type==='chapter'){
       panelIcon.textContent = '📖';
       const d = chapterContext;
