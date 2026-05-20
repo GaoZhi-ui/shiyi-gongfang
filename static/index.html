@@ -668,6 +668,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="goal"><span class="icon">🎯</span><span class="label">写作目标</span></div>
     <div class="tool-item" data-tool="stats"><span class="icon">📊</span><span class="label">统计</span></div>
     <div class="tool-item" data-tool="inspiration"><span class="icon">💡</span><span class="label">灵感</span></div>
+    <div class="tool-item" data-tool="guide"><span class="icon">📖</span><span class="label">规范</span></div>
 
     <div class="tool-group-title">工具</div>
     <div class="tool-item" data-tool="toolsBrowser"><span class="icon">🔧</span><span class="label">工具浏览器</span></div>
@@ -1762,6 +1763,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '💡';
       panelTitle.textContent = '灵感';
       loadInspirationView();
+    }else if(type==='guide'){
+      panelIcon.textContent = '📖';
+      panelTitle.textContent = '写作规范';
+      loadWritingGuideView();
     }else if(type==='chapter'){
       panelIcon.textContent = '📖';
       const d = chapterContext;
@@ -2566,6 +2571,167 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         input.value = '';
         loadInspirationList();
       });
+    }
+  }
+
+  // ========== 写作规范 ==========
+
+  var _guideSaveTimer = null;
+  var _guideFormDirty = false;
+
+  async function loadWritingGuideView(){
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#555">请先选择项目</div>';
+      return;
+    }
+    panelBody.innerHTML = '<div style="text-align:center;padding:40px 0"><div class="spinner" style="margin:0 auto"></div></div>';
+    try{
+      var res = await fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/guide', {headers:apiHeaders()});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      var guide = await res.json();
+      renderGuideForm(guide);
+    }catch(e){
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:#d9534f">加载规范失败: '+escHtml(e.message)+'</div>';
+    }
+  }
+
+  function renderGuideForm(guide){
+    var styleOptions = ['冷峻克制','轻快日常','严肃叙事','自定义'];
+    var toneOptions = ['严肃','轻松','正式','口语','中性'];
+    var html = '<div style="display:flex;flex-direction:column;gap:14px">'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">写作风格</label>'+
+        '<select id="guideStyle" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px">'+
+          styleOptions.map(function(s){ return '<option value="'+s+'"'+(s===guide.style?' selected':'')+'>'+s+'</option>'; }).join('')+
+        '</select></div>'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">语调</label>'+
+        '<select id="guideTone" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px">'+
+          toneOptions.map(function(s){ return '<option value="'+s+'"'+(s===guide.tone?' selected':'')+'>'+s+'</option>'; }).join('')+
+        '</select></div>'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">禁用词（回车添加）</label>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px" id="guideForbiddenTags"></div>'+
+        '<input id="guideForbiddenInput" type="text" placeholder="输入禁用词后回车" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px"></div>'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">角色名（回车添加）</label>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px" id="guideCharTags"></div>'+
+        '<input id="guideCharInput" type="text" placeholder="输入角色名后回车" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px"></div>'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">地名（回车添加）</label>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px" id="guidePlaceTags"></div>'+
+        '<input id="guidePlaceInput" type="text" placeholder="输入地名后回车" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px"></div>'+
+      '<div class="field"><label style="font-size:11px;color:#888;display:block;margin-bottom:4px">风格描述</label>'+
+        '<textarea id="guideDesc" rows="3" style="width:100%;padding:7px 10px;background:#1e1e1e;border:1px solid #2a2825;border-radius:6px;color:#c8c3b8;font-size:13px;resize:vertical">'+escHtml(guide.description||'')+'</textarea></div>'+
+      '<button id="guideSaveBtn" style="padding:8px 0;background:#d4a040;border:none;border-radius:6px;color:#1a1a1a;font-size:13px;font-weight:500;cursor:pointer">💾 保存规范</button>'+
+      '<div id="guideStatus" style="font-size:11px;color:#888;text-align:center"></div>'+
+    '</div>';
+    panelBody.innerHTML = html;
+
+    // 渲染标签
+    renderGuideTags('guideForbiddenTags', guide.forbidden_words||[], 'guideForbiddenInput');
+    renderGuideTags('guideCharTags', guide.character_names||[], 'guideCharInput');
+    renderGuideTags('guidePlaceTags', guide.place_names||[], 'guidePlaceInput');
+
+    // 设置标签输入
+    setupGuideTagInput('guideForbiddenInput', 'guideForbiddenTags');
+    setupGuideTagInput('guideCharInput', 'guideCharTags');
+    setupGuideTagInput('guidePlaceInput', 'guidePlaceTags');
+
+    // 保存按钮
+    var saveBtn = document.getElementById('guideSaveBtn');
+    if(saveBtn){
+      saveBtn.addEventListener('click', function(){ saveWritingGuide(); });
+    }
+  }
+
+  function renderGuideTags(containerId, tags, inputId){
+    var container = document.getElementById(containerId);
+    if(!container) return;
+    if(!tags || tags.length === 0){
+      container.innerHTML = '';
+      return;
+    }
+    container.innerHTML = tags.map(function(tag, idx){
+      return '<span data-value="'+escAttr(tag)+'" style="display:inline-flex;align-items:center;gap:4px;background:#2a2825;border-radius:4px;padding:2px 8px;font-size:12px;color:#c8c3b8">'+
+        escHtml(tag)+
+        '<span class="guide-tag-remove" data-container="'+containerId+'" data-input="'+inputId+'" data-idx="'+idx+'" style="cursor:pointer;color:#888;font-size:14px;line-height:1">&times;</span>'+
+      '</span>';
+    }).join('');
+    // 绑定删除事件
+    container.querySelectorAll('.guide-tag-remove').forEach(function(el){
+      el.addEventListener('click', function(){
+        var tags = getGuideTagValues(this.dataset.container);
+        tags.splice(parseInt(this.dataset.idx), 1);
+        renderGuideTags(this.dataset.container, tags, this.dataset.input);
+        _guideFormDirty = true;
+      });
+    });
+  }
+
+  function getGuideTagValues(containerId){
+    var container = document.getElementById(containerId);
+    if(!container) return [];
+    var tags = [];
+    container.querySelectorAll('span').forEach(function(span){
+      var text = span.dataset.value || span.textContent.replace(/\s*×\s*$/, '').trim();
+      if(text) tags.push(text);
+    });
+    return tags;
+  }
+
+  function setupGuideTagInput(inputId, containerId){
+    var input = document.getElementById(inputId);
+    if(!input) return;
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        var val = this.value.trim();
+        if(!val) return;
+        var tags = getGuideTagValues(containerId);
+        if(tags.indexOf(val) === -1){
+          tags.push(val);
+          renderGuideTags(containerId, tags, inputId);
+          _guideFormDirty = true;
+        }
+        this.value = '';
+      }
+    });
+  }
+
+  function collectGuideFormData(){
+    var styleEl = document.getElementById('guideStyle');
+    var toneEl = document.getElementById('guideTone');
+    var descEl = document.getElementById('guideDesc');
+    return {
+      style: styleEl ? styleEl.value : '冷峻克制',
+      tone: toneEl ? toneEl.value : '严肃',
+      forbidden_words: getGuideTagValues('guideForbiddenTags'),
+      character_names: getGuideTagValues('guideCharTags'),
+      place_names: getGuideTagValues('guidePlaceTags'),
+      max_sentence_length: parseInt(document.getElementById('guideMaxLen')?.value) || 40,
+      dialogue_density_target: parseFloat(document.getElementById('guideDensity')?.value) || 0.25,
+      description: descEl ? descEl.value : '',
+    };
+  }
+
+  async function saveWritingGuide(){
+    if(!currentProjectId) return;
+    var data = collectGuideFormData();
+    var statusEl = document.getElementById('guideStatus');
+    if(statusEl) statusEl.textContent = '⏳ 保存中…';
+    try{
+      var res = await fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/guide', {
+        method:'PUT',
+        headers:apiHeaders(),
+        body:JSON.stringify(data),
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      if(statusEl){
+        statusEl.textContent = '✓ 规范已保存';
+        statusEl.style.color = '#5cb85c';
+      }
+      _guideFormDirty = false;
+    }catch(e){
+      if(statusEl){
+        statusEl.textContent = '✗ 保存失败: '+escHtml(e.message);
+        statusEl.style.color = '#d9534f';
+      }
     }
   }
 

@@ -627,10 +627,36 @@ def register_all_tools() -> None:
     """注册所有工具到全局 ToolRegistry"""
     registry = get_registry()
 
+    # ─── 计算动态上下文提示 ───
+
+    chapter_count = 0
+    for project_candidate in ["tales-of-tera"]:
+        cd = _get_chapters_dir(project_candidate)
+        if cd:
+            chapter_count = len([f for f in cd.iterdir() if f.suffix == ".md"])
+            break
+
+    knowledge_count = 0
+    kb_path = KNOWLEDGE_DIR
+    cfg = _load_config()
+    for _name, info in cfg.get("knowledge_base", {}).items():
+        root = info.get("root")
+        if root:
+            p = Path(root).expanduser().resolve()
+            if p.is_dir():
+                kb_path = p
+                break
+    if kb_path.exists():
+        allowed = {".md", ".txt", ".json", ".yaml", ".yml"}
+        knowledge_count = len([e for e in kb_path.rglob("*") if e.is_file() and e.suffix.lower() in allowed and not e.name.startswith("_")])
+
+    chapters_hint = f"当前项目约有 {chapter_count} 个章节文件"
+    knowledge_hint = f"知识库包含约 {knowledge_count} 个文件"
+
     # 1. review — 章节审查
     registry.register(Tool(
         name="review",
-        description="对指定章节运行 _review.py 写作审查，检查字数、句式、密度等",
+        description=f"对指定章节运行 _review.py 写作审查，检查字数、句式、密度等。{chapters_hint}",
         inputSchema={
             "type": "object",
             "properties": {
@@ -640,6 +666,7 @@ def register_all_tools() -> None:
             "required": ["chapter"],
         },
         handler=_review_handler,
+        context_hint=f"写作审查工具。审查 {chapters_hint}，默认项目 tales-of-tera，运行 _review.py 脚本。",
     ))
 
     # 2. chat — AI 对话
@@ -675,20 +702,22 @@ def register_all_tools() -> None:
             "required": ["messages"],
         },
         handler=_chat_handler,
+        context_hint="AI 对话工具。支持 deepseek/openai/moonshot/zhipu/yi/google 六种模型，四种对话模式（chat/continue/expand/rewrite）。",
     ))
 
     # 3. knowledge_list — 知识库文件清单
     registry.register(Tool(
         name="knowledge_list",
-        description="列出知识库中所有文件的名称、大小和中文字数",
+        description=f"列出知识库中所有文件的名称、大小和中文字数。{knowledge_hint}",
         inputSchema={"type": "object", "properties": {}},
         handler=_knowledge_list_handler,
+        context_hint=f"知识库浏览工具。{knowledge_hint}，遍历知识库目录列出可读文件。",
     ))
 
     # 4. knowledge_read — 读取知识库文件
     registry.register(Tool(
         name="knowledge_read",
-        description="读取指定知识库文件的完整内容",
+        description=f"读取指定知识库文件的完整内容。{knowledge_hint}",
         inputSchema={
             "type": "object",
             "properties": {
@@ -697,12 +726,13 @@ def register_all_tools() -> None:
             "required": ["path"],
         },
         handler=_knowledge_read_handler,
+        context_hint=f"知识库文件读取工具。{knowledge_hint}，支持 .md/.txt/.json/.yaml/.yml 格式，单文件上限 5MB。",
     ))
 
     # 5. chapters_list — 章节文件清单
     registry.register(Tool(
         name="chapters_list",
-        description="列出项目中所有章节文件",
+        description=f"列出项目中所有章节文件。{chapters_hint}",
         inputSchema={
             "type": "object",
             "properties": {
@@ -710,12 +740,13 @@ def register_all_tools() -> None:
             },
         },
         handler=_chapters_list_handler,
+        context_hint=f"章节文件列表工具。{chapters_hint}，支持按项目名过滤。",
     ))
 
     # 6. chapter_read — 读取章节文件
     registry.register(Tool(
         name="chapter_read",
-        description="读取指定章节文件的完整内容（含正文和日记）",
+        description=f"读取指定章节文件的完整内容（含正文和日记）。{chapters_hint}",
         inputSchema={
             "type": "object",
             "properties": {
@@ -725,12 +756,13 @@ def register_all_tools() -> None:
             "required": ["filename"],
         },
         handler=_chapter_read_handler,
+        context_hint=f"章节文件读取工具。{chapters_hint}，默认项目 tales-of-tera，返回 .md 全文。",
     ))
 
     # 7. scenes_list — 场景列表
     registry.register(Tool(
         name="scenes_list",
-        description="列出指定章节下的所有场景",
+        description="列出指定章节下的所有场景，含标题、状态、字数",
         inputSchema={
             "type": "object",
             "properties": {
@@ -739,12 +771,13 @@ def register_all_tools() -> None:
             "required": ["chapter_id"],
         },
         handler=_scenes_list_handler,
+        context_hint=f"场景列表工具。场景文件存储在 scenes/ 目录下，按 chapter_id 查找 JSON。{chapters_hint}",
     ))
 
     # 8. scene_create — 创建场景
     registry.register(Tool(
         name="scene_create",
-        description="在指定章节下创建新场景",
+        description="在指定章节下创建新场景，写入 scenes/{chapter_id}.json",
         inputSchema={
             "type": "object",
             "properties": {
@@ -757,20 +790,22 @@ def register_all_tools() -> None:
             "required": ["chapter_id"],
         },
         handler=_scene_create_handler,
+        context_hint=f"场景创建工具。向 scenes/{{chapter_id}}.json 追加新场景，自动生成 id 和 order。{chapters_hint}",
     ))
 
     # 9. projects_list — 项目列表
     registry.register(Tool(
         name="projects_list",
-        description="列出所有项目及其基本信息",
+        description="列出所有项目及其基本信息（名称、模板、说明）",
         inputSchema={"type": "object", "properties": {}},
         handler=_projects_list_handler,
+        context_hint="项目管理工具。扫描 projects/ 目录下的 config.json。",
     ))
 
     # 10. project_create — 创建项目
     registry.register(Tool(
         name="project_create",
-        description="创建新写作项目（含 chapters/knowledge/scenes 子目录）",
+        description="创建新写作项目（含 chapters/knowledge/scenes 子目录），生成 UUID 标识",
         inputSchema={
             "type": "object",
             "properties": {
@@ -781,12 +816,13 @@ def register_all_tools() -> None:
             "required": ["name"],
         },
         handler=_project_create_handler,
+        context_hint="项目创建工具。在 projects/ 下创建新目录，自动生成 config.json 和子目录。",
     ))
 
     # 11. guard_scan — 内容安全检查
     registry.register(Tool(
         name="guard_scan",
-        description="对指定章节运行 guard.py 内容安全检查，检测敏感词和写作规范",
+        description=f"对指定章节运行 guard.py 内容安全检查，检测敏感词和写作规范。{chapters_hint}",
         inputSchema={
             "type": "object",
             "properties": {
@@ -796,14 +832,16 @@ def register_all_tools() -> None:
             "required": ["chapter"],
         },
         handler=_guard_scan_handler,
+        context_hint=f"内容安全检查工具。运行 guard.py scan 检查 {chapters_hint}，输出命中列表。",
     ))
 
     # 12. style_list — 列出所有写法风格
     registry.register(Tool(
         name="style_list",
-        description="列出所有已注册的可复用写作风格，含特征画像和规则定义",
+        description="列出所有已注册的可复用写作风格，含特征画像、字词偏好和规则定义",
         inputSchema={"type": "object", "properties": {}},
         handler=_style_list_handler,
+        context_hint="写作风格工具。从 StyleRegistry 读取所有已注册风格的定义。",
     ))
 
     # 13. style_analyze — 分析文本匹配风格
@@ -818,6 +856,7 @@ def register_all_tools() -> None:
             "required": ["text"],
         },
         handler=_style_analyze_handler,
+        context_hint="风格分析工具。对输入文本计算各风格的余弦匹配度，返回最佳匹配。",
     ))
 
     # 14. export — 导出文稿
@@ -849,4 +888,8 @@ def register_all_tools() -> None:
             "content": [{"type": "text", "text": f"调用 POST /api/v1/export/{args.get('format', 'docx')} 导出，参数：章节={args.get('chapters', 'all')}，标题={args.get('title', '默认')}"}],
             "meta": {"endpoint": f"/api/v1/export/{args.get('format', 'docx')}"},
         },
+        context_hint=(
+            "文稿导出工具。支持 docx/txt/pdf/markdown 四种格式，"
+            f"可选择部分章节或全部导出。{chapters_hint}"
+        ),
     ))

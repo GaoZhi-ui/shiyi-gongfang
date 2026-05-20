@@ -119,6 +119,7 @@ class ChatMessage(BaseModel):
 class ChatContext(BaseModel):
     active_chapter: str | None = None
     attached_knowledge: list[str] | None = None
+    project_id: str | None = None
 
 
 class ChatRequest(BaseModel):
@@ -284,6 +285,44 @@ MODE_SYSTEM_PROMPTS = {
 # ─── 核心逻辑 ───
 
 
+def _load_writing_guide(project_id: str) -> str | None:
+    from pathlib import Path
+    proj_dir = (BASE / "projects" / project_id).resolve()
+    if not str(proj_dir).startswith(str((BASE / "projects").resolve())):
+        return None
+    """读取项目的 writing-guide.json，返回格式化的描述文本"""
+    guide_dir = BASE / "projects" / project_id
+    guide_file = guide_dir / "writing-guide.json"
+    if not guide_file.exists():
+        return None
+    try:
+        data = json.loads(guide_file.read_text(encoding="utf-8"))
+        parts = []
+        if data.get("description"):
+            parts.append(f"写作规范：{data['description']}")
+        forbidden = data.get("forbidden_words", [])
+        if forbidden:
+            parts.append(f"禁用词：{', '.join(forbidden)}")
+        names = data.get("character_names", [])
+        if names:
+            parts.append(f"角色名：{', '.join(names)}")
+        places = data.get("place_names", [])
+        if places:
+            parts.append(f"地名：{', '.join(places)}")
+        style = data.get("style", "")
+        tone = data.get("tone", "")
+        if style or tone:
+            extras = []
+            if style:
+                extras.append(f"风格：{style}")
+            if tone:
+                extras.append(f"语调：{tone}")
+            parts.insert(0, "；".join(extras))
+        return "。".join(parts) if parts else None
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def _build_payload(provider: str, req: ChatRequest) -> dict:
     """构建请求体（OpenAI 兼容格式）"""
     provider_lower = provider.lower()
@@ -310,6 +349,12 @@ def _build_payload(provider: str, req: ChatRequest) -> dict:
 
     if context_notes:
         messages.append({"role": "system", "content": "\n".join(context_notes)})
+
+    # 注入 writing-guide（如果 project_id 存在）
+    if req.context and req.context.project_id:
+        guide_text = _load_writing_guide(req.context.project_id)
+        if guide_text:
+            messages.append({"role": "system", "content": guide_text})
 
     # 添加用户消息
     for msg in req.messages:

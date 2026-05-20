@@ -28,7 +28,9 @@ from routers.stats import router as stats_router
 from routers.backup import router as backup_router
 from routers.style_check import router as style_router
 from routers.plugins import router as plugins_router
+from routers.harness_report import router as harness_router
 from core.plugin_manager import plugin_manager, logger as plugin_logger
+from core.writing_rules import discover_and_register
 
 # 插件日志设置
 plugin_logger.setLevel(logging.INFO)
@@ -39,7 +41,13 @@ plugin_logger.addHandler(sh)
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
 
-app = FastAPI(title="写作助手工坊", on_startup=[lambda: plugin_manager.load_all(app, BASE / "plugins")])
+def _startup():
+    plugin_manager.load_all(app, BASE / "plugins")
+    count = discover_and_register("core.rules")
+    logging.info(f"WritingRule 插件加载完成: {count} 条规则")
+
+
+app = FastAPI(title="写作助手工坊", on_startup=[_startup])
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(health_router, prefix="/api/v1")
@@ -61,6 +69,7 @@ app.include_router(stats_router, prefix="/api/v1")
 app.include_router(backup_router, prefix="/api/v1")
 app.include_router(style_router, prefix="/api/v1")
 app.include_router(plugins_router, prefix="/api/v1")
+app.include_router(harness_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")

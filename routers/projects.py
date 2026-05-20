@@ -150,6 +150,88 @@ class DuplicateProjectResponse(BaseModel):
     message: str
 
 
+# ─── 写作规范管理 ───
+
+DEFAULT_WRITING_GUIDE = {
+    "style": "冷峻克制",
+    "tone": "严肃",
+    "forbidden_words": [],
+    "character_names": [],
+    "place_names": [],
+    "max_sentence_length": 40,
+    "dialogue_density_target": 0.25,
+    "description": "项目的写作风格描述",
+}
+
+
+class WritingGuideResponse(BaseModel):
+    style: str = Field(default="冷峻克制", description="写作风格")
+    tone: str = Field(default="严肃", description="语调")
+    forbidden_words: list[str] = Field(default_factory=list, description="禁用词")
+    character_names: list[str] = Field(default_factory=list, description="角色名")
+    place_names: list[str] = Field(default_factory=list, description="地名")
+    max_sentence_length: int = Field(default=40, ge=10, le=100, description="最大句子长度")
+    dialogue_density_target: float = Field(default=0.25, ge=0.0, le=1.0, description="对话密度目标")
+    description: str = Field(default="项目的写作风格描述", description="写作风格描述")
+
+
+class WritingGuideUpdate(BaseModel):
+    style: str = Field(default="冷峻克制", description="写作风格")
+    tone: str = Field(default="严肃", description="语调")
+    forbidden_words: list[str] = Field(default_factory=list, description="禁用词")
+    character_names: list[str] = Field(default_factory=list, description="角色名")
+    place_names: list[str] = Field(default_factory=list, description="地名")
+    max_sentence_length: int = Field(default=40, ge=10, le=100, description="最大句子长度")
+    dialogue_density_target: float = Field(default=0.25, ge=0.0, le=1.0, description="对话密度目标")
+    description: str = Field(default="项目的写作风格描述", description="写作风格描述")
+
+
+@router.get("/{project_id}/guide", response_model=WritingGuideResponse)
+def get_writing_guide(project_id: str):
+    """获取项目的写作规范"""
+    try:
+        proj_dir = _find_project(project_id)
+    except ProjectNotFound as e:
+        raise HTTPException(404, detail={"code": "PROJECT_NOT_FOUND", "message": str(e)})
+    except ProjectOperationError:
+        raise HTTPException(423, detail={"code": "PATH_TRAVERSAL", "message": "路径越界"})
+
+    guide_path = proj_dir / "writing-guide.json"
+    if not guide_path.exists():
+        return WritingGuideResponse(**DEFAULT_WRITING_GUIDE)
+
+    try:
+        data = json.loads(guide_path.read_text(encoding="utf-8"))
+        return WritingGuideResponse(**data)
+    except (json.JSONDecodeError, OSError):
+        return WritingGuideResponse(**DEFAULT_WRITING_GUIDE)
+
+
+@router.put("/{project_id}/guide", response_model=WritingGuideResponse)
+def update_writing_guide(project_id: str, body: WritingGuideUpdate):
+    """更新项目的写作规范"""
+    try:
+        proj_dir = _find_project(project_id)
+    except ProjectNotFound as e:
+        raise HTTPException(404, detail={"code": "PROJECT_NOT_FOUND", "message": str(e)})
+    except ProjectOperationError:
+        raise HTTPException(423, detail={"code": "PATH_TRAVERSAL", "message": "路径越界"})
+
+    guide_path = proj_dir / "writing-guide.json"
+    try:
+        guide_path.write_text(
+            json.dumps(body.model_dump(), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        raise HTTPException(500, detail={
+            "code": "GUIDE_SAVE_FAILED",
+            "message": f"保存写作规范失败: {e}",
+        })
+
+    return WritingGuideResponse(**body.model_dump())
+
+
 # ─── 路由 ───
 
 @router.get("", response_model=ProjectListResponse)

@@ -32,6 +32,7 @@ class Tool:
         description: str,
         inputSchema: dict | None = None,
         handler: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+        context_hint: str | None = None,
     ):
         if not name or not isinstance(name, str):
             raise ValueError("Tool name must be a non-empty string")
@@ -43,14 +44,18 @@ class Tool:
             else {"type": "object", "properties": {}}
         )
         self.handler = handler
+        self.context_hint = context_hint or ""
 
     def to_dict(self) -> dict:
         """序列化为 MCP 兼容格式"""
-        return {
+        d = {
             "name": self.name,
             "description": self.description,
             "inputSchema": self.inputSchema,
         }
+        if self.context_hint:
+            d["context_hint"] = self.context_hint
+        return d
 
     def execute(self, args: dict[str, Any] | None = None) -> dict:
         """执行工具，返回 MCP 兼容结果"""

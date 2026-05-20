@@ -1,22 +1,22 @@
 """
-风格检查路由
+写作风格检查路由（基于 WritingRule 插件系统）
 
 POST /api/v1/style/check  — 对文本执行写作风格检查
+GET  /api/v1/style/rules  — 列出所有可用的检查规则
 
 路径前缀 /api/v1/style
 """
 
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from core.style_checker import StyleChecker
+from core.writing_rules import WritingIssue, registry
 
 router = APIRouter(prefix="/style", tags=["style"])
-
-# 全局单例
-_checker = StyleChecker()
 
 
 class StyleCheckBody(BaseModel):
@@ -24,8 +24,15 @@ class StyleCheckBody(BaseModel):
     rules: list[str] | None = Field(
         None,
         description="要启用的规则列表，不传或 null 表示全部启用。"
-        "可选值: filler_words, redundant_modifiers, weak_words, passive_voice, long_sentence",
+        "可选值见 GET /api/v1/style/rules",
     )
+
+
+def _issue_to_old_format(issue: WritingIssue) -> dict:
+    """将 WritingIssue 转换为旧版 CheckResult 格式以保持接口不变"""
+    d = asdict(issue)
+    d["rule"] = d.pop("rule_name")
+    return d
 
 
 @router.post("/check")
@@ -38,7 +45,7 @@ def style_check(body: StyleCheckBody):
         })
 
     # 校验规则名称
-    valid_rules = {r["name"] for r in _checker.list_rules()}
+    valid_rules = {r["name"] for r in registry.list()}
     if body.rules is not None:
         invalid = set(body.rules) - valid_rules
         if invalid:
@@ -48,7 +55,9 @@ def style_check(body: StyleCheckBody):
                 "valid_rules": sorted(valid_rules),
             })
 
-    results = _checker.check(text=body.text, rules=body.rules)
+    issues = registry.check_all(text=body.text, rule_names=body.rules)
+    results = [_issue_to_old_format(issue) for issue in issues]
+
     return {
         "status": "ok",
         "total_issues": len(results),
@@ -62,5 +71,5 @@ def list_rules():
     """列出所有可用的检查规则"""
     return {
         "status": "ok",
-        "rules": _checker.list_rules(),
+        "rules": registry.list(),
     }
