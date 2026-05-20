@@ -122,7 +122,7 @@ class ChatContext(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    model: str = Field("deepseek", description="模型标识: deepseek / openai / claude")
+    model: str = Field("deepseek", description="模型标识: deepseek / openai / claude / google / moonshot / zhipu / yi")
     stream: bool = Field(True, description="是否流式响应")
     temperature: float = Field(0.7, ge=0.0, le=2.0)
     max_tokens: int = Field(4096, ge=1, le=32768)
@@ -196,14 +196,14 @@ def _append_to_history(entry: dict):
 PROVIDER_CONFIGS = {
     "deepseek": {
         "base_url": "https://api.deepseek.com",
-        "default_model": "deepseek-chat",
+        "default_model": "deepseek-v4-flash",
         "chat_endpoint": "/v1/chat/completions",
         "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
     },
     "openai": {
         "base_url": "https://api.openai.com",
-        "default_model": "gpt-4o",
+        "default_model": "gpt-5.4",
         "chat_endpoint": "/v1/chat/completions",
         "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
@@ -216,6 +216,34 @@ PROVIDER_CONFIGS = {
             "x-api-key": key,
             "anthropic-version": "2023-06-01",
         },
+        "content_type": "application/json",
+    },
+    "google": {
+        "base_url": "https://generativelanguage.googleapis.com",
+        "default_model": "gemini-2.5-pro",
+        "chat_endpoint": "/v1beta/openai/chat/completions",
+        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
+        "content_type": "application/json",
+    },
+    "moonshot": {
+        "base_url": "https://api.moonshot.cn",
+        "default_model": "kimi-k2.6",
+        "chat_endpoint": "/v1/chat/completions",
+        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
+        "content_type": "application/json",
+    },
+    "zhipu": {
+        "base_url": "https://open.bigmodel.cn",
+        "default_model": "glm-5.1",
+        "chat_endpoint": "/api/paas/v4/chat/completions",
+        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
+        "content_type": "application/json",
+    },
+    "yi": {
+        "base_url": "https://api.lingyiwanwu.com",
+        "default_model": "yi-lightning",
+        "chat_endpoint": "/v1/chat/completions",
+        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
     },
 }
