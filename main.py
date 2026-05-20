@@ -22,6 +22,8 @@ from routers.tools_router import router as mcp_tools_router
 from routers.goals import router as goals_router
 from routers.characters import router as characters_router
 from routers.foreshadowing import router as foreshadowing_router
+from routers.snapshots import router as snapshots_router
+from routers.export import router as export_router
 
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
@@ -42,9 +44,16 @@ app.include_router(mcp_tools_router, prefix="/api/v1")
 app.include_router(goals_router, prefix="/api/v1")
 app.include_router(characters_router, prefix="/api/v1")
 app.include_router(foreshadowing_router, prefix="/api/v1")
+app.include_router(snapshots_router, prefix="/api/v1")
+app.include_router(export_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
+
+# 导出文件下载
+EXPORT = BASE / "export"
+EXPORT.mkdir(exist_ok=True)
+app.mount("/export", StaticFiles(directory=str(EXPORT)), name="export")
 
 @app.get("/")
 async def index():

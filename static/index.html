@@ -32,6 +32,39 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .sidebar-footer button{flex:1;padding:6px;background:transparent;border:1px solid #252525;border-radius:6px;color:#888;font-size:11px;cursor:pointer;transition:all .12s}
 .sidebar-footer button:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
 
+/* 分屏对照 */
+.split-container{display:flex;flex-direction:column;gap:2px;height:100%}
+.split-section{flex:1;display:flex;flex-direction:column;min-height:0}
+.split-section:first-child{border-bottom:1px solid #252525;padding-bottom:10px;margin-bottom:4px}
+.split-label{font-size:10px;color:#888;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.split-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.split-wordcount{font-size:11px;color:#666;flex:1}
+.split-select{background:#1e1e1e;border:1px solid #252525;border-radius:5px;color:#ccc;padding:4px 8px;font-size:11px;cursor:pointer;flex:1;max-width:200px;transition:border-color .12s}
+.split-select:hover,.split-select:focus{border-color:#3a3a3a}
+.split-reload-btn{background:transparent;border:1px solid #252525;border-radius:5px;color:#888;padding:4px 8px;font-size:12px;cursor:pointer;transition:all .12s}
+.split-reload-btn:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+.split-textarea{width:100%;flex:1;min-height:60px;background:#1e1e1e;border:1px solid #252525;border-radius:6px;padding:10px;color:#ccc;font-size:13px;line-height:1.6;resize:none;font-family:inherit;transition:border-color .12s}
+.split-textarea:focus{border-color:#e8a84c}
+.split-textarea.split-snapshot{background:#191919;color:#999}
+.split-textarea.split-snapshot:focus{border-color:#3a3a3a}
+.split-loading{text-align:center;padding:30px 0;color:#555}
+
+/* 标签筛选 */
+.tagfilter-container{display:flex;flex-direction:column;gap:12px;height:100%}
+.tagfilter-chips{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:12px;border-bottom:1px solid #252525}
+.tagfilter-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;color:#999;background:#1e1e1e;border:1px solid #252525;cursor:pointer;transition:all .12s;user-select:none}
+.tagfilter-chip:hover{background:#242424;color:#d4d4d4;border-color:#3a3a3a}
+.tagfilter-chip.active{background:rgba(232,168,76,0.12);color:#e8a84c;border-color:rgba(232,168,76,0.3)}
+.tagfilter-chip .chip-count{font-size:10px;color:#666;margin-left:2px}
+.tagfilter-chip.active .chip-count{color:#e8a84c;opacity:.7}
+.tagfilter-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.tagfilter-chapter{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;font-size:12px;color:#999;background:#1a1a1a;border:1px solid transparent;transition:all .2s}
+.tagfilter-chapter .tfc-num{color:#555;width:28px;flex-shrink:0;font-size:11px}
+.tagfilter-chapter .tfc-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tagfilter-chapter .tfc-stats{font-size:10px;color:#555;flex-shrink:0}
+.tagfilter-chapter.faded{opacity:.25;transform:scale(.98);pointer-events:none}
+.tagfilter-empty{text-align:center;padding:40px 0;color:#555}
+
 .col-main{flex:1;display:flex;flex-direction:column;min-width:0}
 
 .topbar{height:50px;padding:0 16px;border-bottom:1px solid #252525;display:flex;align-items:center;gap:12px;flex-shrink:0;background:#151515}
@@ -379,6 +412,8 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     <div class="tool-item" data-tool="timeline"><span class="icon">📅</span><span class="label">时间线表</span></div>
     <div class="tool-item" data-tool="foreshadow"><span class="icon">🔗</span><span class="label">伏笔追踪</span></div>
     <div class="tool-item" data-tool="corkboard"><span class="icon">📇</span><span class="label">看板</span></div>
+    <div class="tool-item" data-tool="split"><span class="icon">🔄</span><span class="label">分屏对照</span></div>
+    <div class="tool-item" data-tool="tagfilter"><span class="icon">🏷️</span><span class="label">标签筛选</span></div>
 
     <div class="tool-group-title">快捷操作</div>
     <div class="tool-item" data-tool="new"><span class="icon">📝</span><span class="label">开始写作</span></div>
@@ -1351,6 +1386,14 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
       panelIcon.textContent = '🔧';
       panelTitle.textContent = '工具浏览器';
       loadToolBrowser();
+    }else if(type==='split'){
+      panelIcon.textContent = '🔄';
+      panelTitle.textContent = '分屏对照';
+      renderSplitPanel();
+    }else if(type==='tagfilter'){
+      panelIcon.textContent = '🏷️';
+      panelTitle.textContent = '标签筛选';
+      loadTagFilter();
     }else if(type==='chapter'){
       panelIcon.textContent = '📖';
       const d = chapterContext;
@@ -2258,6 +2301,212 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
     });
 
     ctx.restore();
+  }
+
+  // ========== 分屏对照 ==========
+  var splitSnapshots = [];
+
+  function renderSplitPanel(){
+    panelBody.innerHTML = '<div class="split-container">'+
+      '<div class="split-section">'+
+        '<div class="split-label">当前版本</div>'+
+        '<div class="split-toolbar"><span class="split-wordcount" id="splitWordCount">0 字</span></div>'+
+        '<textarea class="split-textarea" id="splitTextCurrent" placeholder="在此粘贴或编辑当前版本的文本…"></textarea>'+
+      '</div>'+
+      '<div class="split-section">'+
+        '<div class="split-label">历史快照</div>'+
+        '<div class="split-toolbar">'+
+          '<select class="split-select" id="splitSnapshotSelect"><option value="">— 选择快照 —</option></select>'+
+          '<button class="split-reload-btn" id="splitReloadBtn">↻</button>'+
+        '</div>'+
+        '<textarea class="split-textarea split-snapshot" id="splitTextSnapshot" readonly placeholder="选择快照后显示历史版本，可用于对比前后改动"></textarea>'+
+      '</div>'+
+    '</div>';
+    // 字数统计
+    var curTextarea = document.getElementById('splitTextCurrent');
+    if(curTextarea){
+      curTextarea.addEventListener('input', function(){
+        var len = this.value.replace(/[\s\n\r]/g,'').length;
+        var el = document.getElementById('splitWordCount');
+        if(el) el.textContent = len.toLocaleString()+' 字';
+      });
+    }
+    // 加载快照列表
+    loadSnapshots();
+    // 重新加载按钮
+    var reloadBtn = document.getElementById('splitReloadBtn');
+    if(reloadBtn) reloadBtn.addEventListener('click', loadSnapshots);
+    // 快照选择
+    var sel = document.getElementById('splitSnapshotSelect');
+    if(sel) sel.addEventListener('change', function(){
+      loadSnapshotContent(this.value);
+    });
+  }
+
+  function loadSnapshots(){
+    var sel = document.getElementById('splitSnapshotSelect');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">⏳ 加载中…</option>';
+    fetch(apiBase()+'/api/v1/snapshots', {headers:apiHeaders()})
+      .then(function(res){ return res.ok ? res.json() : Promise.reject('HTTP '+res.status); })
+      .then(function(data){
+        splitSnapshots = Array.isArray(data) ? data : [];
+        sel.innerHTML = '<option value="">— 选择快照 —</option>';
+        splitSnapshots.forEach(function(s){
+          var label = s.title || s.name || '快照';
+          if(s.created_at) label += ' ('+formatTime(s.created_at)+')';
+          sel.innerHTML += '<option value="'+(s.id||'')+'">'+escHtml(label)+'</option>';
+        });
+        if(splitSnapshots.length===0){
+          sel.innerHTML = '<option value="">暂无快照</option>';
+        }
+      })
+      .catch(function(){
+        sel.innerHTML = '<option value="">加载失败，点击 ↻ 重试</option>';
+      });
+  }
+
+  function loadSnapshotContent(id){
+    var textarea = document.getElementById('splitTextSnapshot');
+    if(!textarea) return;
+    if(!id){
+      textarea.value = '';
+      textarea.placeholder = '选择快照后显示历史版本';
+      return;
+    }
+    textarea.value = '加载中…';
+    fetch(apiBase()+'/api/v1/snapshots/'+id, {headers:apiHeaders()})
+      .then(function(res){ return res.ok ? res.json() : Promise.reject('HTTP '+res.status); })
+      .then(function(data){
+        textarea.value = data.content || data.text || '(无内容)';
+      })
+      .catch(function(){
+        textarea.value = '加载快照内容失败';
+      });
+  }
+
+  // ========== 标签筛选 ==========
+  var tagFilterChapters = [];
+  var tagFilterSelected = [];
+
+  function loadTagFilter(){
+    panelBody.innerHTML = '<div class="tagfilter-container">'+
+      '<div class="tagfilter-chips" id="tagFilterChips"><div class="split-loading">加载标签中…</div></div>'+
+      '<div class="tagfilter-list" id="tagFilterList"></div>'+
+    '</div>';
+    if(!currentProjectId){
+      document.getElementById('tagFilterChips').innerHTML = '<div style="font-size:12px;color:#555;padding:10px 0">请先选择项目</div>';
+      return;
+    }
+    fetch(apiBase()+'/api/v1/projects/'+currentProjectId+'/chapters', {headers:apiHeaders()})
+      .then(function(res){ return res.ok ? res.json() : Promise.reject('HTTP '+res.status); })
+      .then(function(data){
+        tagFilterChapters = Array.isArray(data) ? data : [];
+        renderTagFilter();
+      })
+      .catch(function(){
+        // 降级：显示为空
+        tagFilterChapters = [];
+        renderTagFilter();
+      });
+  }
+
+  function renderTagFilter(){
+    // 提取所有标签
+    var allTags = {};
+    tagFilterChapters.forEach(function(ch){
+      var tags = ch.tags || [];
+      if(typeof tags==='string') tags = tags.split(/[,，、]/).map(function(s){ return s.trim(); }).filter(Boolean);
+      tags.forEach(function(t){
+        if(!allTags[t]) allTags[t] = 0;
+        allTags[t]++;
+      });
+    });
+    var tagKeys = Object.keys(allTags).sort();
+
+    // 渲染标签 chips
+    var chipsEl = document.getElementById('tagFilterChips');
+    if(!chipsEl) return;
+    if(tagKeys.length===0){
+      chipsEl.innerHTML = '<div style="font-size:12px;color:#555;padding:4px 0">暂无标签</div>';
+    }else{
+      chipsEl.innerHTML = tagKeys.map(function(t){
+        var active = tagFilterSelected.indexOf(t)!==-1 ? ' active' : '';
+        return '<span class="tagfilter-chip'+active+'" data-tag="'+escHtml(t)+'">'+escHtml(t)+' <span class="chip-count">'+allTags[t]+'</span></span>';
+      }).join('');
+      chipsEl.querySelectorAll('.tagfilter-chip').forEach(function(chip){
+        chip.addEventListener('click', function(){
+          var tag = this.dataset.tag;
+          var idx = tagFilterSelected.indexOf(tag);
+          if(idx===-1){
+            tagFilterSelected.push(tag);
+          }else{
+            tagFilterSelected.splice(idx, 1);
+          }
+          renderTagFilterChips();
+          renderTagFilterList();
+        });
+      });
+    }
+
+    renderTagFilterList();
+  }
+
+  function renderTagFilterChips(){
+    var chipsEl = document.getElementById('tagFilterChips');
+    if(!chipsEl) return;
+    var allTags = {};
+    tagFilterChapters.forEach(function(ch){
+      var tags = ch.tags || [];
+      if(typeof tags==='string') tags = tags.split(/[,，、]/).map(function(s){ return s.trim(); }).filter(Boolean);
+      tags.forEach(function(t){ allTags[t] = (allTags[t]||0)+1; });
+    });
+    var tagKeys = Object.keys(allTags).sort();
+    chipsEl.innerHTML = tagKeys.map(function(t){
+      var active = tagFilterSelected.indexOf(t)!==-1 ? ' active' : '';
+      return '<span class="tagfilter-chip'+active+'" data-tag="'+escHtml(t)+'">'+escHtml(t)+' <span class="chip-count">'+allTags[t]+'</span></span>';
+    }).join('');
+    chipsEl.querySelectorAll('.tagfilter-chip').forEach(function(chip){
+      chip.addEventListener('click', function(){
+        var tag = this.dataset.tag;
+        var idx = tagFilterSelected.indexOf(tag);
+        if(idx===-1) tagFilterSelected.push(tag);
+        else tagFilterSelected.splice(idx, 1);
+        renderTagFilterChips();
+        renderTagFilterList();
+      });
+    });
+  }
+
+  function renderTagFilterList(){
+    var listEl = document.getElementById('tagFilterList');
+    if(!listEl) return;
+    if(tagFilterChapters.length===0){
+      listEl.innerHTML = '<div class="tagfilter-empty"><div style="font-size:36px;margin-bottom:10px">📖</div><div style="font-size:13px">暂无章节数据</div></div>';
+      return;
+    }
+    // 判断是否有过滤条件
+    var hasFilter = tagFilterSelected.length > 0;
+    listEl.innerHTML = tagFilterChapters.map(function(ch, idx){
+      var tags = ch.tags || [];
+      if(typeof tags==='string') tags = tags.split(/[,，、]/).map(function(s){ return s.trim(); }).filter(Boolean);
+      // 检查是否匹配所有选中的标签
+      var matches = true;
+      if(hasFilter){
+        tagFilterSelected.forEach(function(t){
+          if(tags.indexOf(t)===-1) matches = false;
+        });
+      }
+      var num = ch.number || (idx+1);
+      var title = ch.title || '未命名章节';
+      var wc = ch.wordCount || 0;
+      var faded = hasFilter && !matches ? ' faded' : '';
+      return '<div class="tagfilter-chapter'+faded+'">'+
+        '<span class="tfc-num">#'+num+'</span>'+
+        '<span class="tfc-title">'+escHtml(title)+'</span>'+
+        '<span class="tfc-stats">'+wc.toLocaleString()+'字</span>'+
+      '</div>';
+    }).join('');
   }
 
   // ========== 初始化 ==========
