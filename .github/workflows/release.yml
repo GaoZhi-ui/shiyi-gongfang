@@ -1,0 +1,123 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 版本号（如 1.0.0）
+        required: true
+
+env:
+  APP_NAME: shiyi-gongfang
+
+jobs:
+  # ── 版本提取 ──
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+    steps:
+      - id: get-version
+        run: |
+          VERSION="${{ github.event.inputs.version || github.ref_name }}"
+          VERSION="${VERSION#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+  # ── 矩阵构建 ──
+  build:
+    needs: version
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build with PyInstaller (onedir)
+        run: python build.py --onedir
+
+      - name: Set archive name
+        shell: bash
+        run: |
+          case "${{ runner.os }}" in
+            Windows) suffix="win64" ;;
+            macOS)   suffix="macos" ;;
+            Linux)   suffix="linux-x86_64" ;;
+          esac
+          echo "ARCHIVE_NAME=${APP_NAME}-${VERSION}-${suffix}" >> "$GITHUB_ENV"
+
+      - name: Package portable zip (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd dist
+          zip -r "../${{ env.ARCHIVE_NAME }}.zip" "${{ env.APP_NAME }}/"
+
+      - name: Package portable zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/${{ env.APP_NAME }}/*" -DestinationPath "${{ env.ARCHIVE_NAME }}.zip"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: ${{ env.ARCHIVE_NAME }}.zip
+
+  # ── 发布 Release ──
+  release:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate release notes
+        run: |
+          cat > release-notes.md <<- EOF
+          # 拾遗工坊 v${VERSION}
+
+          ## 下载
+
+          | 平台 | 便携版 |
+          |------|--------|
+          | Windows | \`${APP_NAME}-${VERSION}-win64.zip\` |
+          | macOS   | \`${APP_NAME}-${VERSION}-macos.zip\` |
+          | Linux   | \`${APP_NAME}-${VERSION}-linux-x86_64.zip\` |
+
+          > 由 GitHub Actions 自动构建。
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: 拾遗工坊 v${{ env.VERSION }}
+          body_path: release-notes.md
+          files: artifacts/**/*.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: false

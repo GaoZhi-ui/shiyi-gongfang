@@ -1,0 +1,44 @@
+{
+  "characters": [
+    {
+      "id": "351eb0091dd6",
+      "name": "SimpleChar",
+      "description": "",
+      "traits": [],
+      "avatar_color": "#4A90D9",
+      "created_at": "2026-05-20T15:32:28.426795+00:00",
+      "updated_at": "2026-05-20T15:32:28.426805+00:00"
+    },
+    {
+      "id": "c74de15333ef",
+      "name": "FullChar2",
+      "description": "with array traits",
+      "traits": [
+        "brave",
+        "decisive"
+      ],
+      "avatar_color": "red",
+      "created_at": "2026-05-20T15:32:50.977282+00:00",
+      "updated_at": "2026-05-20T15:32:50.977294+00:00"
+    },
+    {
+      "id": "f455b47976ae",
+      "name": "SecondChar",
+      "description": "",
+      "traits": [
+        "calm"
+      ],
+      "avatar_color": "#4A90D9",
+      "created_at": "2026-05-20T15:32:59.408742+00:00",
+      "updated_at": "2026-05-20T15:32:59.408759+00:00"
+    }
+  ],
+  "relations": [
+    {
+      "source": "351eb0091dd6",
+      "target": "f455b47976ae",
+      "type": "neutral",
+      "label": ""
+    }
+  ]
+}

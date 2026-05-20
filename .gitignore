@@ -1,9 +1,36 @@
-__pycache__/
+# 构建产物
 dist/
+spec/
+build/
+
+*.spec
+
+# Python
+__pycache__/
 *.pyc
-.env
-config.json
-venv/
+*.pyo
 *.egg-info/
-.DS_Store
+.env
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 运行时数据
+export/
+chapters/
+projects/
 data/
+characters/
+foreshadowing/
+scenes/
+snapshots/
+project_id.txt
+
+# 系统
+.DS_Store
+Thumbs.db
