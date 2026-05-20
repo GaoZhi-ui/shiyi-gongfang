@@ -16,6 +16,7 @@ from routers.chapters import router as chapters_router
 from routers.chat import router as chat_router
 from routers.tools import router as tools_router
 from routers.workflow import router as workflow_router
+from routers.scenes import router as scenes_router
 
 BASE = Path(__file__).parent
 STATIC = BASE / "static"
@@ -30,6 +31,7 @@ app.include_router(chapters_router, prefix="/api/v1")
 app.include_router(chat_router, prefix="/api/v1")
 app.include_router(tools_router, prefix="/api/v1")
 app.include_router(workflow_router, prefix="/api/v1")
+app.include_router(scenes_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
