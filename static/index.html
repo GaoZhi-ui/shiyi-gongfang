@@ -1371,7 +1371,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 </div>
 
 <script>
-(function(){
+(function(){try{
+
   const CHAT_API = '/api/v1';
 
   const DEFAULT_CHECKLIST = [
@@ -2660,8 +2661,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     updateInputCharCount();
   });
 
-  // ========== 编辑器模块（try/catch保护IIFE不中断）==========
-  try{
+  // ========== 编辑器模块 ==========
   var editorMode = false;
   var editorToggleBtn = document.getElementById('editorToggleBtn');
   var editorArea = document.getElementById('editorArea');
@@ -6037,11 +6037,13 @@ window.runVersionDiff = function(){
 </script>
 
 <script>
-(function(){
+(function(){try{
   var saved = localStorage.getItem('writing-app-theme') || 'dark';
   document.documentElement.dataset.theme = saved;
   var btn = document.getElementById('themeBtn');
   if(btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+
+}catch(e){ console.error("Theme init error:", e); }
 })();
 function toggleTheme(){
   var current = document.documentElement.dataset.theme;
