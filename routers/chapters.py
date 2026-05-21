@@ -18,7 +18,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Literal, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel, Field
 import yaml
 from routers.sanitize import sanitize_text
@@ -459,7 +459,17 @@ def read_chapter(filename: str):
 
 
 @router.post("", status_code=201)
-def create_chapter(body: ChapterCreate):
+
+def _vectorize_chapter(project_id: str, filename: str, title: str, content: str):
+    """Background task: vectorize chapter (runs after response is sent)"""
+    try:
+        from core.vector_store import get_vector_store
+        get_vector_store().add_chapter(project_id, filename, title, content)
+    except Exception as e:
+        import logging
+        logging.getLogger("chapters").warning(f"章节向量化失败 [{filename}]: {e}")
+
+def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
     """创建新章节文件"""
     existing = {f.name for f in CHAPTERS_DIR.glob("*.md")}
 
@@ -501,13 +511,10 @@ def create_chapter(body: ChapterCreate):
     # 自动向量化
     try:
         project_id = _resolve_active_project_id()
-        # Non-blocking vector store call (timeout-protected)
+        # Non-blocking vector store via BackgroundTasks
         try:
-            import threading
-            _vs = get_vector_store()
-            _t = threading.Thread(target=_vs.add_chapter, args=(project_id, filename, display_title, content), daemon=True)
-            _t.start()
-            _t.join(timeout=5)
+            from fastapi import BackgroundTasks
+            background_tasks.add_task(_vectorize_chapter, project_id, filename, display_title, content)
         except Exception:
             pass  # vector store unavailable
     except Exception as e:
@@ -526,7 +533,7 @@ def create_chapter(body: ChapterCreate):
 
 
 @router.put("/{filename}")
-def update_chapter(filename: str, body: ChapterUpdate):
+def update_chapter(filename: str, body: ChapterUpdate, background_tasks: BackgroundTasks):
     """覆盖写入章节文件（自动管理 YAML frontmatter）"""
     try:
         target = _safe_chapter_path(filename)
@@ -572,11 +579,8 @@ def update_chapter(filename: str, body: ChapterUpdate):
     try:
         project_id = _resolve_active_project_id()
         try:
-            import threading
-            _vs2 = get_vector_store()
-            _t2 = threading.Thread(target=_vs2.add_chapter, args=(project_id, filename, title, clean_content), daemon=True)
-            _t2.start()
-            _t2.join(timeout=5)
+            from fastapi import BackgroundTasks
+            background_tasks.add_task(_vectorize_chapter, project_id, filename, title, clean_content)
         except Exception:
             pass  # vector store unavailable
     except Exception as e:
