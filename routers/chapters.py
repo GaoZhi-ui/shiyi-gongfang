@@ -23,7 +23,15 @@ from pydantic import BaseModel, Field
 import yaml
 from routers.sanitize import sanitize_text
 from core.enums import ChapterStatus
-from core.vector_store import get_vector_store
+# Lazy import: vector_store is imported on first use (avoid blocking at module load)
+import importlib as _il
+def _get_vector_store():
+    """Lazy get vector store instance"""
+    try:
+        mod = _il.import_module("core.vector_store")
+        return mod.get_vector_store()
+    except Exception:
+        return None
 
 router = APIRouter(prefix="/chapters", tags=["chapters"])
 BASE = Path(__file__).resolve().parent.parent
@@ -463,8 +471,7 @@ def read_chapter(filename: str):
 def _vectorize_chapter(project_id: str, filename: str, title: str, content: str):
     """Background task: vectorize chapter (runs after response is sent)"""
     try:
-        from core.vector_store import get_vector_store
-        get_vector_store().add_chapter(project_id, filename, title, content)
+                _get_vector_store().add_chapter(project_id, filename, title, content)
     except Exception as e:
         import logging
         logging.getLogger("chapters").warning(f"章节向量化失败 [{filename}]: {e}")
@@ -498,25 +505,27 @@ def create_chapter(body: ChapterCreate):
         display_title = stem[len(TMP_PREFIX):]
     else:
         display_title = stem
-    import logging as _lg
-    _lg.getLogger("chapters").info("DEBUG: building frontmatter...")
-    fm_text = _build_frontmatter(
+        fm_text = _build_frontmatter(
         title=display_title,
         content=content,
         existing_fm=None,
         status=body.status.value if isinstance(body.status, ChapterStatus) else str(body.status),
     )
-    _lg.getLogger("chapters").info("DEBUG: writing file...")
     target.write_text(fm_text + content, encoding="utf-8")
-    _lg.getLogger("chapters").info("DEBUG: file written, git commit...")
 
     _auto_git_commit("create", filename)
 
-    # Vector store disabled (causes blocking)
+    # 自动向量化（惰性导入，不阻塞模块加载）
+    try:
+        project_id = _resolve_active_project_id()
+        vs = _get_vector_store()
+        if vs:
+            background_tasks.add_task(_vectorize_chapter, project_id, filename, display_title, content)
+    except Exception:
+        pass
 
     parsed = _parse_filename(filename)
 
-    _lg.getLogger("chapters").info("DEBUG: returning response...")
     return {
         "status": "created",
         "filename": filename,
@@ -608,7 +617,7 @@ def delete_chapter(filename: str):
     try:
         project_id = _resolve_active_project_id()
         try:
-            get_vector_store().delete_chapter(project_id, filename)
+            _get_vector_store().delete_chapter(project_id, filename)
         except Exception:
             pass  # vector store unavailable
     except Exception as e:
