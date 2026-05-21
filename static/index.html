@@ -2816,7 +2816,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }
   }, 10); });
 
-  // 编辑器内容变化时判断导出按钮状态
+  // ===== 编辑器事件处理器（try/catch 保护 IIFE 不中断）=====
+  try{
   if(typeof editor !== 'undefined' && editor && editor.on){
     editor.on('change', function(){
     var hasContent = editor.getValue().trim().length > 0;
@@ -2881,6 +2882,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     if(line) lines.push(line);
     return lines;
   }
+
+  }catch(e){ console.warn('Editor handlers init error:', e); }
 
   function renderLongImage(text, bgColor, textColor, accentColor, fontSize, padding, lineHeight, maxWidth){
     var canvas = document.createElement('canvas');
