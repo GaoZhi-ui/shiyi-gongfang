@@ -2817,13 +2817,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   }, 10); });
 
   // 编辑器内容变化时判断导出按钮状态
-  editor.on('change', function(){
+  if(typeof editor !== 'undefined' && editor && editor.on){
+    editor.on('change', function(){
     var hasContent = editor.getValue().trim().length > 0;
     if(document.querySelector('.editor-area.active')){
       exportBtn.style.display = hasContent ? 'inline-flex' : 'none';
     }
   });
 
+  }
   ttsBtn.addEventListener('click', function(){
     if(ttsActive){
       ttsSynth.cancel();
