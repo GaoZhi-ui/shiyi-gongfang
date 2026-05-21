@@ -508,18 +508,7 @@ def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
 
     _auto_git_commit("create", filename)
 
-    # 自动向量化
-    try:
-        project_id = _resolve_active_project_id()
-        # Non-blocking vector store via BackgroundTasks
-        try:
-            from fastapi import BackgroundTasks
-            background_tasks.add_task(_vectorize_chapter, project_id, filename, display_title, content)
-        except Exception:
-            pass  # vector store unavailable
-    except Exception as e:
-        logger = __import__("logging").getLogger("chapters")
-        logger.warning(f"章节向量化失败 [{filename}]: {e}")
+    # Vector store disabled (causes blocking)
 
     parsed = _parse_filename(filename)
 
