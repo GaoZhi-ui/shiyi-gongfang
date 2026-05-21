@@ -1195,7 +1195,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         <div class="modal-tab-body">
           <div class="field">
             <label>API 端点</label>
-            <input type="text" id="apiEndpoint" value="http://localhost:8000/api/v1" placeholder="http://localhost:8000/api/v1">
+            <input type="text" id="apiEndpoint" value="http://127.0.0.1:8867/api/v1" placeholder="http://127.0.0.1:8867/api/v1">
           </div>
           <div class="field">
             <label>API Key</label>
@@ -1435,7 +1435,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   }
 
   function apiBase(){
-    const ep = ($('apiEndpoint')||{}).value || 'http://localhost:8000/api/v1';
+    const ep = ($('apiEndpoint')||{}).value || 'http://127.0.0.1:8867/api/v1';
     return ep.endsWith('/api/v1') ? ep.replace(/\/api\/v1$/,'') : ep;
   }
 
@@ -1444,8 +1444,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     try{
       const res = await fetch(apiBase()+'/api/v1/projects', {headers:apiHeaders()});
       if(!res.ok) throw new Error('HTTP '+res.status);
-      projects = await res.json();
-      if(!Array.isArray(projects)) projects = [];
+      const raw = await res.json();
+      projects = Array.isArray(raw) ? raw : (raw.projects || []);
     }catch(e){
       // 离线降级
       projects = [{id:'default',name:'新项目',template:'novel'}];

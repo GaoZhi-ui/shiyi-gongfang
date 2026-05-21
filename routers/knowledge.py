@@ -161,6 +161,16 @@ def list_knowledge():
     )
 
 
+@router.get("/search")
+def search_knowledge(q: str = Query(...), project_id: str = Query("default"), top_k: int = Query(5)):
+    """语义搜索知识库"""
+    from core.vector_store import VectorStore
+    try:
+        results = VectorStore.search(q, project_id, top_k)
+        return {"query": q, "project_id": project_id, "results": results, "total": len(results)}
+    except Exception as e:
+        return {"query": q, "project_id": project_id, "results": [], "total": 0, "error": str(e)}
+
 @router.get("/{filepath:path}", response_model=FileContent)
 def read_knowledge(filepath: str):
     """读取某个知识库文件内容"""
