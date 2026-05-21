@@ -82,7 +82,7 @@ def _ensure_knowledge_base():
                         KNOWLEDGE_BASE = p
                         return KNOWLEDGE_BASE
         except Exception:
-            pass
+            pass  # knowledge dir not found
     candidates = [
         BASE / "knowledge",
         Path("knowledge"),

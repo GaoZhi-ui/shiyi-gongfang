@@ -23,6 +23,8 @@ from pydantic import BaseModel, Field
 from routers.sanitize import sanitize_text
 from routers.projects import _find_project, ProjectNotFound, ProjectOperationError
 
+import shutil
+_git_cmd = shutil.which("git") or "git"
 router = APIRouter(prefix="/git", tags=["git"])
 
 
@@ -60,7 +62,7 @@ def _git_available(proj_dir: Path) -> bool:
     """检查目录是否在 git 仓库中"""
     try:
         r = subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"],
+            [_git_cmd, "rev-parse", "--is-inside-work-tree"],
             cwd=str(proj_dir),
             capture_output=True, text=True, timeout=5,
         )

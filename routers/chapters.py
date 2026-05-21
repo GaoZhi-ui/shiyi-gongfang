@@ -41,7 +41,7 @@ def _resolve_active_project_id() -> str:
             if active:
                 return active
         except Exception:
-            pass
+            pass  # config optional
     return "default"
 
 
@@ -60,7 +60,7 @@ def _resolve_chapters_dir() -> Path:
                 if p.is_dir():
                     return p
         except Exception:
-            pass
+            pass  # config optional
 
     local_dir = (BASE / "chapters").resolve()
     local_dir.mkdir(exist_ok=True)

@@ -53,7 +53,7 @@ def _resolve_chapters_dir() -> Path:
                 if p.is_dir():
                     return p
         except Exception:
-            pass
+            pass  # fallback to local dir
     local_dir = (BASE / "chapters").resolve()
     local_dir.mkdir(exist_ok=True)
     return local_dir

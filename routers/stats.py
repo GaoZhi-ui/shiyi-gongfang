@@ -20,6 +20,8 @@ from pathlib import Path
 from datetime import datetime, date, timezone, timedelta
 from fastapi import APIRouter, HTTPException
 
+import shutil
+_git_cmd = shutil.which("git") or "git"
 router = APIRouter(prefix="/stats", tags=["stats"])
 BASE = Path(__file__).resolve().parent.parent
 PROJECTS_DIR = BASE / "projects"
@@ -193,7 +195,7 @@ async def get_project_stats(project_id: str):
                     try:
                         rel_path = f"chapters/{name}"
                         result = subprocess.run(
-                            ["git", "diff", "--word-diff=porcelain", "HEAD", "--", rel_path],
+                            [_git_cmd, "diff", "--word-diff=porcelain", "HEAD", "--", rel_path],
                             capture_output=True, text=True, timeout=5,
                             cwd=git_dir,
                         )

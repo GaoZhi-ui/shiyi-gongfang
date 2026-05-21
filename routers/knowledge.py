@@ -111,7 +111,7 @@ def _resolve_knowledge_base() -> Path:
                     if p.is_dir():
                         return p
         except Exception:
-            pass
+            pass  # config optional
 
     # 回退链
     candidates = [

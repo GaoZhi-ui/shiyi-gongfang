@@ -23,6 +23,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from routers.sanitize import sanitize_text
 
+import shutil
+_git_cmd = shutil.which("git") or "git"
 router = APIRouter(prefix="/projects", tags=["projects"])
 BASE = Path(__file__).resolve().parent.parent
 PROJECTS_DIR = BASE / "projects"
@@ -137,7 +139,7 @@ def _is_git_available() -> bool:
     """检查 git 命令是否可用"""
     try:
         subprocess.run(
-            ["git", "--version"],
+            [_git_cmd, "--version"],
             capture_output=True, timeout=5,
         )
         return True
@@ -154,7 +156,7 @@ def _init_git(proj_dir: Path):
         return  # 已初始化
     try:
         subprocess.run(
-            ["git", "init"],
+            [_git_cmd, "init"],
             cwd=str(proj_dir),
             capture_output=True, timeout=10,
         )
@@ -164,12 +166,12 @@ def _init_git(proj_dir: Path):
             gitignore_path.write_text(GITIGNORE_TEMPLATE, encoding="utf-8")
         # 初始 commit
         subprocess.run(
-            ["git", "add", "."],
+            [_git_cmd, "add", "."],
             cwd=str(proj_dir),
             capture_output=True, timeout=10,
         )
         subprocess.run(
-            ["git", "commit", "-m", "init: 项目初始提交"],
+            [_git_cmd, "commit", "-m", "init: 项目初始提交"],
             cwd=str(proj_dir),
             capture_output=True, timeout=10,
         )
