@@ -755,6 +755,19 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .calendar-day .cal-day-num{height:16px;display:flex;align-items:center}
 .calendar-day:hover{background:var(--bg-hover);color:var(--text-primary)}
 .calendar-empty{padding:40px 0;text-align:center;color:var(--text-muted);font-size:12px}
+.calendar-summary{display:flex;gap:16px;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:8px;font-size:12px}
+.calendar-summary .cs-item{display:flex;flex-direction:column;gap:2px;flex:1}
+.calendar-summary .cs-label{font-size:10px;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase}
+.calendar-summary .cs-value{font-size:14px;color:var(--accent);font-weight:600}
+.calendar-day .cal-wc-label{font-size:9px;color:var(--accent);opacity:.7;line-height:1;margin-top:1px;height:12px;overflow:hidden}
+.calendar-day.today{border:1px solid var(--accent);background:rgba(var(--accent-rgb),0.1);color:var(--accent);font-weight:600}
+.calendar-day.has-data{cursor:pointer}
+.calendar-day.active-day{background:var(--bg-surface);border-color:var(--accent)}
+.cal-chapter-list{margin-top:8px;padding:10px 12px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:8px}
+.cal-chapter-list .ccl-header{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.cal-chapter-list .ccl-item{padding:4px 8px;font-size:12px;color:var(--text-secondary);border-radius:4px}
+.cal-chapter-list .ccl-item:hover{background:var(--bg-hover);color:var(--text-primary)}
+.cal-chapter-list .ccl-empty{font-size:11px;color:var(--text-muted);text-align:center;padding:12px 0}
 
 /* ===== Welcome Guide ===== */
 .welcome-guide{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;overflow-y:auto;text-align:center;gap:24px}
@@ -3765,7 +3778,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         var s = await res.json();
         calDailyStats = {};
         if(s.daily_stats && s.daily_stats.length > 0){
-          s.daily_stats.forEach(function(d){ calDailyStats[d.date] = d.words_written || 0; });
+          s.daily_stats.forEach(function(d){ calDailyStats[d.date] = d; });
         }
       }
     }catch(e){ calDailyStats = {}; }
@@ -3775,13 +3788,49 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   function renderCalendar(){
     var firstDay = new Date(calYear, calMonth, 1);
     var lastDay = new Date(calYear, calMonth + 1, 0);
-    var startDow = firstDay.getDay(); // 0=Sun
+    var startDow = firstDay.getDay();
     var daysInMonth = lastDay.getDate();
     var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
     var today = new Date();
     var todayStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 
+    // === 月汇总 ===
+    var monthTotal = 0;
+    var monthWritingDays = 0;
+    for(var d=1; d<=daysInMonth; d++){
+      var ds = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var dd = calDailyStats[ds];
+      var wc = dd ? (dd.words_written || 0) : 0;
+      if(wc > 0){ monthTotal += wc; monthWritingDays++; }
+    }
+    var avgDaily = monthWritingDays > 0 ? Math.round(monthTotal / monthWritingDays) : 0;
+
+    // 连续写作天（从今天往前推，不限月份）
+    var streak = 0;
+    var checkDate = new Date(today);
+    while(true){
+      var cs = checkDate.getFullYear()+'-'+String(checkDate.getMonth()+1).padStart(2,'0')+'-'+String(checkDate.getDate()).padStart(2,'0');
+      var cd = calDailyStats[cs];
+      if(cd && (cd.words_written || 0) > 0){
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else { break; }
+    }
+
     var html = '<div class="calendar-container">';
+
+    // 月汇总栏
+    var hasAnyData = Object.keys(calDailyStats).length > 0;
+    if(hasAnyData || monthTotal > 0){
+      html += '<div class="calendar-summary">';
+      html += '<div class="cs-item"><span class="cs-label">本月总字数</span><span class="cs-value">'+monthTotal.toLocaleString()+'</span></div>';
+      html += '<div class="cs-item"><span class="cs-label">连续写作</span><span class="cs-value">'+streak+' 天</span></div>';
+      html += '<div class="cs-item"><span class="cs-label">日均字数</span><span class="cs-value">'+avgDaily.toLocaleString()+'</span></div>';
+      html += '</div>';
+    }else{
+      html += '<div style="text-align:center;padding:8px 12px;color:var(--text-muted);font-size:12px">📝 还没有写作数据，开始写点什么吧</div>';
+    }
+
     html += '<div class="calendar-header">';
     html += '<button class="cal-nav-btn" id="calPrev">◀</button>';
     html += '<span class="cal-title">'+calYear+' 年 '+monthNames[calMonth]+'</span>';
@@ -3792,24 +3841,24 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     html += '</div>';
     html += '<div class="calendar-grid">';
 
-    // 空白占位
     for(var i=0; i<startDow; i++){
       html += '<div class="calendar-day other-month"><div class="cal-day-num"></div><div class="cal-dot-wrap"></div></div>';
     }
 
     var maxWords = 1;
-    var vals = Object.values(calDailyStats);
+    var vals = Object.values(calDailyStats).map(function(d){ return d.words_written || 0; });
     if(vals.length > 0) maxWords = Math.max.apply(null, vals);
     if(maxWords === 0) maxWords = 1;
 
     for(var d=1; d<=daysInMonth; d++){
       var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
       var isToday = (dateStr === todayStr);
-      var wc = calDailyStats[dateStr] || 0;
+      var dayData = calDailyStats[dateStr];
+      var wc = dayData ? (dayData.words_written || 0) : 0;
       var cls = 'calendar-day';
       if(isToday) cls += ' today';
+      if(wc > 0) cls += ' has-data';
 
-      // 计算圆点大小
       var dotSize = 0;
       if(wc > 0){
         var ratio = wc / maxWords;
@@ -3818,28 +3867,57 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         else dotSize = 1;
       }
 
-      html += '<div class="'+cls+'" title="'+dateStr+': '+wc.toLocaleString()+'字">';
+      html += '<div class="'+cls+'" data-date="'+dateStr+'" title="'+dateStr+': '+wc.toLocaleString()+'字">';
       html += '<div class="cal-day-num">'+d+'</div>';
+      html += '<div class="cal-wc-label">'+(wc > 0 ? wc.toLocaleString()+'字' : '')+'</div>';
       html += '<div class="cal-dot-wrap">';
       if(dotSize > 0) html += '<span class="cal-dot s-'+dotSize+'"></span>';
       html += '</div></div>';
     }
 
-    html += '</div></div>';
+    html += '</div>';
+
+    // 章节详情区
+    html += '<div class="cal-chapter-list" id="calChapterList">';
+    html += '<div class="ccl-empty">点击有写作量的日期查看修改的章节</div>';
+    html += '</div>';
+
+    html += '</div>';
     panelBody.innerHTML = html;
 
-    // 绑定导航
-    var prevBtn = document.getElementById('calPrev');
-    var nextBtn = document.getElementById('calNext');
-    if(prevBtn) prevBtn.addEventListener('click', function(){
+    document.getElementById('calPrev').addEventListener('click', function(){
       calMonth--;
       if(calMonth < 0){ calMonth = 11; calYear--; }
       renderCalendar();
     });
-    if(nextBtn) nextBtn.addEventListener('click', function(){
+    document.getElementById('calNext').addEventListener('click', function(){
       calMonth++;
       if(calMonth > 11){ calMonth = 0; calYear++; }
       renderCalendar();
+    });
+
+    // 日期点击 → 章节列表
+    document.querySelectorAll('.calendar-day.has-data').forEach(function(el){
+      el.addEventListener('click', function(){
+        var date = this.dataset.date;
+        if(!date) return;
+        document.querySelectorAll('.calendar-day.active-day').forEach(function(c){ c.classList.remove('active-day'); });
+        this.classList.add('active-day');
+        var dd = calDailyStats[date];
+        var chapters = dd ? (dd.chapters_modified || dd.chapters || []) : [];
+        var listEl = document.getElementById('calChapterList');
+        if(!listEl) return;
+        var listHtml = '<div class="ccl-header">📖 '+date+' 修改的章节</div>';
+        if(chapters.length > 0){
+          chapters.forEach(function(ch){
+            var chName = typeof ch === 'string' ? ch : (ch.title || ch.name || JSON.stringify(ch));
+            listHtml += '<div class="ccl-item">'+escHtml(chName)+'</div>';
+          });
+        }else{
+          listHtml += '<div class="ccl-empty">该日无章节修改记录</div>';
+        }
+        listEl.innerHTML = listHtml;
+      });
     });
   }
 
