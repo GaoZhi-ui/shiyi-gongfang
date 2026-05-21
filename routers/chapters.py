@@ -469,7 +469,7 @@ def _vectorize_chapter(project_id: str, filename: str, title: str, content: str)
         import logging
         logging.getLogger("chapters").warning(f"章节向量化失败 [{filename}]: {e}")
 
-def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
+def create_chapter(body: ChapterCreate):
     """创建新章节文件"""
     existing = {f.name for f in CHAPTERS_DIR.glob("*.md")}
 
@@ -527,7 +527,7 @@ def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
 
 
 @router.put("/{filename}")
-def update_chapter(filename: str, body: ChapterUpdate, background_tasks: BackgroundTasks):
+def update_chapter(filename: str, body: ChapterUpdate):
     """覆盖写入章节文件（自动管理 YAML frontmatter）"""
     try:
         target = _safe_chapter_path(filename)
