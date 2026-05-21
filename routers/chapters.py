@@ -271,6 +271,47 @@ class SearchResultItem(BaseModel):
     match_count: int
 
 
+# ─── 标签树构建 ───
+
+
+def _build_tag_tree(tags: dict) -> dict:
+    """
+    将扁平标签字典构建为嵌套标签树。
+
+    使用 Notable 风格的 split('/') + reduce 模式：
+      标签 "卷壹/龙门" → 顶层 "卷壹" → 子层 "龙门"
+      旧标签 "对话"    → 根层级 "对话"
+
+    返回结构：
+      {
+        "卷壹": {"count": 5, "children": {
+          "龙门": {"count": 3, "children": {}},
+          "荒野": {"count": 2, "children": {}}
+        }},
+        "对话": {"count": 4, "children": {}}
+      }
+    """
+    tree: dict = {}
+
+    # 第一遍：精确计数每层
+    for _filename, tag_list in tags.items():
+        for tag in tag_list:
+            parts = tag.split("/")
+            current = tree
+            for i, part in enumerate(parts):
+                if part not in current:
+                    current[part] = {"count": 0, "children": {}}
+                # 仅在此路径节点上计数（父节点总计数后续合并）
+                current[part]["count"] += 1
+                if i < len(parts) - 1:
+                    current = current[part]["children"]
+
+    # 不向上合并——每个节点只计直接命中的章节数
+    # 理由："卷壹" 的计数只统计标签正好是 "卷壹" 的章节
+    # 用户看树形结构时可以根据子节点自行推算
+    return tree
+
+
 # ─── 帮助函数 ───
 
 
@@ -688,9 +729,27 @@ def batch_export_chapters(body: BatchExportBody):
     }
 
 
+# ─── 标签树路由 ───
+
+
+class TagTreeNode(BaseModel):
+    count: int
+    children: dict[str, "TagTreeNode"]
+
+
+TagTreeNode.model_rebuild()
+
+
+@router.get("/tags/tree")
+def get_tag_tree():
+    """获取嵌套标签树"""
+    tags = _load_tags()
+    return _build_tag_tree(tags)
+
+
 @router.post("/batch/tag")
 def batch_tag_chapters(body: BatchTagBody):
-    """批量给章节打标签"""
+    """批量给章节打标签（支持层级标签，用 / 分隔路径）"""
     clean_tag = sanitize_text(body.tag)
     tags = _load_tags()
     tagged: list[str] = []
