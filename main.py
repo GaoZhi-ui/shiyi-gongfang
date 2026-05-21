@@ -29,6 +29,8 @@ from routers.backup import router as backup_router
 from routers.style_check import router as style_router
 from routers.plugins import router as plugins_router
 from routers.harness_report import router as harness_router
+from routers.agent import router as agent_router
+from routers.git import router as git_router
 from core.plugin_manager import plugin_manager, logger as plugin_logger
 from core.writing_rules import discover_and_register
 
@@ -70,6 +72,8 @@ app.include_router(backup_router, prefix="/api/v1")
 app.include_router(style_router, prefix="/api/v1")
 app.include_router(plugins_router, prefix="/api/v1")
 app.include_router(harness_router, prefix="/api/v1")
+app.include_router(agent_router, prefix="/api/v1")
+app.include_router(git_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")

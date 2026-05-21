@@ -23,11 +23,26 @@ from pydantic import BaseModel, Field
 import yaml
 from routers.sanitize import sanitize_text
 from core.enums import ChapterStatus
+from core.vector_store import get_vector_store
 
 router = APIRouter(prefix="/chapters", tags=["chapters"])
 BASE = Path(__file__).resolve().parent.parent
 
 # ─── 章节目录解析 ───
+
+
+def _resolve_active_project_id() -> str:
+    """从 config.yaml 读取当前活跃项目 ID，失败返回 'default'"""
+    yaml_path = BASE / "config.yaml"
+    if yaml_path.exists():
+        try:
+            cfg = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+            active = cfg.get("active_project", "")
+            if active:
+                return active
+        except Exception:
+            pass
+    return "default"
 
 
 def _resolve_chapters_dir() -> Path:
@@ -55,6 +70,43 @@ def _resolve_chapters_dir() -> Path:
 CHAPTERS_DIR = _resolve_chapters_dir()
 ALLOWED_EXTENSIONS = {".md"}
 MAX_FILE_SIZE = 5 * 1024 * 1024
+
+
+# ─── Git 自动提交 ───
+
+
+def _is_git_repo(proj_dir: Path) -> bool:
+    """检查目录是否为 Git 仓库"""
+    try:
+        r = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            cwd=str(proj_dir),
+            capture_output=True, text=True, timeout=5,
+        )
+        return r.returncode == 0 and r.stdout.strip() == "true"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+def _auto_git_commit(action: str, filename: str):
+    """自动执行 git add + commit（静默跳过不可用情况）"""
+    proj_dir = CHAPTERS_DIR.parent.resolve()
+    try:
+        if not _is_git_repo(proj_dir):
+            return
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        subprocess.run(
+            ["git", "add", "."],
+            cwd=str(proj_dir),
+            capture_output=True, timeout=10,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", f"auto: {action} {filename} - {timestamp}"],
+            cwd=str(proj_dir),
+            capture_output=True, timeout=10,
+        )
+    except Exception:
+        pass  # 静默跳过
 
 # ─── 异常定义 ───
 
@@ -444,6 +496,16 @@ def create_chapter(body: ChapterCreate):
     )
     target.write_text(fm_text + content, encoding="utf-8")
 
+    _auto_git_commit("create", filename)
+
+    # 自动向量化
+    try:
+        project_id = _resolve_active_project_id()
+        get_vector_store().add_chapter(project_id, filename, display_title, content)
+    except Exception as e:
+        logger = __import__("logging").getLogger("chapters")
+        logger.warning(f"章节向量化失败 [{filename}]: {e}")
+
     parsed = _parse_filename(filename)
 
     return {
@@ -496,6 +558,16 @@ def update_chapter(filename: str, body: ChapterUpdate):
     final_content = fm_text + clean_content
     target.write_text(final_content, encoding="utf-8")
 
+    _auto_git_commit("update", filename)
+
+    # 自动向量化（更新）
+    try:
+        project_id = _resolve_active_project_id()
+        get_vector_store().add_chapter(project_id, filename, title, clean_content)
+    except Exception as e:
+        logger = __import__("logging").getLogger("chapters")
+        logger.warning(f"章节向量化更新失败 [{filename}]: {e}")
+
     cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', clean_content))
     return {
         "status": "ok",
@@ -519,7 +591,16 @@ def delete_chapter(filename: str):
             "message": f"章节文件不存在: {filename}",
         })
 
+    # 删除向量
+    try:
+        project_id = _resolve_active_project_id()
+        get_vector_store().delete_chapter(project_id, filename)
+    except Exception as e:
+        logger = __import__("logging").getLogger("chapters")
+        logger.warning(f"章节向量删除失败 [{filename}]: {e}")
+
     target.unlink()
+    _auto_git_commit("delete", filename)
     return {"status": "deleted", "filename": filename}
 
 

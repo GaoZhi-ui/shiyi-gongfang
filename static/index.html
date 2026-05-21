@@ -586,6 +586,41 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .today-panel .tp-progress-bar .tp-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
 .today-panel .tp-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:6px 0}
 
+/* ===== 智能写作面板 ===== */
+.agent-panel{display:flex;flex-direction:column;gap:12px;height:100%}
+.agent-input-wrap{display:flex;flex-direction:column;gap:8px}
+.agent-textarea{width:100%;min-height:80px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;padding:10px 12px;color:var(--text-secondary);font-size:13px;line-height:1.6;resize:vertical;font-family:inherit;transition:border-color .12s}
+.agent-textarea:focus{border-color:var(--accent)}
+.agent-textarea::placeholder{color:var(--text-muted)}
+.agent-run-btn{padding:8px 20px;background:var(--accent);border:none;border-radius:6px;color:var(--text-on-accent);font-size:13px;font-weight:500;cursor:pointer;transition:background .12s;white-space:nowrap;align-self:flex-start}
+.agent-run-btn:hover{background:var(--accent-hover)}
+.agent-run-btn:disabled{opacity:.5;cursor:not-allowed}
+.agent-plan{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;padding:10px}
+.agent-plan-title{font-size:11px;color:var(--text-muted);margin-bottom:6px;letter-spacing:1px}
+.agent-step{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;color:var(--text-muted);border-bottom:1px solid var(--bg-surface)}
+.agent-step:last-child{border-bottom:none}
+.agent-step-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.agent-step-label{flex:1}
+.agent-step-status{font-size:10px;padding:2px 8px;border-radius:8px;flex-shrink:0}
+.agent-step-status.done{background:rgba(var(--success-rgb),0.15);color:var(--success)}
+.agent-step-status.running{background:rgba(var(--info-rgb),0.15);color:var(--info)}
+.agent-step-status.failed{background:rgba(var(--danger-rgb),0.15);color:var(--danger)}
+.agent-step-status.pending{background:var(--bg-surface);color:var(--text-muted)}
+.agent-progress{display:flex;flex-direction:column;gap:6px;min-height:0}
+.agent-result{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;padding:10px;flex:1;overflow-y:auto;min-height:120px}
+.agent-result pre{white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.7;color:var(--text-primary);font-family:inherit}
+.agent-result-empty{text-align:center;padding:30px 0;color:var(--text-muted);font-size:13px}
+.agent-result-empty .icon{font-size:36px;margin-bottom:8px}
+.agent-changes{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.agent-change-tag{font-size:11px;background:rgba(var(--accent-rgb),0.1);color:var(--accent);padding:2px 8px;border-radius:10px}
+.agent-actions{display:flex;gap:8px;padding:4px 0}
+.agent-apply-btn{padding:6px 16px;background:var(--success);border:none;border-radius:6px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;transition:opacity .12s}
+.agent-apply-btn:hover{opacity:.85}
+.agent-apply-btn:disabled{opacity:.4;cursor:not-allowed}
+.agent-error{background:rgba(var(--danger-rgb),0.1);border:1px solid rgba(var(--danger-rgb),0.2);border-radius:6px;padding:10px 12px;color:var(--danger);font-size:12px;line-height:1.5}
+.agent-meta{font-size:11px;color:var(--text-muted);display:flex;gap:16px;padding:4px 0}
+.agent-meta span{display:flex;align-items:center;gap:4px}
+
 /* ===== 灵感悬浮窗 ===== */
 .inspiration-float-btn{position:absolute;bottom:44px;right:12px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(var(--accent-rgb), 0.15);border:1px solid rgba(var(--accent-rgb), 0.3);color:var(--accent);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all .15s;user-select:none;line-height:1}
 .inspiration-float-btn:hover{background:rgba(var(--accent-rgb), 0.25);border-color:var(--accent);transform:scale(1.08)}
@@ -807,6 +842,78 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   .inspiration-input-wrap{flex-direction:column}
   .inspiration-save-btn{align-self:stretch}
 }
+
+/* ===== Version Control Panel ===== */
+.version-container{display:flex;flex-direction:column;gap:10px;height:100%}
+.version-branch-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;font-size:12px}
+.version-branch-bar .vbb-icon{font-size:14px}
+.version-branch-bar .vbb-name{flex:1;color:var(--accent);font-weight:500;font-family:monospace}
+.version-branch-bar .vbb-status{font-size:10px;color:var(--text-muted)}
+.version-branch-bar .vbb-clean{color:var(--success)}
+.version-branch-bar .vbb-dirty{color:var(--warning)}
+.version-actions{display:flex;gap:6px;flex-wrap:wrap}
+.version-actions button{padding:5px 12px;background:transparent;border:1px solid var(--bg-surface);border-radius:5px;color:var(--text-muted);font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.version-actions button:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.version-actions button.va-primary{background:var(--accent);border-color:var(--accent);color:var(--bg-primary);font-weight:500}
+.version-actions button.va-primary:hover{background:var(--accent-hover)}
+.version-actions button.va-active{background:rgba(var(--accent-rgb), 0.12);color:var(--accent);border-color:rgba(var(--accent-rgb), 0.3)}
+.version-log{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;min-height:0}
+.version-entry{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:5px;font-size:11px;transition:background .12s;cursor:default}
+.version-entry:hover{background:var(--bg-hover)}
+.version-entry .ve-hash{color:var(--accent);font-family:monospace;font-size:10px;min-width:52px;flex-shrink:0;cursor:pointer}
+.version-entry .ve-hash:hover{text-decoration:underline}
+.version-entry .ve-date{color:var(--text-muted);font-size:10px;min-width:110px;flex-shrink:0}
+.version-entry .ve-msg{color:var(--text-secondary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.version-entry.ve-current{background:rgba(var(--accent-rgb), 0.06);border-left:2px solid var(--accent)}
+.version-loading{text-align:center;padding:30px 0;color:var(--text-muted)}
+.version-empty{text-align:center;padding:40px 0;color:var(--text-muted);font-size:13px}
+.version-empty .icon{font-size:32px;margin-bottom:8px}
+.version-error{text-align:center;padding:20px 0;color:var(--danger);font-size:12px}
+
+/* Branch list in panel */
+.version-branch-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;min-height:0}
+.version-branch-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;font-size:12px;cursor:pointer;transition:all .12s}
+.version-branch-item:hover{background:var(--bg-hover)}
+.version-branch-item.vbi-current{background:rgba(var(--accent-rgb), 0.08);color:var(--accent);font-weight:500}
+.version-branch-item .vbi-name{flex:1;font-family:monospace;color:var(--text-secondary)}
+.version-branch-item.vbi-current .vbi-name{color:var(--accent)}
+.version-branch-item .vbi-hash{font-size:10px;color:var(--text-muted);font-family:monospace}
+.version-branch-item .vbi-check{color:var(--accent);font-size:12px;display:none}
+.version-branch-item.vbi-current .vbi-check{display:inline}
+
+/* Diff view */
+.version-diff-panel{display:none;flex-direction:column;gap:8px;height:100%}
+.version-diff-panel.active{display:flex}
+.version-diff-header{display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--bg-surface)}
+.version-diff-header .vdh-title{font-size:12px;color:var(--text-muted);flex:1}
+.version-diff-header .vdh-back{background:transparent;border:1px solid var(--bg-surface);border-radius:4px;color:var(--text-muted);padding:3px 8px;font-size:10px;cursor:pointer}
+.version-diff-header .vdh-back:hover{background:var(--bg-hover);color:var(--text-primary)}
+.version-diff-body{flex:1;overflow-y:auto;background:var(--bg-primary);border:1px solid var(--bg-surface);border-radius:5px;padding:8px 10px;font-size:11px;font-family:monospace;line-height:1.6;white-space:pre-wrap;word-break:break-word;color:var(--text-secondary)}
+.version-diff-body .vd-add{color:var(--success)}
+.version-diff-body .vd-del{color:var(--danger)}
+.version-diff-body .vd-header-line{color:var(--accent);font-weight:500}
+.version-diff-empty{text-align:center;padding:20px 0;color:var(--text-muted);font-size:12px}
+
+/* Branch form overlay */
+.version-form-overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:50;display:none;align-items:center;justify-content:center;border-radius:8px}
+.version-form-overlay.open{display:flex}
+.version-form-box{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:8px;padding:16px;width:280px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.version-form-box .vfb-title{font-size:13px;color:var(--text-primary);margin-bottom:10px;font-weight:500}
+.version-form-box input{width:100%;background:var(--bg-primary);border:1px solid var(--bg-surface);border-radius:5px;padding:7px 10px;color:var(--text-secondary);font-size:12px;margin-bottom:8px}
+.version-form-box input:focus{border-color:var(--accent)}
+.version-form-box .vfb-actions{display:flex;gap:6px;justify-content:flex-end}
+.version-form-box .vfb-actions button{padding:5px 14px;border-radius:5px;font-size:11px;cursor:pointer;transition:all .12s}
+.version-form-box .vfb-actions .vfb-cancel{background:transparent;border:1px solid var(--bg-surface);color:var(--text-muted)}
+.version-form-box .vfb-actions .vfb-cancel:hover{background:var(--bg-hover);color:var(--text-primary)}
+.version-form-box .vfb-actions .vfb-confirm{background:var(--accent);border:none;color:var(--bg-primary);font-weight:500}
+.version-form-box .vfb-actions .vfb-confirm:hover{background:var(--accent-hover)}
+
+/* Diff compare selector */
+.version-compare{display:flex;gap:6px;align-items:center;padding:6px 0}
+.version-compare select{flex:1;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:5px;padding:4px 6px;color:var(--text-secondary);font-size:11px;cursor:pointer}
+.version-compare .vc-btn{padding:4px 10px;background:var(--accent);border:none;border-radius:5px;color:var(--bg-primary);font-size:11px;cursor:pointer;font-weight:500}
+.version-compare .vc-btn:hover{background:var(--accent-hover)}
+.version-compare .vc-btn:disabled{opacity:.5;cursor:not-allowed}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css">
 <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
@@ -858,8 +965,14 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="inspiration"><span class="icon">💡</span><span class="label">灵感</span></div>
     <div class="tool-item" data-tool="guide"><span class="icon">📖</span><span class="label">规范</span></div>
 
+    <div class="tool-group-title">AI</div>
+    <div class="tool-item" data-tool="agentWrite"><span class="icon">🤖</span><span class="label">智能写作</span></div>
+
     <div class="tool-group-title">工具</div>
     <div class="tool-item" data-tool="toolsBrowser"><span class="icon">🔧</span><span class="label">工具浏览器</span></div>
+
+    <div class="tool-group-title">版本控制</div>
+    <div class="tool-item" data-tool="version"><span class="icon">🔀</span><span class="label">版本</span></div>
   </div>
   <div class="sidebar-footer">
     <button id="btn-clear-chat">🗑 清空对话</button>
@@ -2026,6 +2139,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '📖';
       panelTitle.textContent = '写作规范';
       loadWritingGuideView();
+    }else if(type==='agentWrite'){
+      panelIcon.textContent = '🤖';
+      panelTitle.textContent = '智能写作';
+      loadWritingAgentView();
     }else if(type==='chapter'){
       panelIcon.textContent = '📖';
       const d = chapterContext;
@@ -2073,6 +2190,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
           上次编辑：${d.lastEdit}
         </div>
       </div>`;
+    }else if(type==='version'){
+      panelIcon.textContent = '🔀';
+      panelTitle.textContent = '版本控制';
+      renderVersionPanel();
     }
   }
 
@@ -4623,6 +4744,217 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }
   }
 
+  // ========== Toast 通知 ==========
+  function showToast(text, type){
+    type = type || 'info';
+    var colorMap = {success:'var(--success)', warning:'var(--warning)', error:'var(--danger)', info:'var(--info)'};
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:9999;padding:8px 20px;border-radius:8px;font-size:13px;background:var(--bg-secondary);border:1px solid ' + (colorMap[type] || 'var(--text-muted)') + ';color:var(--text-primary);box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:opacity .3s;max-width:80vw;text-align:center';
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(function(){
+      el.style.opacity = '0';
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 300);
+    }, 2500);
+  }
+
+  // ========== 智能写作 Agent ==========
+  var _agentState = {
+    running: false,
+    plan: [],
+    result: '',
+    filename: null,
+    changes: [],
+    duration: 0,
+    stepsDetail: [],
+  };
+
+  function loadWritingAgentView(){
+    panelBody.innerHTML = '';
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div class="agent-panel"><div style="text-align:center;padding:40px 0;color:var(--text-muted)">请先选择一个项目</div></div>';
+      return;
+    }
+    _agentState = {running:false,plan:[],result:'',filename:null,changes:[],duration:0,stepsDetail:[]};
+    renderAgentPanel();
+  }
+
+  function renderAgentPanel(){
+    var html = '<div class="agent-panel">';
+    // 输入区
+    html += '<div class="agent-input-wrap">';
+    html += '<textarea class="agent-textarea" id="agentInput" placeholder="描述你想写什么，例如：&#10;帮我写下一章，沈默进入龙门后第一次见到魏彦吾&#10;写一个关于陈和星熊在近卫局日常的过渡章节&#10;续写当前章节，推进主线剧情" rows="3"></textarea>';
+    html += '<button class="agent-run-btn" id="agentRunBtn"' + (_agentState.running ? ' disabled' : '') + '>🚀 开始写作</button>';
+    html += '</div>';
+
+    // 执行进度
+    if(_agentState.plan && _agentState.plan.length > 0){
+      html += '<div class="agent-plan" id="agentPlanBlock">';
+      html += '<div class="agent-plan-title">📋 执行计划</div>';
+      _agentState.plan.forEach(function(step, idx){
+        var detail = _agentState.stepsDetail[idx];
+        var status = 'pending';
+        if(detail){
+          status = detail.status === 'done' ? 'done' : (detail.status === 'failed' ? 'failed' : 'running');
+        } else if(_agentState.running && idx === 0){
+          status = 'running';
+        }
+        var icons = {read_chapter:'📖', draft:'✍️', review:'🔍', revise:'🔄', save:'💾'};
+        var labels = {read_chapter:'读取参考', draft:'起草', review:'自检', revise:'修订', save:'保存'};
+        var icon = icons[step.action] || '➡️';
+        var label = labels[step.action] || step.action;
+        var summary = '';
+        if(detail && detail.result_summary) summary = ' <span style="font-size:10px;color:var(--text-muted)">— ' + escHtml(detail.result_summary) + '</span>';
+        if(detail && detail.error) summary = ' <span style="font-size:10px;color:var(--danger)">⚠ ' + escHtml(detail.error) + '</span>';
+        html += '<div class="agent-step">';
+        html += '<span class="agent-step-icon">' + icon + '</span>';
+        html += '<span class="agent-step-label">' + label + summary + '</span>';
+        html += '<span class="agent-step-status ' + status + '">' + ({done:'✓ 完成',running:'进行中',failed:'失败',pending:'等待'})[status] + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // 变更记录
+    if(_agentState.changes && _agentState.changes.length > 0){
+      html += '<div class="agent-changes">';
+      _agentState.changes.forEach(function(c){
+        html += '<span class="agent-change-tag">' + escHtml(c) + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // 元信息
+    if(_agentState.duration > 0){
+      html += '<div class="agent-meta">';
+      html += '<span>⏱ ' + (_agentState.duration / 1000).toFixed(1) + 's</span>';
+      if(_agentState.filename) html += '<span>📄 ' + escHtml(_agentState.filename) + '</span>';
+      html += '</div>';
+    }
+
+    // 结果区
+    html += '<div class="agent-result" id="agentResult">';
+    if(_agentState.running){
+      html += '<div style="text-align:center;padding:20px 0"><div class="spinner" style="margin:0 auto"></div><div style="font-size:12px;color:var(--text-muted);margin-top:10px">正在执行…</div></div>';
+    } else if(_agentState.result){
+      html += '<pre>' + escHtml(_agentState.result) + '</pre>';
+    } else {
+      html += '<div class="agent-result-empty"><div class="icon">🤖</div><div>输入写作需求，点击「开始写作」</div><div style="font-size:11px;margin-top:4px">AI 会自动分析大纲、参考前章、起草、自检并修订</div></div>';
+    }
+    html += '</div>';
+
+    // 操作按钮
+    if(_agentState.result && !_agentState.running){
+      html += '<div class="agent-actions">';
+      html += '<button class="agent-apply-btn" id="agentApplyBtn"' + (!_agentState.filename ? '' : '') + '>📝 应用到编辑器</button>';
+      html += '<button class="agent-apply-btn" style="background:var(--accent)" id="agentRegenBtn">🔄 重新生成</button>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    panelBody.innerHTML = html;
+
+    // 绑定事件
+    bindAgentEvents();
+  }
+
+  function bindAgentEvents(){
+    var runBtn = document.getElementById('agentRunBtn');
+    if(runBtn) runBtn.addEventListener('click', agentRun);
+
+    var applyBtn = document.getElementById('agentApplyBtn');
+    if(applyBtn) applyBtn.addEventListener('click', agentApplyToEditor);
+
+    var regenBtn = document.getElementById('agentRegenBtn');
+    if(regenBtn) regenBtn.addEventListener('click', function(){
+      document.getElementById('agentInput').value = document.getElementById('agentInput').value || '';
+      agentRun();
+    });
+
+    // Enter 快捷键（Shift+Enter 换行）
+    var input = document.getElementById('agentInput');
+    if(input) input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        if(!_agentState.running) agentRun();
+      }
+    });
+  }
+
+  async function agentRun(){
+    if(!currentProjectId){
+      showToast('请先选择项目', 'warning');
+      return;
+    }
+    var input = document.getElementById('agentInput');
+    var task = input ? input.value.trim() : '';
+    if(!task){
+      showToast('请输入写作需求', 'warning');
+      return;
+    }
+
+    _agentState.running = true;
+    _agentState.result = '';
+    _agentState.plan = [];
+    _agentState.changes = [];
+    _agentState.stepsDetail = [];
+    _agentState.duration = 0;
+    _agentState.filename = null;
+    renderAgentPanel();
+
+    try{
+      var res = await fetch(apiBase()+'/api/v1/agent/write', {
+        method:'POST',
+        headers:apiHeaders({'Content-Type':'application/json'}),
+        body:JSON.stringify({task:task, project_id:currentProjectId}),
+      });
+
+      if(!res.ok){
+        var errData = await res.json().catch(function(){ return {detail:{message:'HTTP '+res.status}}; });
+        var errMsg = (errData.detail && errData.detail.message) || '请求失败';
+        _agentState.result = '';
+        _agentState.running = false;
+        panelBody.innerHTML = '<div class="agent-panel"><div class="agent-error">❌ ' + escHtml(errMsg) + '</div><button class="agent-run-btn" onclick="loadWritingAgentView()" style="margin-top:8px">返回</button></div>';
+        return;
+      }
+
+      var data = await res.json();
+      _agentState.plan = data.plan || [];
+      _agentState.result = data.result || '';
+      _agentState.changes = data.changes || [];
+      _agentState.duration = data.duration_ms || 0;
+      _agentState.filename = data.filename || null;
+      _agentState.stepsDetail = data.steps_detail || [];
+      _agentState.running = false;
+      renderAgentPanel();
+
+    }catch(e){
+      _agentState.running = false;
+      panelBody.innerHTML = '<div class="agent-panel"><div class="agent-error">❌ 网络错误: ' + escHtml(e.message) + '</div><button class="agent-run-btn" onclick="loadWritingAgentView()" style="margin-top:8px">重试</button></div>';
+    }
+  }
+
+  async function agentApplyToEditor(){
+    var content = _agentState.result;
+    if(!content || !editor){
+      showToast('没有可应用的内容', 'warning');
+      return;
+    }
+    // 切换到编辑模式
+    if(!editorMode) editorToggleBtn.click();
+    // 在编辑器中插入内容
+    var cursor = editor.getCursor();
+    editor.replaceRange(content, cursor);
+    editor.focus();
+    showToast('已应用到编辑器', 'success');
+
+    // 如果有文件名但编辑器当前为空，直接替换全部
+    if(_agentState.filename && editor.getValue().trim() === ''){
+      // 已经是空编辑器，直接填入内容
+      editor.setValue(content);
+    }
+  }
+
   // ========== 卡住了 ==========
   var stuckToggle = document.getElementById('stuckToggle');
   var stuckPopup = null;
@@ -4906,9 +5238,234 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     });
   }
 
-  // ========== 今日面板初始化与更新 ==========
-  // 首次加载
-  setTimeout(function(){ updateTodayPanel(); }, 300);
+  // ========== 版本控制 ==========
+  var versionState = {view:'log', log:[], branches:[], currentBranch:'', compareFrom:'', compareTo:''};
+
+  function gitApiUrl(path){
+    if(!currentProjectId) return null;
+    return apiBase()+'/api/v1/git/'+currentProjectId+path;
+  }
+
+  async function fetchGitLog(){
+    var url = gitApiUrl('/log?count=30');
+    if(!url) return [];
+    try{
+      var res = await fetch(url, {headers:apiHeaders()});
+      if(!res.ok) return [];
+      var data = await res.json();
+      return data.entries || [];
+    }catch(e){ return []; }
+  }
+
+  async function fetchGitBranches(){
+    var url = gitApiUrl('/branches');
+    if(!url) return {current:'', branches:[]};
+    try{
+      var res = await fetch(url, {headers:apiHeaders()});
+      if(!res.ok) return {current:'', branches:[]};
+      var data = await res.json();
+      return {current:data.current||'main', branches:data.branches||[]};
+    }catch(e){ return {current:'', branches:[]}; }
+  }
+
+  async function fetchGitStatus(){
+    var url = gitApiUrl('/status');
+    if(!url) return {clean:true, branch:'', changes:[]};
+    try{
+      var res = await fetch(url, {headers:apiHeaders()});
+      if(!res.ok) return {clean:true, branch:'', changes:[]};
+      var data = await res.json();
+      return {clean:data.clean, branch:data.branch, changes:data.changes||[]};
+    }catch(e){ return {clean:true, branch:'', changes:[]}; }
+  }
+
+  async function createGitBranch(name){
+    var url = gitApiUrl('/branch');
+    if(!url) return null;
+    try{
+      var res = await fetch(url, {
+        method:'POST', headers:apiHeaders(),
+        body:JSON.stringify({name:name})
+      });
+      if(!res.ok){
+        var err = await res.json();
+        throw new Error((err.detail&&err.detail.message)||'创建失败');
+      }
+      return await res.json();
+    }catch(e){ throw e; }
+  }
+
+  async function checkoutGitRef(ref){
+    var url = gitApiUrl('/checkout');
+    if(!url) return null;
+    try{
+      var res = await fetch(url, {
+        method:'POST', headers:apiHeaders(),
+        body:JSON.stringify({name:ref})
+      });
+      if(!res.ok){
+        var err = await res.json();
+        throw new Error((err.detail&&err.detail.message)||'切换失败');
+      }
+      return await res.json();
+    }catch(e){ throw e; }
+  }
+
+  async function fetchGitDiff(fromHash, toHash){
+    var url = gitApiUrl('/diff');
+    if(!url) return '';
+    try{
+      var res = await fetch(url, {
+        method:'POST', headers:apiHeaders(),
+        body:JSON.stringify({from_hash:fromHash||'HEAD', to_hash:toHash||''})
+      });
+      if(!res.ok) return '';
+      var data = await res.json();
+      return data.diff || '';
+    }catch(e){ return ''; }
+  }
+
+  function renderVersionLog(log, currentBranch, clean){
+    var html = '';
+    if(log.length === 0){
+      html += '<div class="version-empty"><div class="icon">🔀</div><div>暂无提交记录</div><div style="font-size:11px;margin-top:4px">保存章节后将自动生成版本记录</div></div>';
+    }else{
+      html += '<div class="version-log">';
+      log.forEach(function(entry, idx){
+        var isCurrent = (idx === 0);
+        var dateStr = entry.date ? entry.date.replace('T',' ').substring(0,19) : '';
+        html += '<div class="version-entry'+(isCurrent?' ve-current':'')+'" title="'+escHtml(entry.hash)+'">'+
+          '<span class="ve-hash" onclick="viewVersionDiff(\''+entry.hash+'\')" title="查看此版本差异">'+entry.hash.substring(0,8)+'</span>'+
+          '<span class="ve-date">'+escHtml(dateStr)+'</span>'+
+          '<span class="ve-msg">'+escHtml(entry.message)+'</span>'+
+        '</div>';
+      });
+      html += '</div>';
+    }
+    return html;
+  }
+
+  function renderVersionBranches(branches, currentBranch){
+    var html = '<div class="version-branch-list">';
+    if(branches.length === 0){
+      html += '<div class="version-empty"><div class="icon">🌿</div><div>暂无分支</div></div>';
+    }else{
+      branches.forEach(function(b){
+        var isCur = b.current || (b.name === currentBranch);
+        html += '<div class="version-branch-item'+(isCur?' vbi-current':'')+'" onclick="'+
+          (isCur ? '' : 'checkoutGitBranch(\''+escHtml(b.name)+'\')"')+' title="'+(isCur?'当前分支':'点击切换到此分支')+'">'+
+          '<span class="vbi-check">✓</span>'+
+          '<span class="vbi-name">'+escHtml(b.name)+'</span>'+
+          '<span class="vbi-hash">'+escHtml((b.hash||'').substring(0,8))+'</span>'+
+        '</div>';
+      });
+    }
+    html += '</div>';
+    return html;
+  }
+
+  async function renderVersionPanel(){
+    panelBody.innerHTML = '<div class="version-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div class="version-empty"><div class="icon">🔀</div><div>请先选择项目</div></div>';
+      return;
+    }
+
+    try{
+      var [log, branchData, statusData] = await Promise.all([
+        fetchGitLog(),
+        fetchGitBranches(),
+        fetchGitStatus()
+      ]);
+
+      versionState.log = log;
+      versionState.branches = branchData.branches;
+      versionState.currentBranch = branchData.current || statusData.branch || 'main';
+
+      // 如果 git 不可用（log为空），显示未启用提示
+      if(log.length === 0 && branchData.branches.length === 0 && !branchData.current){
+        panelBody.innerHTML = '<div class="version-empty"><div class="icon">🔀</div><div>该项目未启用版本控制</div><div style="font-size:11px;margin-top:4px;color:var(--text-muted)">新建项目时会自动初始化 Git。已有项目请先保存章节，将自动创建版本记录。</div></div>';
+        return;
+      }
+
+      versionState._clean = statusData.clean;
+      renderVersionMainView(log, versionState.currentBranch, statusData.clean);
+    }catch(e){
+      panelBody.innerHTML = '<div class="version-error">加载版本信息失败: '+escHtml(e.message||'未知错误')+'</div>';
+    }
+  }
+
+  window.renderVersionPanel = renderVersionPanel;
+  window.renderVersionMainView = renderVersionMainView;
+  window.renderVersionDiffForm = renderVersionDiffForm;
+  window.renderVersionLog = renderVersionLog;
+  window.renderVersionBranches = renderVersionBranches;
+  window.createGitBranch = createGitBranch;
+  window.checkoutGitRef = checkoutGitRef;
+  window.fetchGitDiff = fetchGitDiff;
+  window.escHtml = escHtml;
+  window.versionState = versionState;
+
+  function renderVersionMainView(log, currentBranch, clean){
+    var statusText = clean ? '干净' : '有更改';
+    var statusClass = clean ? 'vbb-clean' : 'vbb-dirty';
+    var statusIcon = clean ? '✓' : '⚠';
+
+    panelBody.innerHTML = '<div class="version-container">'+
+      '<div class="version-branch-bar">'+
+        '<span class="vbb-icon">🔀</span>'+
+        '<span class="vbb-name">'+escHtml(currentBranch)+'</span>'+
+        '<span class="vbb-status '+statusClass+'">'+statusIcon+' '+statusText+'</span>'+
+      '</div>'+
+      '<div class="version-actions">'+
+        '<button onclick="showNewBranchForm()" class="va-primary">+ 新建分支</button>'+
+        '<button onclick="switchVersionView(\'log\')" class="'+(versionState.view==='log'?'va-active':'')+'" id="vViewLogBtn">📜 提交记录</button>'+
+        '<button onclick="switchVersionView(\'branches\')" class="'+(versionState.view==='branches'?'va-active':'')+'" id="vViewBranchBtn">🌿 分支</button>'+
+        '<button onclick="switchVersionView(\'diff\')" class="'+(versionState.view==='diff'?'va-active':'')+'" id="vViewDiffBtn">📋 比较</button>'+
+        '<button onclick="refreshVersionPanel()" title="刷新">🔄 刷新</button>'+
+      '</div>';
+
+    if(versionState.view === 'log' || versionState.view === 'branches'){
+      panelBody.innerHTML += '<div id="versionViewContainer">';
+      if(versionState.view === 'log'){
+        panelBody.innerHTML += renderVersionLog(log, currentBranch, clean);
+      }else{
+        panelBody.innerHTML += renderVersionBranches(versionState.branches, currentBranch);
+      }
+      panelBody.innerHTML += '</div>';
+    }else if(versionState.view === 'diff'){
+      panelBody.innerHTML += renderVersionDiffForm();
+    }
+
+    panelBody.innerHTML += '<div class="version-form-overlay" id="versionFormOverlay"><div class="version-form-box">'+
+      '<div class="vfb-title">🌿 新建分支</div>'+
+      '<input type="text" id="versionNewBranchInput" placeholder="分支名称 (如 feature/xxx)" maxlength="80">'+
+      '<div class="vfb-actions">'+
+        '<button class="vfb-cancel" onclick="hideNewBranchForm()">取消</button>'+
+        '<button class="vfb-confirm" onclick="confirmNewBranch()">创建</button>'+
+      '</div></div></div>'+
+    '</div>';
+  }
+
+  function renderVersionDiffForm(){
+    var log = versionState.log || [];
+    var options = '<option value="HEAD">HEAD</option>';
+    log.forEach(function(entry){
+      var shortHash = entry.hash.substring(0,8);
+      var msg = escHtml(entry.message).substring(0,50);
+      options += '<option value="'+entry.hash+'">'+shortHash+' - '+msg+'</option>';
+    });
+
+    return '<div class="version-compare">'+
+      '<select id="vDiffFrom" style="font-family:monospace;font-size:10px">'+options+'</select>'+
+      '<span style="color:var(--text-muted);font-size:11px">→</span>'+
+      '<select id="vDiffTo" style="font-family:monospace;font-size:10px"><option value="">工作区</option>'+options+'</select>'+
+      '<button class="vc-btn" id="vDiffBtn" onclick="runVersionDiff()">比较</button>'+
+    '</div>'+
+    '<div class="version-diff-panel active" id="versionDiffPanel">'+
+      '<div class="version-diff-empty">选择两次 commit 后点击"比较"</div>'+
+    '</div>';
 
   // 编辑器切换时更新今日面板
   editorToggleBtn.addEventListener('click', function(){ setTimeout(function(){ updateTodayPanel(); }, 50); });
@@ -4928,6 +5485,103 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   // 首次更新目标
   setTimeout(function(){ refreshGoalFromApi(); }, 1000);
 })();
+
+// ========== 版本控制全局函数 ==========
+window.switchVersionView = function(view){
+  var stateEl = document.querySelector('#rightPanel .panel-body');
+  if(!stateEl || !window.versionState) return;
+  window.versionState.view = view;
+  window.renderVersionMainView(window.versionState.log, window.versionState.currentBranch, window.versionState._clean);
+};
+
+window.refreshVersionPanel = function(){
+  if(typeof window.renderVersionPanel === 'function') window.renderVersionPanel();
+};
+
+window.showNewBranchForm = function(){
+  var overlay = document.getElementById('versionFormOverlay');
+  if(overlay) overlay.classList.add('open');
+  var input = document.getElementById('versionNewBranchInput');
+  if(input) setTimeout(function(){ input.focus(); }, 100);
+};
+
+window.hideNewBranchForm = function(){
+  var overlay = document.getElementById('versionFormOverlay');
+  if(overlay) overlay.classList.remove('open');
+};
+
+window.confirmNewBranch = function(){
+  var input = document.getElementById('versionNewBranchInput');
+  if(!input || !input.value.trim()) return;
+  var name = input.value.trim();
+  input.disabled = true;
+  createGitBranch(name).then(function(){
+    input.disabled = false;
+    input.value = '';
+    hideNewBranchForm();
+    return refreshVersionPanel();
+  }).catch(function(e){
+    input.disabled = false;
+    alert('创建分支失败: '+e.message);
+  });
+};
+
+window.checkoutGitBranch = function(name){
+  checkoutGitRef(name).then(function(){
+    return refreshVersionPanel();
+  }).catch(function(e){
+    alert('切换分支失败: '+e.message);
+  });
+};
+
+window.viewVersionDiff = function(hash){
+  window.versionState.view = 'diff';
+  window.renderVersionMainView(window.versionState.log, window.versionState.currentBranch, window.versionState._clean);
+  // 设置下拉框
+  setTimeout(function(){
+    var fromEl = document.getElementById('vDiffFrom');
+    if(fromEl && hash) fromEl.value = hash;
+    runVersionDiff();
+  }, 100);
+};
+
+window.runVersionDiff = function(){
+  var fromEl = document.getElementById('vDiffFrom');
+  var toEl = document.getElementById('vDiffTo');
+  var panel = document.getElementById('versionDiffPanel');
+  if(!fromEl || !panel) return;
+
+  var fromVal = fromEl.value || 'HEAD';
+  var toVal = toEl ? toEl.value : '';
+
+  panel.innerHTML = '<div class="version-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+
+  fetchGitDiff(fromVal, toVal).then(function(diff){
+    if(!diff){
+      panel.innerHTML = '<div class="version-diff-empty">无差异或比较失败</div>';
+      return;
+    }
+    // 渲染带颜色的 diff
+    var lines = diff.split('\n');
+    var html = '';
+    lines.forEach(function(line){
+      if(line.startsWith('+') && !line.startsWith('+++')){
+        html += '<div class="vd-add">'+escHtml(line)+'</div>';
+      }else if(line.startsWith('-') && !line.startsWith('---')){
+        html += '<div class="vd-del">'+escHtml(line)+'</div>';
+      }else if(line.startsWith('@@')){
+        html += '<div class="vd-header-line">'+escHtml(line)+'</div>';
+      }else if(line.startsWith('diff --git') || line.startsWith('index ') || line.startsWith('---') || line.startsWith('+++')){
+        html += '<div class="vd-header-line">'+escHtml(line)+'</div>';
+      }else{
+        html += '<div>'+escHtml(line)+'</div>';
+      }
+    });
+    panel.innerHTML = html;
+  }).catch(function(){
+    panel.innerHTML = '<div class="version-diff-empty">加载差异失败</div>';
+  });
+};
 </script>
 
 <script>

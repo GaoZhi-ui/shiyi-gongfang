@@ -12,7 +12,7 @@ POST /knowledge/{filepath}   — 写入/覆盖某个知识库文件
 import re
 from pathlib import Path
 from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
@@ -195,4 +195,62 @@ def update_knowledge(filepath: str, body: FileUpdate):
         raise HTTPException(423, detail={"code": "PATH_TRAVERSAL", "message": "路径越界"})
     except KnowledgeFileTypeError:
         raise HTTPException(400, detail={"code": "FILE_TYPE_ERROR", "message": "不支持的文件类型"})
+
+    # 自动向量化知识库文件
+    try:
+        from core.vector_store import get_vector_store
+        # 读取 config.yaml 确定 project_id
+        yaml_path = BASE / "config.yaml"
+        project_id = "default"
+        if yaml_path.exists():
+            import yaml
+            cfg = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+            active = cfg.get("active_project", "")
+            if active:
+                project_id = active
+        get_vector_store().add_knowledge(project_id, filepath, body.content)
+    except Exception as e:
+        import logging as _lg
+        _lg.getLogger("knowledge").warning(f"知识库文件向量化失败 [{filepath}]: {e}")
+
     return {"status": "ok", "path": filepath, "size": len(body.content.encode("utf-8"))}
+
+
+class SearchQueryParams(BaseModel):
+    q: str = Field(..., min_length=1, description="搜索关键词")
+    project_id: str = Field("default", description="项目标识符")
+    top_k: int = Field(5, ge=1, le=20, description="返回结果数量")
+
+
+@router.get("/search")
+def search_knowledge(
+    q: str = Query("", description="搜索关键词"),
+    project_id: str = Query("default", description="项目标识符"),
+    top_k: int = Query(5, ge=1, le=20, description="返回结果数量"),
+):
+    """
+    向量搜索知识库（语义搜索）。
+
+    使用 sentence-transformers 将查询文本嵌入，在 ChromaDB 中检索最相关的章节/知识片段。
+
+    参数:
+      q: 搜索关键词
+      project_id: 项目标识符（默认 "default"）
+      top_k: 返回结果数量（1-20，默认5）
+    """
+    if not q:
+        raise HTTPException(400, detail={"code": "INVALID_PARAMETER", "message": "搜索关键词不能为空"})
+
+    try:
+        from core.vector_store import get_vector_store
+        vs = get_vector_store()
+        results = vs.search(query=q, project_id=project_id, top_k=top_k)
+    except Exception as e:
+        raise HTTPException(500, detail={"code": "SEARCH_ERROR", "message": f"搜索失败: {e}"})
+
+    return {
+        "query": q,
+        "project_id": project_id,
+        "results": results,
+        "total": len(results),
+    }

@@ -27,6 +27,8 @@ from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 import httpx
 
+from core.vector_store import get_vector_store
+
 router = APIRouter(prefix="/chat", tags=["chat"])
 BASE = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE / "data"
@@ -351,6 +353,28 @@ def _build_payload(provider: str, req: ChatRequest) -> dict:
 
     if context_notes:
         messages.append({"role": "system", "content": "\n".join(context_notes)})
+
+    # 注入向量检索上下文（RAG）
+    if req.context and req.context.project_id and req.messages:
+        try:
+            last_user_msg = ""
+            for m in reversed(req.messages):
+                if m.role == "user":
+                    last_user_msg = m.content
+                    break
+            if last_user_msg:
+                vs = get_vector_store()
+                results = vs.search(query=last_user_msg, project_id=req.context.project_id, top_k=5)
+                if results:
+                    rag_parts = ["相关章节内容："]
+                    for r in results:
+                        source = r.get("filename", r.get("title", "未知"))
+                        rag_parts.append(f"[{source}] {r['content'][:400]}\n")
+                    rag_text = "\n".join(rag_parts)
+                    messages.append({"role": "system", "content": rag_text})
+        except Exception as e:
+            logger = __import__("logging").getLogger("chat")
+            logger.warning(f"向量检索失败: {e}")
 
     # 注入 writing-guide（如果 project_id 存在）
     if req.context and req.context.project_id:

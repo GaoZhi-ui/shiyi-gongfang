@@ -16,7 +16,7 @@ POST   /projects/{id}/duplicate  — 复制项目
     └── scenes/             # 场景文件
 """
 
-import json, shutil, uuid
+import json, shutil, subprocess, uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
@@ -105,6 +105,78 @@ def _save_config(proj_dir: Path, cfg: dict):
     cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+GITIGNORE_TEMPLATE = """# 运行时数据
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 导出缓存
+export/
+
+# 本地配置
+.env
+config.yaml
+project_id.txt
+
+# 日志
+*.log
+"""
+
+
+def _is_git_available() -> bool:
+    """检查 git 命令是否可用"""
+    try:
+        subprocess.run(
+            ["git", "--version"],
+            capture_output=True, timeout=5,
+        )
+        return True
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+def _init_git(proj_dir: Path):
+    """在项目目录初始化 Git 仓库（静默跳过不可用情况）"""
+    if not _is_git_available():
+        return
+    git_dir = proj_dir / ".git"
+    if git_dir.is_dir():
+        return  # 已初始化
+    try:
+        subprocess.run(
+            ["git", "init"],
+            cwd=str(proj_dir),
+            capture_output=True, timeout=10,
+        )
+        # 写入 .gitignore
+        gitignore_path = proj_dir / ".gitignore"
+        if not gitignore_path.exists():
+            gitignore_path.write_text(GITIGNORE_TEMPLATE, encoding="utf-8")
+        # 初始 commit
+        subprocess.run(
+            ["git", "add", "."],
+            cwd=str(proj_dir),
+            capture_output=True, timeout=10,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "init: 项目初始提交"],
+            cwd=str(proj_dir),
+            capture_output=True, timeout=10,
+        )
+    except Exception:
+        pass  # 静默跳过
+
+
 def _init_project_dir(proj_dir: Path, cfg: dict):
     """创建初始项目目录结构"""
     proj_dir.mkdir(parents=True, exist_ok=True)
@@ -112,6 +184,7 @@ def _init_project_dir(proj_dir: Path, cfg: dict):
     (proj_dir / "knowledge").mkdir(exist_ok=True)
     (proj_dir / "scenes").mkdir(exist_ok=True)
     _save_config(proj_dir, cfg)
+    _init_git(proj_dir)
 
 
 # ─── Pydantic 模型 ───
@@ -278,6 +351,7 @@ def create_project(body: CreateProjectRequest):
         cfg["updated_at"] = now
         cfg["description"] = cfg.get("description", "")
         _save_config(proj_dir, cfg)
+        _init_git(proj_dir)
     else:
         # 模板没有 config.json，创建默认
         clean_name = sanitize_text(body.name)
