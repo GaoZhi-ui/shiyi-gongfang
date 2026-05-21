@@ -64,7 +64,7 @@ def health_check():
     return {
         "status": "ok",
         "app": "写作助手工坊",
-        "version": "2.0.0",
+        "version": "0.4.1",
         "python_version": sys.version.split()[0],
         "timestamp": datetime.now().astimezone().isoformat(),
         "config": config_preview,

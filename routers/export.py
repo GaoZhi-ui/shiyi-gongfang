@@ -21,7 +21,10 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from core.export_engine import build_document
-from core.export_consumers import DocxConsumer, TxtConsumer, PdfConsumer, MarkdownConsumer
+from core.export_consumers import (
+    DocxConsumer, TxtConsumer, PdfConsumer, MarkdownConsumer,
+    EpubConsumer, EbookConsumer,
+)
 
 router = APIRouter(prefix="/export", tags=["export"])
 BASE = Path(__file__).resolve().parent.parent
@@ -170,6 +173,29 @@ def _export_markdown_zip(chapters: list[tuple[str, str]], title: str) -> Path:
     return consumer.consume(doc)
 
 
+def _export_epub(chapters: list[tuple[str, str]], title: str) -> Path:
+    """Token化 → EpubConsumer 管线"""
+    doc = build_document(title, chapters)
+    consumer = EpubConsumer(export_dir=EXPORT_DIR)
+    return consumer.consume(doc)
+
+
+def _export_ebook(
+    chapters: list[tuple[str, str]],
+    title: str,
+    author: str = "写作助手工坊",
+    subtitle: str | None = None,
+) -> Path:
+    """Token化 → EbookConsumer 管线（含封面 + 目录）"""
+    doc = build_document(title, chapters)
+    consumer = EbookConsumer(
+        export_dir=EXPORT_DIR,
+        author=author,
+        cover_subtitle=subtitle,
+    )
+    return consumer.consume(doc)
+
+
 # ─── 路由 ───
 
 
@@ -229,5 +255,77 @@ def export_pdf(body: ExportBody):
         "format": "pdf",
         "filename": filepath.name,
         "chapter_count": len(chapters),
+        "download_url": f"/export/{filepath.name}",
+    }
+
+
+# ─── EPUB 导出模型 ───
+
+
+class EpubExportBody(ExportBody):
+    """EPUB 导出请求体，复用 ExportBody 的字段"""
+    pass
+
+
+# ─── 电子书编译请求体 ───
+
+
+class EbookExportBody(BaseModel):
+    chapters: list[str] | Literal["all"] = Field(
+        "all",
+        description="要编译的章节列表，或 'all' 表示全部",
+    )
+    title: str | None = Field(
+        None,
+        description="电子书标题（可选）",
+    )
+    author: str = Field(
+        "写作助手工坊",
+        description="作者名，用于封面页",
+    )
+    subtitle: str | None = Field(
+        None,
+        description="封面副标题（可选）",
+    )
+
+
+# ─── EPUB 导出端点 ───
+
+
+@router.post("/epub", status_code=201)
+def export_epub(body: EpubExportBody):
+    """导出为 EPUB 电子书"""
+    chapters = _collect_chapters(body.chapters)
+    title = _export_title(body.chapters, body.title)
+    filepath = _export_epub(chapters, title)
+    return {
+        "status": "ok",
+        "format": "epub",
+        "filename": filepath.name,
+        "chapter_count": len(chapters),
+        "download_url": f"/export/{filepath.name}",
+    }
+
+
+# ─── 电子书编译（多章合并 + 封面 + 目录）端点 ───
+
+
+@router.post("/ebook", status_code=201)
+def export_ebook(body: EbookExportBody):
+    """编译为完整电子书（含封面页 + 完整目录），输出 EPUB 格式"""
+    chapters = _collect_chapters(body.chapters)
+    title = _export_title(body.chapters, body.title)
+    filepath = _export_ebook(
+        chapters=chapters,
+        title=title,
+        author=body.author,
+        subtitle=body.subtitle,
+    )
+    return {
+        "status": "ok",
+        "format": "ebook",
+        "filename": filepath.name,
+        "chapter_count": len(chapters),
+        "author": body.author,
         "download_url": f"/export/{filepath.name}",
     }

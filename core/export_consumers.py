@@ -7,6 +7,7 @@ Token化导出消费者
 
 from __future__ import annotations
 import re
+import uuid
 import zipfile
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
@@ -429,6 +430,396 @@ class PdfConsumer(BaseConsumer):
         filepath = self.export_dir / filename
         pdf.output(str(filepath))
         return filepath
+
+
+# ─── EPUB 消费者 ───
+
+
+class EpubConsumer(BaseConsumer):
+    """将 FormattedDocument 渲染为 EPUB 电子书。
+
+    使用 ebooklib 库生成标准 EPUB 文件，包含:
+      - 标题页
+      - 章节标题 + 正文 + 章末日记
+      - NCX 自动目录
+      - 样式表
+    """
+
+    def __init__(
+        self,
+        export_dir: str | Path,
+        author: str = "写作助手工坊",
+    ):
+        super().__init__(export_dir)
+        self.author = author
+
+    def _tokens_to_html(self, tokens: list[ChapterToken]) -> str:
+        """将 Token 流渲染为 HTML 片段"""
+        html_parts: list[str] = []
+        diary_mode = False
+
+        for token in tokens:
+            if token.type == "heading":
+                tag = f"h{min(token.level, 4)}"
+                for item in token.content:
+                    html_parts.append(f"<{tag}>{_escape_html(item)}</{tag}>")
+
+            elif token.type == "paragraph":
+                for line in token.content:
+                    stripped = line.strip()
+                    if stripped:
+                        html_parts.append(f"<p>{_escape_html(stripped)}</p>")
+
+            elif token.type == "list":
+                html_parts.append("<ul>")
+                for item in token.content:
+                    html_parts.append(f"<li>{_escape_html(item)}</li>")
+                html_parts.append("</ul>")
+
+            elif token.type == "blank":
+                pass
+
+            elif token.type == "diary":
+                if not diary_mode:
+                    diary_mode = True
+                    html_parts.append('<hr class="diary-sep" />')
+                    html_parts.append(
+                        '<p class="diary-label">—— 章末日记 ——</p>'
+                    )
+                for line in token.content:
+                    stripped = line.strip()
+                    if stripped:
+                        html_parts.append(
+                            f'<p class="diary">{_escape_html(stripped)}</p>'
+                        )
+
+        return "\n".join(html_parts)
+
+    def _make_title_page(self, document: FormattedDocument) -> str:
+        """生成 EPUB 标题页 HTML"""
+        now_str = datetime.now(timezone.utc).astimezone().strftime(
+            "%Y-%m-%d %H:%M"
+        )
+        return f"""<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>{_escape_html(document.title)}</title></head>
+<body>
+  <div style="text-align:center;margin-top:30vh;">
+    <h1 style="font-size:2em;">{_escape_html(document.title)}</h1>
+    <p style="color:#666;">作者: {_escape_html(self.author)}</p>
+    <p style="color:#999;font-size:0.9em;">共 {document.chapter_count} 章</p>
+    <p style="color:#999;font-size:0.9em;">导出时间: {now_str}</p>
+  </div>
+</body>
+</html>"""
+
+    def _make_chapter_html(
+        self,
+        chapter_title: str,
+        tokens: list[ChapterToken],
+        uid: str,
+    ) -> str:
+        """生成单章 HTML"""
+        body_html = self._tokens_to_html(tokens)
+        return f"""<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>{_escape_html(chapter_title)}</title>
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+  <h1 class="chapter-title">{_escape_html(chapter_title)}</h1>
+  {body_html}
+</body>
+</html>"""
+
+    def _make_css(self) -> str:
+        """生成 EPUB 样式表"""
+        return """
+@page { margin: 1em 1.5em; }
+body { font-family: "Noto Serif", "Source Han Serif", serif;
+       line-height: 1.8; color: #333; }
+h1.chapter-title { text-align: center; font-size: 1.6em;
+                   margin: 2em 0 1.5em; }
+h2 { font-size: 1.3em; margin: 1.5em 0 0.8em; }
+h3, h4 { font-size: 1.1em; margin: 1.2em 0 0.6em; }
+p { text-indent: 2em; margin: 0.5em 0; }
+ul { margin: 0.5em 0 0.5em 2em; }
+li { margin: 0.3em 0; }
+hr.diary-sep { border: none; border-top: 1px dashed #ccc;
+               margin: 2em 0 1em; }
+p.diary-label { text-align: center; color: #888;
+                font-size: 0.9em; }
+p.diary { color: #666; font-style: italic;
+           text-indent: 2em; }
+"""
+
+    def consume(self, document: FormattedDocument) -> Path:
+        """生成 .epub 文件，返回文件路径"""
+        try:
+            import ebooklib
+            from ebooklib import epub
+        except ImportError:
+            raise RuntimeError(
+                "ebooklib 未安装，请执行 pip install ebooklib"
+            )
+
+        book = epub.EpubBook()
+
+        # 元数据
+        book.set_identifier(
+            f"urn:uuid:{uuid.uuid4().hex[:32]}"
+        )
+        book.set_title(document.title)
+        book.set_language("zh-CN")
+        book.add_author(self.author)
+
+        # 样式表
+        css_content = self._make_css()
+        css_item = epub.EpubItem(
+            uid="style",
+            file_name="style.css",
+            media_type="text/css",
+            content=css_content.encode("utf-8"),
+        )
+        book.add_item(css_item)
+
+        # 标题页
+        title_html = self._make_title_page(document)
+        title_item = epub.EpubHtml(
+            uid="title",
+            file_name="title.xhtml",
+            content=title_html.encode("utf-8"),
+        )
+        title_item.add_item(css_item)
+        book.add_item(title_item)
+
+        # 章节
+        spine = ["nav", title_item]
+        toc = []
+
+        for i, (filename, tokens) in enumerate(document.chapters):
+            chapter_title = filename.replace(".md", "")
+            uid = f"chap_{i+1:03d}"
+
+            chap_html = self._make_chapter_html(
+                chapter_title, tokens, uid
+            )
+            chap_item = epub.EpubHtml(
+                uid=uid,
+                file_name=f"chapter_{i+1:03d}.xhtml",
+                content=chap_html.encode("utf-8"),
+            )
+            chap_item.add_item(css_item)
+            book.add_item(chap_item)
+
+            spine.append(chap_item)
+            toc.append(epub.Link(
+                f"chapter_{i+1:03d}.xhtml",
+                chapter_title,
+                uid,
+            ))
+
+        # NCX 目录 + 导航
+        book.toc = toc
+        book.add_item(epub.EpubNcx())
+        book.add_item(epub.EpubNav())
+
+        book.spine = spine
+
+        # 写入文件
+        filename = _safe_filename(document.title, ".epub")
+        filepath = self.export_dir / filename
+        epub.write_epub(str(filepath), book)
+        return filepath
+
+
+# ─── 电子书编译消费者（多章合并 + 封面 + 目录） ───
+
+
+class EbookConsumer(BaseConsumer):
+    """合并多章为完整电子书，含封面页和完整目录。
+
+    输出为 EPUB 格式，复用 EpubConsumer 的渲染逻辑。
+    额外功能：
+      - 自动生成封面页（标题 + 作者 + 日期）
+      - 完整章节目录
+      - 多章合并为一个文件
+    """
+
+    def __init__(
+        self,
+        export_dir: str | Path,
+        author: str = "写作助手工坊",
+        cover_subtitle: str | None = None,
+    ):
+        super().__init__(export_dir)
+        self.author = author
+        self.cover_subtitle = cover_subtitle
+
+    def consume(self, document: FormattedDocument) -> Path:
+        """生成含封面和目录的 .epub 文件，返回文件路径"""
+        # 委派给 EpubConsumer，但先注入封面页
+        # 用 EpubConsumer 的渲染管线
+        epub_consumer = EpubConsumer(
+            export_dir=self.export_dir,
+            author=self.author,
+        )
+
+        # 用 FormattedDocument 的 all_tokens() 配合自定义封面
+        return self._build_ebook(document, epub_consumer)
+
+    def _build_ebook(
+        self,
+        document: FormattedDocument,
+        epub_consumer: EpubConsumer,
+    ) -> Path:
+        """构建完整的电子书"""
+        try:
+            import ebooklib
+            from ebooklib import epub
+        except ImportError:
+            raise RuntimeError(
+                "ebooklib 未安装，请执行 pip install ebooklib"
+            )
+
+        book = epub.EpubBook()
+
+        # 元数据
+        book.set_identifier(
+            f"urn:uuid:{uuid.uuid4().hex[:32]}"
+        )
+        book.set_title(document.title)
+        book.set_language("zh-CN")
+        book.add_author(self.author)
+
+        # 样式表
+        css_content = epub_consumer._make_css()
+        css_item = epub.EpubItem(
+            uid="style",
+            file_name="style.css",
+            media_type="text/css",
+            content=css_content.encode("utf-8"),
+        )
+        book.add_item(css_item)
+
+        # ── 封面页 ──
+        now_str = datetime.now(timezone.utc).astimezone().strftime(
+            "%Y-%m-%d"
+        )
+        subtitle_html = ""
+        if self.cover_subtitle:
+            subtitle_html = (
+                f'<p style="color:#888;margin-top:0.5em;'
+                f'font-size:1.1em;">{_escape_html(self.cover_subtitle)}</p>'
+            )
+        cover_html = f"""<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>{_escape_html(document.title)}</title></head>
+<body>
+  <div style="text-align:center;margin-top:25vh;">
+    <h1 style="font-size:2.2em;letter-spacing:0.1em;">{_escape_html(document.title)}</h1>
+    {subtitle_html}
+    <p style="color:#666;margin-top:2em;">作者: {_escape_html(self.author)}</p>
+    <p style="color:#999;font-size:0.85em;">{now_str}</p>
+    <hr style="width:30%;margin:2em auto;border:none;border-top:1px solid #ddd;" />
+    <p style="color:#aaa;font-size:0.85em;">共 {document.chapter_count} 章</p>
+  </div>
+</body>
+</html>"""
+
+        cover_item = epub.EpubHtml(
+            uid="cover",
+            file_name="cover.xhtml",
+            content=cover_html.encode("utf-8"),
+        )
+        cover_item.add_item(css_item)
+        book.add_item(cover_item)
+
+        # ── 目录页 ──
+        toc_lines = [
+            '<?xml version="1.0" encoding="utf-8"?>',
+            '<!DOCTYPE html>',
+            '<html xmlns="http://www.w3.org/1999/xhtml">',
+            '<head><title>目录</title>',
+            '<link rel="stylesheet" type="text/css" href="style.css"/>',
+            '</head><body>',
+            '<h1 style="text-align:center;margin:2em 0 1.5em;">目录</h1>',
+            '<ul style="list-style:none;padding:0;">',
+        ]
+        for i, (filename, _) in enumerate(document.chapters):
+            chap_title = filename.replace(".md", "")
+            html_fn = f"chapter_{i+1:03d}.xhtml"
+            toc_lines.append(
+                f'<li style="margin:0.6em 0;">'
+                f'<a href="{html_fn}" '
+                f'style="text-decoration:none;color:#333;'
+                f'font-size:1.1em;">{_escape_html(chap_title)}</a></li>'
+            )
+        toc_lines.append("</ul></body></html>")
+
+        toc_item = epub.EpubHtml(
+            uid="toc_page",
+            file_name="toc.xhtml",
+            content="\n".join(toc_lines).encode("utf-8"),
+        )
+        toc_item.add_item(css_item)
+        book.add_item(toc_item)
+
+        # ── 章节内容 ──
+        spine = ["nav", cover_item, toc_item]
+        epub_toc: list = []
+
+        for i, (filename, tokens) in enumerate(document.chapters):
+            chap_title = filename.replace(".md", "")
+            uid = f"chap_{i+1:03d}"
+
+            chap_html = epub_consumer._make_chapter_html(
+                chap_title, tokens, uid
+            )
+            chap_item = epub.EpubHtml(
+                uid=uid,
+                file_name=f"chapter_{i+1:03d}.xhtml",
+                content=chap_html.encode("utf-8"),
+            )
+            chap_item.add_item(css_item)
+            book.add_item(chap_item)
+
+            spine.append(chap_item)
+            epub_toc.append(epub.Link(
+                f"chapter_{i+1:03d}.xhtml",
+                chap_title,
+                uid,
+            ))
+
+        # NCX + Nav
+        book.toc = epub_toc
+        book.add_item(epub.EpubNcx())
+        book.add_item(epub.EpubNav())
+
+        book.spine = spine
+
+        # 写入
+        filename = _safe_filename(document.title, ".epub")
+        filepath = self.export_dir / filename
+        epub.write_epub(str(filepath), book)
+        return filepath
+
+
+# ─── 辅助：HTML 转义 ───
+
+
+def _escape_html(text: str) -> str:
+    """转义 HTML 特殊字符"""
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = text.replace('"', "&quot;")
+    text = text.replace("'", "&#39;")
+    return text
 
 
 # ─── Markdown 消费者 ───

@@ -14,7 +14,7 @@ This repository is **AI-generated code**.
 
 ## Why AI-generated
 
-- Rapid iteration: v1.0 → v2.1 in a single session
+- Rapid iteration: v0.1 → v0.4 in a single session
 - Multi-agent parallel development: 3+ agents working simultaneously
 - Full code lifecycle: planning → writing → testing → fixing → documenting
 
@@ -24,4 +24,4 @@ Every feature, architectural decision, and code change was reviewed and approved
 
 ---
 
-*Last updated: 2026-05-20*
+*Last updated: 2026-05-21 | Beta 0.4.1*

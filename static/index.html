@@ -718,6 +718,44 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .chapter-nav .nav-label{font-size:11px;color:var(--text-muted);cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .12s;user-select:none}
 .chapter-nav .nav-label:hover{background:var(--bg-hover);color:var(--text-primary)}
 
+/* ===== 角色卡片增强 ===== */
+.char-card.enhanced{border:1px solid rgba(var(--accent-rgb), 0.3);background:linear-gradient(135deg,var(--bg-secondary) 0%,rgba(var(--accent-rgb), 0.03) 100%)}
+.char-card.enhanced:hover{border-color:var(--accent);box-shadow:0 0 12px rgba(var(--accent-rgb), 0.08)}
+.char-card .cc-fields{margin-top:6px;margin-left:18px;display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}
+.char-card .cc-fields .cc-field{font-size:11px;color:var(--text-secondary);display:flex;gap:4px}
+.char-card .cc-fields .cc-field .cc-label{color:var(--text-muted);flex-shrink:0;min-width:32px}
+.char-card .cc-fields .cc-field-full{grid-column:1/-1}
+.char-card .cc-fields .cc-backstory{font-size:11px;color:var(--text-secondary);line-height:1.5;margin-top:2px;padding:6px 8px;background:rgba(var(--accent-rgb),0.04);border-radius:4px;border-left:2px solid rgba(var(--accent-rgb),0.2)}
+
+/* ===== 工具栏按钮统一样式 ===== */
+.editor-toolbar .tb-btn{background:transparent;border:1px solid var(--bg-surface);border-radius:5px;color:var(--text-muted);padding:3px 8px;font-size:11px;cursor:pointer;transition:all .12s;user-select:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.editor-toolbar .tb-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.editor-toolbar .tb-btn.active{background:rgba(var(--accent-rgb), 0.1);color:var(--accent);border-color:rgba(var(--accent-rgb), 0.3)}
+.editor-toolbar .tb-btn:disabled{opacity:.4;cursor:not-allowed}
+.editor-toolbar .tb-btn.speaking{background:rgba(var(--danger-rgb), 0.1);color:var(--danger);border-color:rgba(var(--danger-rgb), 0.3)}
+
+/* ===== 日历组件 ===== */
+.calendar-container{padding:4px 0;display:flex;flex-direction:column;gap:10px}
+.calendar-header{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
+.calendar-header .cal-nav-btn{background:transparent;border:1px solid var(--bg-surface);border-radius:5px;color:var(--text-muted);width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;font-size:13px}
+.calendar-header .cal-nav-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.calendar-header .cal-title{font-size:13px;color:var(--text-primary);font-weight:500}
+.calendar-header .cal-today-btn{background:transparent;border:1px solid var(--bg-surface);border-radius:5px;color:var(--accent);padding:3px 10px;font-size:11px;cursor:pointer;transition:all .12s}
+.calendar-header .cal-today-btn:hover{background:rgba(var(--accent-rgb),0.1);border-color:rgba(var(--accent-rgb),0.3)}
+.calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;color:var(--text-muted);padding:4px 0;border-bottom:1px solid var(--bg-surface)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:4px 0}
+.calendar-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;font-size:12px;color:var(--text-muted);background:transparent;position:relative;min-height:40px;transition:all .1s}
+.calendar-day.other-month{opacity:.25}
+.calendar-day.today{background:rgba(var(--accent-rgb),0.1);color:var(--accent);font-weight:600}
+.calendar-day .cal-dot-wrap{display:flex;gap:1px;align-items:center;justify-content:center;height:8px;margin-top:1px}
+.calendar-day .cal-dot{background:var(--accent);border-radius:50%;transition:all .2s}
+.calendar-day .cal-dot.s-1{width:4px;height:4px}
+.calendar-day .cal-dot.s-2{width:6px;height:6px}
+.calendar-day .cal-dot.s-3{width:8px;height:8px}
+.calendar-day .cal-day-num{height:16px;display:flex;align-items:center}
+.calendar-day:hover{background:var(--bg-hover);color:var(--text-primary)}
+.calendar-empty{padding:40px 0;text-align:center;color:var(--text-muted);font-size:12px}
+
 /* ===== Welcome Guide ===== */
 .welcome-guide{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;overflow-y:auto;text-align:center;gap:24px}
 .welcome-guide.show{display:flex}
@@ -964,6 +1002,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="stats"><span class="icon">📊</span><span class="label">统计</span></div>
     <div class="tool-item" data-tool="inspiration"><span class="icon">💡</span><span class="label">灵感</span></div>
     <div class="tool-item" data-tool="guide"><span class="icon">📖</span><span class="label">规范</span></div>
+    <div class="tool-item" data-tool="calendar"><span class="icon">📅</span><span class="label">日历</span></div>
 
     <div class="tool-group-title">AI</div>
     <div class="tool-item" data-tool="agentWrite"><span class="icon">🤖</span><span class="label">智能写作</span></div>
@@ -1026,6 +1065,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       <span class="tw-toggle" id="twToggle">⏳ 打字机滚动</span>
       <span class="preview-toggle" id="previewToggle">📄 预览</span>
       <span class="stuck-toggle" id="stuckToggle">🚧 卡住了</span>
+      <span class="tb-btn" id="ttsToggle" style="display:none">🔊 朗读</span>
+      <span class="tb-btn" id="exportImgBtn" style="display:none">🖼️ 导出图片</span>
       <div class="toolbar-spacer"></div>
       <div class="chapter-nav" id="chapterNav">
         <button class="nav-arrow" id="navPrev" title="上一章 (Ctrl+↑)">▲</button>
@@ -2139,6 +2180,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '📖';
       panelTitle.textContent = '写作规范';
       loadWritingGuideView();
+    }else if(type==='calendar'){
+      panelIcon.textContent = '📅';
+      panelTitle.textContent = '写作日历';
+      loadCalendarView();
     }else if(type==='agentWrite'){
       panelIcon.textContent = '🤖';
       panelTitle.textContent = '智能写作';
@@ -2750,6 +2795,252 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }finally{
       editorSaveBtn.disabled = false;
     }
+  });
+
+  // ========== TTS 朗读 ==========
+  var ttsSynth = window.speechSynthesis;
+  var ttsUtterance = null;
+  var ttsActive = false;
+  var ttsBtn = document.getElementById('ttsToggle');
+  var exportBtn = document.getElementById('exportImgBtn');
+
+  // 编辑模式切换时显示/隐藏按钮
+  editorToggleBtn.addEventListener('click', function(){ setTimeout(function(){
+    var hasContent = editor && editor.getValue().trim().length > 0;
+    if(document.querySelector('.editor-area.active')){
+      ttsBtn.style.display = 'inline-flex';
+      exportBtn.style.display = hasContent ? 'inline-flex' : 'none';
+    } else {
+      ttsBtn.style.display = 'none';
+      exportBtn.style.display = 'none';
+    }
+  }, 10); });
+
+  // 编辑器内容变化时判断导出按钮状态
+  editor.on('change', function(){
+    var hasContent = editor.getValue().trim().length > 0;
+    if(document.querySelector('.editor-area.active')){
+      exportBtn.style.display = hasContent ? 'inline-flex' : 'none';
+    }
+  });
+
+  ttsBtn.addEventListener('click', function(){
+    if(ttsActive){
+      ttsSynth.cancel();
+      ttsActive = false;
+      ttsBtn.textContent = '🔊 朗读';
+      ttsBtn.className = 'tb-btn';
+      return;
+    }
+    var text = editor.getValue();
+    if(!text.trim()) return;
+    var cursor = editor.getCursor();
+    var lines = text.split('\n');
+    var startLine = cursor.line;
+    var partial = lines.slice(startLine).join('\n');
+    if(!partial.trim()) partial = text;
+    ttsSynth.cancel();
+    ttsUtterance = new SpeechSynthesisUtterance(partial);
+    ttsUtterance.lang = 'zh-CN';
+    ttsUtterance.rate = 1.0;
+    ttsUtterance.pitch = 1.0;
+    ttsUtterance.onend = function(){
+      ttsActive = false;
+      ttsBtn.textContent = '🔊 朗读';
+      ttsBtn.className = 'tb-btn';
+    };
+    ttsUtterance.onerror = function(){
+      ttsActive = false;
+      ttsBtn.textContent = '🔊 朗读';
+      ttsBtn.className = 'tb-btn';
+    };
+    ttsSynth.speak(ttsUtterance);
+    ttsActive = true;
+    ttsBtn.textContent = '⏹ 停止';
+    ttsBtn.className = 'tb-btn speaking';
+  });
+
+  // ========== 长图导出（纯 Canvas 文本渲染）==========
+  function wrapText(ctx, text, maxWidth){
+    var lines = [];
+    var chars = text.split('');
+    var line = '';
+    for(var ci = 0; ci < chars.length; ci++){
+      var ch = chars[ci];
+      var testLine = line + ch;
+      var metrics = ctx.measureText(testLine);
+      if(metrics.width > maxWidth && line.length > 0){
+        lines.push(line);
+        line = ch;
+      } else {
+        line = testLine;
+      }
+    }
+    if(line) lines.push(line);
+    return lines;
+  }
+
+  function renderLongImage(text, bgColor, textColor, accentColor, fontSize, padding, lineHeight, maxWidth){
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.font = fontSize + 'px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+    ctx.textBaseline = 'top';
+
+    // 逐行解析文本
+    var rawLines = text.split('\n');
+    var wrappedLines = [];
+    rawLines.forEach(function(rl){
+      if(rl.trim() === ''){
+        wrappedLines.push({text: '', style: 'empty'});
+        return;
+      }
+      // 检测标题
+      var hMatch = rl.match(/^(#{1,3})\s+(.+)$/);
+      if(hMatch){
+        var level = hMatch[1].length;
+        var content = hMatch[2];
+        wrappedLines.push({text: content, style: 'h' + level});
+        return;
+      }
+      // 检测列表
+      var lMatch = rl.match(/^[-*]\s+(.+)$/);
+      if(lMatch){
+        wrappedLines.push({text: '• ' + lMatch[1], style: 'list'});
+        return;
+      }
+      // 检测引用
+      var qMatch = rl.match(/^>\s*(.+)$/);
+      if(qMatch){
+        wrappedLines.push({text: qMatch[1], style: 'quote'});
+        return;
+      }
+      // 检测分隔线
+      if(/^---+$/.test(rl.trim())){
+        wrappedLines.push({text: '———', style: 'hr'});
+        return;
+      }
+      // 普通文本，处理自动换行
+      var canWrap = true;
+      // 标题行不换行（本来就短）
+      var subLines = wrapText(ctx, rl, maxWidth - padding * 2);
+      subLines.forEach(function(sl){
+        wrappedLines.push({text: sl, style: 'normal'});
+      });
+    });
+
+    // 计算画布尺寸
+    var lineHeightPx = lineHeight;
+    var headerExtra = {h1: 16, h2: 12, h3: 8, hr: 10, quote: 4, empty: 6};
+    var totalHeight = padding * 2;
+    wrappedLines.forEach(function(lw, i){
+      var extra = 0;
+      if(lw.style === 'empty') extra = 10;
+      else if(lw.style === 'h1') extra = 20;
+      else if(lw.style === 'h2') extra = 16;
+      else if(lw.style === 'h3') extra = 12;
+      else if(lw.style === 'hr') extra = 14;
+      else if(lw.style === 'quote') extra = 6;
+      totalHeight += lineHeightPx + extra;
+    });
+    totalHeight = Math.max(totalHeight, 200);
+
+    canvas.width = maxWidth;
+    canvas.height = totalHeight;
+
+    // 绘制背景
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制顶部装饰线
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(padding, 6, maxWidth - padding * 2, 2);
+
+    var y = padding + 16;
+    var leftMargin = padding;
+    var writeWidth = maxWidth - padding * 2;
+
+    wrappedLines.forEach(function(lw){
+      var style = lw.style;
+      if(style === 'empty'){
+        y += 10;
+        return;
+      }
+      ctx.globalAlpha = 1;
+      ctx.textBaseline = 'top';
+
+      if(style === 'h1'){
+        ctx.font = 'bold 20px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = accentColor;
+        ctx.fillText(lw.text, leftMargin, y);
+        y += 28;
+      } else if(style === 'h2'){
+        ctx.font = 'bold 17px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = accentColor;
+        ctx.fillText(lw.text, leftMargin, y);
+        y += 24;
+      } else if(style === 'h3'){
+        ctx.font = 'bold 15px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = accentColor;
+        ctx.fillText(lw.text, leftMargin, y);
+        y += 22;
+      } else if(style === 'quote'){
+        ctx.font = fontSize + 'px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = 'rgba(200,195,184,0.75)';
+        ctx.fillRect(leftMargin, y, 3, lineHeightPx - 2);
+        ctx.fillStyle = 'rgba(200,195,184,0.85)';
+        ctx.fillText(lw.text, leftMargin + 10, y);
+        y += lineHeightPx + 8;
+      } else if(style === 'hr'){
+        ctx.fillStyle = accentColor;
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(leftMargin, y + 6, writeWidth, 1);
+        ctx.globalAlpha = 1;
+        y += 16;
+      } else if(style === 'list'){
+        ctx.font = fontSize + 'px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.fillText(lw.text, leftMargin, y);
+        y += lineHeightPx + 4;
+      } else {
+        ctx.font = fontSize + 'px -apple-system,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.fillText(lw.text, leftMargin, y);
+        y += lineHeightPx + 4;
+      }
+    });
+
+    // 底部装饰线
+    ctx.fillStyle = accentColor;
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(padding, totalHeight - 12, writeWidth, 1);
+    ctx.globalAlpha = 1;
+
+    return canvas;
+  }
+
+  exportBtn.addEventListener('click', function(){
+    var text = editor.getValue();
+    if(!text.trim()) return;
+    exportBtn.disabled = true;
+    exportBtn.textContent = '⏳ 生成中…';
+
+    setTimeout(function(){
+      try{
+        var bg = getComputedStyle(document.body).getPropertyValue('--bg-secondary').trim() || '#1a1a1e';
+        var fg = getComputedStyle(document.body).getPropertyValue('--text-primary').trim() || '#e8e6e3';
+        var accent = getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#d4a040';
+        var canvas = renderLongImage(text, bg, fg, accent, 13, 30, 22, 720);
+        var link = document.createElement('a');
+        link.download = '写作_' + new Date().toISOString().slice(0,10) + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }catch(e){
+        showToast('导出失败: ' + (e.message || '未知错误'), 'error');
+      }finally{
+        exportBtn.disabled = false;
+        exportBtn.textContent = '🖼️ 导出图片';
+      }
+    }, 50);
   });
 
   // ========== 写作目标模块 ==========
@@ -3449,6 +3740,102 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     });
   }
 
+  // ========== 日历写作计划 ==========
+  var calDate = new Date();
+  var calYear = calDate.getFullYear();
+  var calMonth = calDate.getMonth();
+  var calDailyStats = {};
+
+  async function loadCalendarView(){
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner" style="margin:0 auto"></div></div>';
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div class="calendar-empty">请先选择项目</div>';
+      return;
+    }
+    try{
+      var res = await fetch(apiBase()+'/api/v1/stats/'+currentProjectId, {headers:apiHeaders()});
+      if(res.ok){
+        var s = await res.json();
+        calDailyStats = {};
+        if(s.daily_stats && s.daily_stats.length > 0){
+          s.daily_stats.forEach(function(d){ calDailyStats[d.date] = d.words_written || 0; });
+        }
+      }
+    }catch(e){ calDailyStats = {}; }
+    renderCalendar();
+  }
+
+  function renderCalendar(){
+    var firstDay = new Date(calYear, calMonth, 1);
+    var lastDay = new Date(calYear, calMonth + 1, 0);
+    var startDow = firstDay.getDay(); // 0=Sun
+    var daysInMonth = lastDay.getDate();
+    var monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    var today = new Date();
+    var todayStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+
+    var html = '<div class="calendar-container">';
+    html += '<div class="calendar-header">';
+    html += '<button class="cal-nav-btn" id="calPrev">◀</button>';
+    html += '<span class="cal-title">'+calYear+' 年 '+monthNames[calMonth]+'</span>';
+    html += '<button class="cal-nav-btn" id="calNext">▶</button>';
+    html += '</div>';
+    html += '<div class="calendar-weekdays">';
+    ['日','一','二','三','四','五','六'].forEach(function(d){ html += '<span>'+d+'</span>'; });
+    html += '</div>';
+    html += '<div class="calendar-grid">';
+
+    // 空白占位
+    for(var i=0; i<startDow; i++){
+      html += '<div class="calendar-day other-month"><div class="cal-day-num"></div><div class="cal-dot-wrap"></div></div>';
+    }
+
+    var maxWords = 1;
+    var vals = Object.values(calDailyStats);
+    if(vals.length > 0) maxWords = Math.max.apply(null, vals);
+    if(maxWords === 0) maxWords = 1;
+
+    for(var d=1; d<=daysInMonth; d++){
+      var dateStr = calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var isToday = (dateStr === todayStr);
+      var wc = calDailyStats[dateStr] || 0;
+      var cls = 'calendar-day';
+      if(isToday) cls += ' today';
+
+      // 计算圆点大小
+      var dotSize = 0;
+      if(wc > 0){
+        var ratio = wc / maxWords;
+        if(ratio > 0.66) dotSize = 3;
+        else if(ratio > 0.33) dotSize = 2;
+        else dotSize = 1;
+      }
+
+      html += '<div class="'+cls+'" title="'+dateStr+': '+wc.toLocaleString()+'字">';
+      html += '<div class="cal-day-num">'+d+'</div>';
+      html += '<div class="cal-dot-wrap">';
+      if(dotSize > 0) html += '<span class="cal-dot s-'+dotSize+'"></span>';
+      html += '</div></div>';
+    }
+
+    html += '</div></div>';
+    panelBody.innerHTML = html;
+
+    // 绑定导航
+    var prevBtn = document.getElementById('calPrev');
+    var nextBtn = document.getElementById('calNext');
+    if(prevBtn) prevBtn.addEventListener('click', function(){
+      calMonth--;
+      if(calMonth < 0){ calMonth = 11; calYear--; }
+      renderCalendar();
+    });
+    if(nextBtn) nextBtn.addEventListener('click', function(){
+      calMonth++;
+      if(calMonth > 11){ calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+  }
+
   // ========== 角色关系图模块 ==========
   var charactersData = [];
   var relationsData = [];
@@ -3464,8 +3851,24 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         fetch(apiBase()+'/api/v1/characters', {headers:apiHeaders()}),
         fetch(apiBase()+'/api/v1/relations', {headers:apiHeaders()})
       ]);
-      if(cRes.ok) charactersData = await cRes.json();
-      else throw new Error('characters');
+      if(cRes.ok) {
+        var rawChars = await cRes.json();
+        if(Array.isArray(rawChars)){
+          // 从 traits 字段展开扩展属性
+          charactersData = rawChars.map(function(c){
+            if(c.traits){
+              c.race = c.traits.race || c.race;
+              c.age = c.traits.age || c.age;
+              c.occupation = c.traits.occupation || c.occupation;
+              c.personality = c.traits.personality || c.personality;
+              c.backstory = c.traits.backstory || c.backstory;
+            }
+            return c;
+          });
+        }else{
+          charactersData = [];
+        }
+      } else throw new Error('characters');
       if(rRes.ok) relationsData = await rRes.json();
       else relationsData = [];
       if(!Array.isArray(charactersData)) charactersData = [];
@@ -3473,11 +3876,11 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }catch(e){
       // 模拟数据
       charactersData = [
-        {id:1, name:'沈默', description:'退役武警，前程序员，历史爱好者。地球穿越者，罗德岛外勤干员。', colorIndex:0, tags:['主角','穿越者']},
-        {id:2, name:'Dr.██', description:'罗德岛博士，战术指挥官。性格冷淡，但意外地可靠。', colorIndex:3, tags:['罗德岛','指挥官']},
-        {id:3, name:'阿米娅', description:'罗德岛公开领袖，年轻的卡特斯/奇美拉。', colorIndex:1, tags:['罗德岛','领袖']},
-        {id:4, name:'凯尔希', description:'罗德岛医疗部门负责人，Mon3tr 操控者。', colorIndex:4, tags:['罗德岛','医疗']},
-        {id:5, name:'陈', description:'龙门近卫局高级警司。', colorIndex:2, tags:['龙门','近卫局']},
+        {id:1, name:'沈默', race:'人类', age:'28', occupation:'退役武警 / 程序员', personality:'冷静、敏锐、克制', backstory:'地球穿越者，带着地球人的认知框架进入泰拉世界。曾是武警战士，退役后做程序员，历史爱好者。在泰拉的身份是罗德岛外勤干员，始终在用另一种眼光看待这个世界——看得比泰拉人更深，也因此常常陷入孤独。', description:'退役武警，前程序员，历史爱好者。地球穿越者，罗德岛外勤干员。', colorIndex:0, tags:['主角','穿越者']},
+        {id:2, name:'Dr.██', race:'未知', age:'未知', occupation:'罗德岛博士', personality:'冷淡、可靠', backstory:'罗德岛战术指挥官，档案高度保密。性格冷淡但意外地可靠。与沈默之间存在某种超越上下级的信任关系。', description:'罗德岛博士，战术指挥官。性格冷淡，但意外地可靠。', colorIndex:3, tags:['罗德岛','指挥官']},
+        {id:3, name:'阿米娅', race:'卡特斯/奇美拉', age:'14', occupation:'罗德岛公开领袖', personality:'坚韧、温柔、早熟', backstory:'罗德岛的公开领袖，年轻的卡特斯/奇美拉。虽然年纪小，但肩负着沉重的责任。对罗德岛的每一个人都怀有真诚的关心。', description:'罗德岛公开领袖，年轻的卡特斯/奇美拉。', colorIndex:1, tags:['罗德岛','领袖']},
+        {id:4, name:'凯尔希', race:'未知', age:'未知', occupation:'罗德岛医疗部门负责人', personality:'理性、疏离、深不可测', backstory:'罗德岛医疗部门负责人，Mon3tr 的操控者。长期监视着沈默在地球上的记忆——或者说，监视着另一个世界的人如何理解泰拉。', description:'罗德岛医疗部门负责人，Mon3tr 操控者。', colorIndex:4, tags:['罗德岛','医疗']},
+        {id:5, name:'陈', race:'龙', age:'27', occupation:'龙门近卫局高级警司', personality:'刚毅、直率、正义感强', backstory:'龙门近卫局高级警司，龙门实际上的执法者。与沈默在龙门事件中建立信任，是少数几个知道沈默来历的人之一。', description:'龙门近卫局高级警司。', colorIndex:2, tags:['龙门','近卫局']},
       ];
       relationsData = [
         {source:1, target:2, label:'战友', type:'friend'},
@@ -3504,9 +3907,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       html += '<div class="char-list">';
       charactersData.forEach(function(ch, idx){
         var color = charColors[ch.colorIndex % charColors.length] || 'var(--text-muted)';
-        html += '<div class="char-card" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
+        html += '<div class="char-card enhanced" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
         html += '<div class="cc-row"><span class="cc-color" style="background:'+color+'"></span><span class="cc-name">'+escHtml(ch.name)+'</span></div>';
-        html += '<div class="cc-desc">'+escHtml(ch.description||'暂无描述')+'</div>';
+        html += '<div class="cc-fields">';
+        html += '<div class="cc-field"><span class="cc-label">种族</span>'+escHtml(ch.race||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">年龄</span>'+escHtml(ch.age||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">职业</span>'+escHtml(ch.occupation||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">性格</span>'+escHtml(ch.personality||'&mdash;')+'</div>';
+        html += '<div class="cc-field cc-field-full"><span class="cc-label">背景</span><div class="cc-backstory">'+escHtml(ch.backstory||ch.description||'暂无描述')+'</div></div>';
+        html += '</div>';
         html += '<div class="cc-edit" id="charEditForm_'+idx+'"></div>';
         html += '</div>';
       });
@@ -3519,9 +3928,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       html += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">角色列表</div>';
       charactersData.forEach(function(ch, idx){
         var color = charColors[ch.colorIndex % charColors.length] || 'var(--text-muted)';
-        html += '<div class="char-card" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
+        html += '<div class="char-card enhanced" data-idx="'+idx+'" data-id="'+(ch.id||idx)+'">';
         html += '<div class="cc-row"><span class="cc-color" style="background:'+color+'"></span><span class="cc-name">'+escHtml(ch.name)+'</span></div>';
-        html += '<div class="cc-desc">'+escHtml(ch.description||'暂无描述')+'</div>';
+        html += '<div class="cc-fields">';
+        html += '<div class="cc-field"><span class="cc-label">种族</span>'+escHtml(ch.race||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">年龄</span>'+escHtml(ch.age||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">职业</span>'+escHtml(ch.occupation||'&mdash;')+'</div>';
+        html += '<div class="cc-field"><span class="cc-label">性格</span>'+escHtml(ch.personality||'&mdash;')+'</div>';
+        html += '<div class="cc-field cc-field-full"><span class="cc-label">背景</span><div class="cc-backstory">'+escHtml(ch.backstory||ch.description||'暂无描述')+'</div></div>';
+        html += '</div>';
         html += '<div class="cc-edit" id="charEditForm2_'+idx+'"></div>';
         html += '</div>';
       });
@@ -3564,7 +3979,12 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     }
     container.innerHTML = '<div class="char-edit-form">'+
       '<div class="ce-field"><label>姓名</label><input type="text" id="ceName_'+idx+'" value="'+escHtml(ch.name)+'"></div>'+
-      '<div class="ce-field"><label>描述</label><textarea id="ceDesc_'+idx+'">'+escHtml(ch.description||'')+'</textarea></div>'+
+      '<div class="ce-field"><label>种族</label><input type="text" id="ceRace_'+idx+'" value="'+escHtml(ch.race||'')+'" placeholder="人类 / 龙 / 卡特斯…"></div>'+
+      '<div class="ce-field"><label>年龄</label><input type="text" id="ceAge_'+idx+'" value="'+escHtml(ch.age||'')+'" placeholder="28 / 未知…"></div>'+
+      '<div class="ce-field"><label>职业</label><input type="text" id="ceOcc_'+idx+'" value="'+escHtml(ch.occupation||'')+'" placeholder="退役武警 / 博士…"></div>'+
+      '<div class="ce-field"><label>性格</label><input type="text" id="cePers_'+idx+'" value="'+escHtml(ch.personality||'')+'" placeholder="冷静、敏锐…"></div>'+
+      '<div class="ce-field"><label>背景故事</label><textarea id="ceBackstory_'+idx+'" style="height:70px">'+escHtml(ch.backstory||'')+'</textarea></div>'+
+      '<div class="ce-field"><label>简短描述</label><textarea id="ceDesc_'+idx+'" style="height:50px">'+escHtml(ch.description||'')+'</textarea></div>'+
       '<div class="ce-field"><label>标签颜色</label><div class="char-color-picker" id="ceColor_'+idx+'">'+
         charColors.map(function(c, ci){ return '<span class="ccp-swatch'+(ci===ch.colorIndex?' selected':'')+'" style="background:'+c+'" data-ci="'+ci+'"></span>'; }).join('')+
       '</div></div>'+
@@ -3592,20 +4012,46 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     if(!ch) return;
     var nameEl = document.getElementById('ceName_'+idx);
     var descEl = document.getElementById('ceDesc_'+idx);
+    var raceEl = document.getElementById('ceRace_'+idx);
+    var ageEl = document.getElementById('ceAge_'+idx);
+    var occEl = document.getElementById('ceOcc_'+idx);
+    var persEl = document.getElementById('cePers_'+idx);
+    var backstoryEl = document.getElementById('ceBackstory_'+idx);
     var name = (nameEl||{}).value;
     var desc = (descEl||{}).value;
+    var race = (raceEl||{}).value;
+    var age = (ageEl||{}).value;
+    var occ = (occEl||{}).value;
+    var pers = (persEl||{}).value;
+    var backstory = (backstoryEl||{}).value;
     var selectedSwatch = document.querySelector('#ceColor_'+idx+' .ccp-swatch.selected');
     var colorIndex = selectedSwatch ? parseInt(selectedSwatch.dataset.ci) : (ch.colorIndex||0);
     ch.name = name || ch.name;
     ch.description = desc || ch.description;
+    ch.race = race || ch.race;
+    ch.age = age || ch.age;
+    ch.occupation = occ || ch.occupation;
+    ch.personality = pers || ch.personality;
+    ch.backstory = backstory || ch.backstory;
     ch.colorIndex = colorIndex;
     renderCharactersView();
-    // 保存到 API
+    // 保存到 API（trait 字段存储扩展属性）
     try{
       await fetch(apiBase()+'/api/v1/characters/'+ch.id, {
         method:'PUT',
         headers:apiHeaders(),
-        body:JSON.stringify({name:ch.name, description:ch.description, colorIndex:ch.colorIndex})
+        body:JSON.stringify({
+          name:ch.name,
+          description:ch.description,
+          colorIndex:ch.colorIndex,
+          traits:{
+            race:ch.race,
+            age:ch.age,
+            occupation:ch.occupation,
+            personality:ch.personality,
+            backstory:ch.backstory
+          }
+        })
       });
     }catch(e){}
   }
