@@ -2660,7 +2660,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     updateInputCharCount();
   });
 
-  // ========== 编辑器模块 ==========
+  // ========== 编辑器模块（try/catch保护IIFE不中断）==========
+  try{
   var editorMode = false;
   var editorToggleBtn = document.getElementById('editorToggleBtn');
   var editorArea = document.getElementById('editorArea');
