@@ -25,6 +25,11 @@ _git_cmd = shutil.which("git") or "git"
 router = APIRouter(prefix="/stats", tags=["stats"])
 BASE = Path(__file__).resolve().parent.parent
 PROJECTS_DIR = BASE / "projects"
+# Reuse chapters.py chapter directory resolution
+def _get_chapters_dir():
+    """Get the actual chapters directory, same as chapters.py"""
+    from routers.chapters import CHAPTERS_DIR as _cd
+    return _cd
 
 # ─── 字数统计 ───
 
@@ -84,7 +89,7 @@ async def get_project_stats(project_id: str):
         raise HTTPException(404, detail={"code": "PROJECT_NOT_FOUND", "message": f"项目 '{project_id}' 不存在"})
 
     # ─── 章节统计 ───
-    chapters_dir = proj_dir / "chapters"
+    chapters_dir = _get_chapters_dir()
     chapter_files = []
     if chapters_dir.is_dir():
         chapter_files = sorted(

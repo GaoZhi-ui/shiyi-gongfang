@@ -501,7 +501,15 @@ def create_chapter(body: ChapterCreate):
     # 自动向量化
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().add_chapter(project_id, filename, display_title, content)  # non-blocking on timeout
+        # Non-blocking vector store call (timeout-protected)
+        try:
+            import threading
+            _vs = get_vector_store()
+            _t = threading.Thread(target=_vs.add_chapter, args=(project_id, filename, display_title, content), daemon=True)
+            _t.start()
+            _t.join(timeout=5)
+        except Exception:
+            pass  # vector store unavailable
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量化失败 [{filename}]: {e}")
@@ -563,7 +571,14 @@ def update_chapter(filename: str, body: ChapterUpdate):
     # 自动向量化（更新）
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().add_chapter(project_id, filename, title, clean_content)  # non-blocking on timeout
+        try:
+            import threading
+            _vs2 = get_vector_store()
+            _t2 = threading.Thread(target=_vs2.add_chapter, args=(project_id, filename, title, clean_content), daemon=True)
+            _t2.start()
+            _t2.join(timeout=5)
+        except Exception:
+            pass  # vector store unavailable
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量化更新失败 [{filename}]: {e}")
@@ -594,7 +609,10 @@ def delete_chapter(filename: str):
     # 删除向量
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().delete_chapter(project_id, filename)  # non-blocking on timeout
+        try:
+            get_vector_store().delete_chapter(project_id, filename)
+        except Exception:
+            pass  # vector store unavailable
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量删除失败 [{filename}]: {e}")
