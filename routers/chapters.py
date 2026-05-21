@@ -501,7 +501,7 @@ def create_chapter(body: ChapterCreate):
     # 自动向量化
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().add_chapter(project_id, filename, display_title, content)
+        get_vector_store().add_chapter(project_id, filename, display_title, content)  # non-blocking on timeout
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量化失败 [{filename}]: {e}")
@@ -563,7 +563,7 @@ def update_chapter(filename: str, body: ChapterUpdate):
     # 自动向量化（更新）
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().add_chapter(project_id, filename, title, clean_content)
+        get_vector_store().add_chapter(project_id, filename, title, clean_content)  # non-blocking on timeout
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量化更新失败 [{filename}]: {e}")
@@ -594,7 +594,7 @@ def delete_chapter(filename: str):
     # 删除向量
     try:
         project_id = _resolve_active_project_id()
-        get_vector_store().delete_chapter(project_id, filename)
+        get_vector_store().delete_chapter(project_id, filename)  # non-blocking on timeout
     except Exception as e:
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量删除失败 [{filename}]: {e}")
