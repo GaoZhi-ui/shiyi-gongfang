@@ -106,7 +106,7 @@ def _auto_git_commit(action: str, filename: str):
             capture_output=True, timeout=10,
         )
     except Exception:
-        pass  # 静默跳过
+        pass  # Git not available, 静默跳过
 
 # ─── 异常定义 ───
 

@@ -174,7 +174,7 @@ def _init_git(proj_dir: Path):
             capture_output=True, timeout=10,
         )
     except Exception:
-        pass  # 静默跳过
+        pass  # Git not available, 静默跳过
 
 
 def _init_project_dir(proj_dir: Path, cfg: dict):

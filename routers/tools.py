@@ -67,8 +67,8 @@ def _load_project_config() -> dict:
         try:
             import yaml
             cfg = yaml.safe_load(yaml_path.read_text(encoding="utf-8")) or {}
-        except Exception:
-            pass
+        except Exception as e:
+            pass  # Config file optional
     return cfg
 
 
