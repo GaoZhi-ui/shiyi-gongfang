@@ -498,13 +498,17 @@ def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
         display_title = stem[len(TMP_PREFIX):]
     else:
         display_title = stem
+    import logging as _lg
+    _lg.getLogger("chapters").info("DEBUG: building frontmatter...")
     fm_text = _build_frontmatter(
         title=display_title,
         content=content,
         existing_fm=None,
         status=body.status.value if isinstance(body.status, ChapterStatus) else str(body.status),
     )
+    _lg.getLogger("chapters").info("DEBUG: writing file...")
     target.write_text(fm_text + content, encoding="utf-8")
+    _lg.getLogger("chapters").info("DEBUG: file written, git commit...")
 
     _auto_git_commit("create", filename)
 
@@ -512,6 +516,7 @@ def create_chapter(body: ChapterCreate, background_tasks: BackgroundTasks):
 
     parsed = _parse_filename(filename)
 
+    _lg.getLogger("chapters").info("DEBUG: returning response...")
     return {
         "status": "created",
         "filename": filename,
