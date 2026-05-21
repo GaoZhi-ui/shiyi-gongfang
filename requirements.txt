@@ -10,4 +10,5 @@ pywebview>=6.0.0
 chromadb>=1.5.0
 sentence-transformers>=3.0.0
 ebooklib>=0.18
+pyspellchecker>=0.8.0
 # GUI 模式需要（仅构建需要，运行时已有webview）

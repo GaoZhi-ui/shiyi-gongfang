@@ -734,6 +734,24 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .editor-toolbar .tb-btn:disabled{opacity:.4;cursor:not-allowed}
 .editor-toolbar .tb-btn.speaking{background:rgba(var(--danger-rgb), 0.1);color:var(--danger);border-color:rgba(var(--danger-rgb), 0.3)}
 
+/* ===== 拼写检查面板 ===== */
+.spell-check-panel{display:none;border-top:1px solid var(--bg-surface);background:var(--bg-primary);padding:0;font-size:12px;max-height:200px;overflow-y:auto;flex-shrink:0}
+.spell-check-panel.active{display:flex;flex-direction:column}
+.spell-check-panel .scp-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg-secondary);border-bottom:1px solid var(--bg-surface);color:var(--text-primary);font-size:11px;font-weight:500;user-select:none}
+.spell-check-panel .scp-close{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:13px;padding:0 4px;border-radius:3px}
+.spell-check-panel .scp-close:hover{color:var(--text-primary);background:var(--bg-hover)}
+.spell-check-panel .scp-body{padding:6px 10px;flex:1}
+.spell-check-panel .scp-empty{text-align:center;padding:20px 0;color:var(--text-muted);font-size:11px}
+.spell-check-panel .scp-loading{text-align:center;padding:20px 0;color:var(--text-muted);font-size:11px}
+.spell-check-panel .scp-item{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:4px;margin-bottom:3px;transition:background .12s}
+.spell-check-panel .scp-item:hover{background:var(--bg-hover)}
+.spell-check-panel .scp-item .scp-word{font-weight:500;color:var(--danger);font-size:12px;min-width:80px}
+.spell-check-panel .scp-item .scp-sugs{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+.spell-check-panel .scp-item .scp-sug{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:3px;padding:1px 6px;font-size:11px;color:var(--text-secondary);cursor:pointer;transition:all .12s}
+.spell-check-panel .scp-item .scp-sug:hover{background:rgba(var(--accent-rgb),0.1);color:var(--accent);border-color:rgba(var(--accent-rgb),0.3)}
+.spell-check-panel .scp-item .scp-sug.replaced{opacity:.5;text-decoration:line-through;cursor:default}
+.spell-check-panel .scp-status{font-size:11px;color:var(--text-muted);padding:3px 6px}
+
 /* ===== 日历组件 ===== */
 .calendar-container{padding:4px 0;display:flex;flex-direction:column;gap:10px}
 .calendar-header{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
@@ -1081,6 +1099,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       <span class="stuck-toggle" id="stuckToggle">🚧 卡住了</span>
       <span class="tb-btn" id="ttsToggle" style="display:none">🔊 朗读</span>
       <span class="tb-btn" id="exportImgBtn" style="display:none">🖼️ 导出图片</span>
+      <span class="tb-btn" id="spellCheckBtn">🔤 拼写检查</span>
       <div class="toolbar-spacer"></div>
       <div class="chapter-nav" id="chapterNav">
         <button class="nav-arrow" id="navPrev" title="上一章 (Ctrl+↑)">▲</button>
@@ -1132,6 +1151,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         <button class="ifw-close" id="inspirationFloatClose">✕</button>
       </div>
       <div class="ifw-list" id="inspirationFloatList"></div>
+    </div>
+    <div class="spell-check-panel" id="spellCheckPanel">
+      <div class="scp-header">
+        <span>🔤 拼写检查结果</span>
+        <span class="scp-close" id="spellCheckClose">✕</span>
+      </div>
+      <div class="scp-body" id="spellCheckBody">
+        <div class="scp-empty">暂无检查结果</div>
+      </div>
     </div>
     <div class="editor-footer">
       <span class="editor-char-count">已写 <span class="num" id="editorCharCount">0</span> 字</span>
@@ -3062,6 +3090,104 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       }
     }, 50);
   });
+
+  // ========== 拼写检查模块 ==========
+  var spellCheckBtn = document.getElementById('spellCheckBtn');
+  var spellCheckPanel = document.getElementById('spellCheckPanel');
+  var spellCheckBody = document.getElementById('spellCheckBody');
+  var spellCheckClose = document.getElementById('spellCheckClose');
+
+  function showSpellCheckPanel(){
+    spellCheckPanel.classList.add('active');
+  }
+
+  function hideSpellCheckPanel(){
+    spellCheckPanel.classList.remove('active');
+  }
+
+  function replaceSpellWord(original, suggestion, start, end){
+    var text = editor.getValue();
+    // 找到第 N 次出现这个 start/end 位置
+    // 但可能有多个相同位置的错误（不会，因为位置唯一）
+    var before = text.slice(0, start);
+    var after = text.slice(end);
+    var newText = before + suggestion + after;
+    editor.setValue(newText);
+    // 更新面板中的对应条目为已替换
+    var items = spellCheckBody.querySelectorAll('.scp-item');
+    for(var i = 0; i < items.length; i++){
+      var wordEl = items[i].querySelector('.scp-word');
+      if(wordEl && wordEl.textContent === original){
+        // 找到这个 button 置灰
+        var sugs = items[i].querySelectorAll('.scp-sug');
+        for(var j = 0; j < sugs.length; j++){
+          if(sugs[j].textContent === suggestion){
+            sugs[j].classList.add('replaced');
+            sugs[j].textContent = '✓ ' + suggestion;
+            break;
+          }
+        }
+        break;
+      }
+    }
+    showToast('已替换: ' + original + ' → ' + suggestion, 'success');
+  }
+
+  spellCheckBtn.addEventListener('click', function(){
+    var text = editor.getValue();
+    if(!text.trim()){
+      showToast('编辑器内容为空，无法检查', 'warning');
+      return;
+    }
+    // 检测文本语言：如果有大量中文字符，传 zh，否则传 en
+    var lang = 'en';
+    var zhCount = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+    if(zhCount > text.length * 0.3){
+      lang = 'zh';
+    }
+    showSpellCheckPanel();
+    spellCheckBody.innerHTML = '<div class="scp-loading">⏳ 正在检查拼写…</div>';
+    fetch(apiBase() + '/api/v1/spell/check', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({text: text, language: lang})
+    })
+    .then(function(res){ return res.json(); })
+    .then(function(data){
+      var misspellings = data.misspellings || [];
+      if(misspellings.length === 0){
+        spellCheckBody.innerHTML = '<div class="scp-status">✅ 未发现拼写错误</div>';
+        return;
+      }
+      var html = '<div class="scp-status">发现 ' + misspellings.length + ' 个拼写错误</div>';
+      for(var i = 0; i < misspellings.length; i++){
+        var m = misspellings[i];
+        var sugHtml = '';
+        for(var j = 0; j < m.suggestions.length; j++){
+          (function(orig, sug, start, end){
+            sugHtml += '<span class="scp-sug" data-word="' + escHtml(orig) + '" data-sug="' + escHtml(sug) + '" data-start="' + start + '" data-end="' + end + '">' + escHtml(sug) + '</span>';
+          })(m.word, m.suggestions[j], m.start, m.end);
+        }
+        html += '<div class="scp-item"><span class="scp-word">' + escHtml(m.word) + '</span><div class="scp-sugs">' + sugHtml + '</div></div>';
+      }
+      spellCheckBody.innerHTML = html;
+      // 绑定点击替换事件
+      spellCheckBody.querySelectorAll('.scp-sug:not(.replaced)').forEach(function(el){
+        el.addEventListener('click', function(){
+          var orig = el.getAttribute('data-word');
+          var sug = el.getAttribute('data-sug');
+          var start = parseInt(el.getAttribute('data-start'));
+          var end = parseInt(el.getAttribute('data-end'));
+          replaceSpellWord(orig, sug, start, end);
+        });
+      });
+    })
+    .catch(function(err){
+      spellCheckBody.innerHTML = '<div class="scp-empty">❌ 检查失败: ' + escHtml(err.message || '未知错误') + '</div>';
+    });
+  });
+
+  spellCheckClose.addEventListener('click', hideSpellCheckPanel);
 
   // ========== 写作目标模块 ==========
   var goalState = { todayTarget: 2000, todayWritten: 835, streak: 3 };
