@@ -2825,9 +2825,21 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         body:JSON.stringify({title:'新章节', content:content, status:'draft'})
       });
       if(!res.ok) throw new Error('HTTP '+res.status);
-      editorSaveStatus.textContent = '✓ 已保存至服务器';
+      var data = await res.json();
+      editorSaveStatus.textContent = '✓ 已保存';
       editorSaveStatus.style.color = 'var(--success)';
       editorSaveStatus.className = 'editor-status saved';
+      // 显示自动审查结果
+      if(data.check && data.check.issues && data.check.issues.length){
+        var checkHtml = '<div style="margin-top:8px;padding:8px 10px;background:var(--bg-secondary);border-radius:6px;font-size:11px">';
+        checkHtml += '<div style="color:var(--warning);margin-bottom:4px">⚠ 自动审查发现以下问题：</div>';
+        data.check.issues.forEach(function(iss){
+          var color = iss.severity==='error'?'var(--danger)':'var(--warning)';
+          checkHtml += '<div style="color:'+color+';padding:2px 0">• '+escHtml(iss.message)+'</div>';
+        });
+        checkHtml += '</div>';
+        editorSaveStatus.innerHTML = '✓ 已保存 ' + checkHtml;
+      }
       // 清除本地草稿
       try{ localStorage.removeItem(getDraftKey()); }catch(e){}
       setTimeout(function(){ editorSaveStatus.textContent = ''; editorSaveStatus.className = 'editor-status'; }, 3000);
