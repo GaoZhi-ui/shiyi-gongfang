@@ -28,6 +28,7 @@ from routers.stats import router as stats_router
 from routers.backup import router as backup_router
 from routers.style_check import router as style_router
 from routers.plugins import router as plugins_router
+from routers.diary import router as diary_router
 from routers.harness_report import router as harness_router
 from routers.agent import router as agent_router
 from routers.git import router as git_router

@@ -526,12 +526,20 @@ def create_chapter(body: ChapterCreate):
 
     parsed = _parse_filename(filename)
 
+    # 自动审查
+    try:
+        from routers.save_check import check_chapter
+        issues = check_chapter(target.read_text(encoding='utf-8'))
+    except Exception:
+        issues = []
+
     return {
         "status": "created",
         "filename": filename,
         "path": str(target.relative_to(CHAPTERS_DIR)),
         "chapter_number": parsed["chapter_number"],
         "title": parsed["title"],
+        "check": {"issues": issues, "passed": len(issues) == 0},
     }
 
 
