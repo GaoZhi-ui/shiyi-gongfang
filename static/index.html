@@ -1061,6 +1061,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       <option value="google">Gemini 2.5 Pro</option>
       <option value="moonshot">Kimi K2.6</option>
       <option value="zhipu">GLM-5.1</option>
+      <option value="ollama">Ollama (本地)</option>
+    </select>
     </select>
 
     <div class="project-selector" id="projectSelector">
@@ -1286,6 +1288,12 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
               <optgroup label="零一万物 Yi">
                 <option value="yi-lightning">Yi-Lightning</option>
                 <option value="yi-large">Yi-Large</option>
+              </optgroup>
+              <optgroup label="Ollama (本地)">
+                <option value="llama3.2">Llama 3.2</option>
+                <option value="qwen2.5">Qwen 2.5</option>
+                <option value="deepseek-coder-v2">DeepSeek Coder V2</option>
+                <option value="mistral">Mistral</option>
               </optgroup>
             </select>
             <div class="hint">所有请求发送至 {endpoint}/chat/completions</div>

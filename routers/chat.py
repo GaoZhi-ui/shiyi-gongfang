@@ -252,6 +252,14 @@ PROVIDER_CONFIGS = {
         "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
     },
+    "ollama": {
+        "base_url": "http://localhost:11434",
+        "default_model": "llama3.2",
+        "chat_endpoint": "/v1/chat/completions",
+        "auth_header": lambda key: {},
+        "content_type": "application/json",
+        "local": True,
+    },
 }
 
 DEFAULT_SYSTEM = "你是专业的写作助手。回答简洁、直接、不啰嗦。"
@@ -407,14 +415,18 @@ def _get_api_info(provider: str) -> tuple[str, dict]:
             "suggestion": f"可用: {list(PROVIDER_CONFIGS.keys())}",
         })
 
-    km = _get_key_manager()
-    api_key = km.get_key(provider_lower)
-    if not api_key:
-        raise HTTPException(503, detail={
-            "code": "KEY_NOT_CONFIGURED",
-            "message": f"{provider} 的 API Key 未配置",
-            "suggestion": "请先通过 POST /api/v1/keys 配置 API Key",
-        })
+    # 本地 provider（如 ollama）不需要 API Key
+    if config.get("local"):
+        api_key = ""
+    else:
+        km = _get_key_manager()
+        api_key = km.get_key(provider_lower)
+        if not api_key:
+            raise HTTPException(503, detail={
+                "code": "KEY_NOT_CONFIGURED",
+                "message": f"{provider} 的 API Key 未配置",
+                "suggestion": "请先通过 POST /api/v1/keys 配置 API Key",
+            })
 
     stored_cfg = km.get_config(provider_lower)
     base_url = None

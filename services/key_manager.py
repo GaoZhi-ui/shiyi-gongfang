@@ -84,6 +84,9 @@ async def test_key(provider: str, key: str) -> bool:
         "deepseek": "https://api.deepseek.com/v1/models",
         "claude": "https://api.anthropic.com/v1/messages",
     }
+    # 本地 provider 不需要测试
+    if provider == "ollama":
+        return True
     url = urls.get(provider)
     if not url:
         return False
