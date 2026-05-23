@@ -1034,6 +1034,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="stats"><span class="icon">📊</span><span class="label">统计</span></div>
     <div class="tool-item" data-tool="inspiration"><span class="icon">💡</span><span class="label">灵感</span></div>
     <div class="tool-item" data-tool="guide"><span class="icon">📖</span><span class="label">规范</span></div>
+    <div class="tool-item" data-tool="diary"><span class="icon">📔</span><span class="label">日记</span></div>
     <div class="tool-item" data-tool="calendar"><span class="icon">📅</span><span class="label">日历</span></div>
 
     <div class="tool-group-title">AI</div>
@@ -1239,7 +1240,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         <div class="modal-tab-body">
           <div class="field">
             <label>API 端点</label>
-            <input type="text" id="apiEndpoint" value="http://127.0.0.1:8867/api/v1" placeholder="http://127.0.0.1:8867/api/v1">
+            <input type="text" id="apiEndpoint" value="http://127.0.0.1:8000/api/v1" placeholder="http://127.0.0.1:8000/api/v1">
           </div>
           <div class="field">
             <label>API Key</label>
@@ -1486,7 +1487,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   }
 
   function apiBase(){
-    const ep = ($('apiEndpoint')||{}).value || 'http://127.0.0.1:8867/api/v1';
+    const ep = ($('apiEndpoint')||{}).value || 'http://127.0.0.1:8000/api/v1';
     return ep.endsWith('/api/v1') ? ep.replace(/\/api\/v1$/,'') : ep;
   }
 
@@ -2169,6 +2170,11 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         <div style="padding:8px 0;border-bottom:1px solid var(--bg-secondary)"><span style="color:var(--text-primary)">展示不告诉</span><br><span style="font-size:11px;color:var(--text-muted)">用场景和动作传达情绪，不替读者总结</span></div>
         <div style="padding:8px 0"><span style="color:var(--text-primary)">衔接原则</span><br><span style="font-size:11px;color:var(--text-muted)">情绪不归零、不重复，章节间自然过渡</span></div>
       </div>`;
+    }else if(type==='diary'){
+      panelIcon.textContent = '📔';
+      panelTitle.textContent = '日记';
+      loadDiaryView();
+      return;
     }else if(type==='characters'){
       panelIcon.textContent = '👥';
       panelTitle.textContent = '角色';
@@ -3485,6 +3491,62 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   function toggleInspirationFloat(){
     if(inspirationFloatOpen) closeInspirationFloat();
     else openInspirationFloat();
+  }
+
+  // ========== 日记 ==========
+
+  function loadDiaryView(){
+    var pid = currentProjectId || 'default';
+    panelBody.innerHTML = '<div class="kb-loading"><div class="spinner"></div></div>';
+    fetch(apiBase()+'/api/v1/diary/'+pid)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var html = '<div style="padding:16px">';
+      html += '<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">';
+      html += '<input id="diaryDayInput" type="number" placeholder="天数" style="width:80px;padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:4px;color:var(--text-primary)">';
+      html += '<textarea id="diaryContentInput" placeholder="写日记..." style="flex:1;min-width:200px;padding:6px 8px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:4px;color:var(--text-primary);resize:vertical;min-height:60px"></textarea>';
+      html += '<button onclick="saveDiary()" style="padding:6px 12px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer">保存</button>';
+      html += '</div>';
+      html += '<div style="font-size:13px;color:var(--text-secondary)">';
+      if(data.entries && data.entries.length){
+        data.entries.forEach(function(e){
+          html += '<div class="diary-entry" data-day="'+e.day+'" onclick="loadDiaryDay('+e.day+')" style="padding:8px 10px;border-radius:4px;cursor:pointer;border-left:3px solid var(--accent);margin-bottom:6px;background:var(--bg-hover)">';
+          html += '<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">第'+e.day+'天</div>';
+          html += '<div>'+escHtml(e.content)+'</div></div>';
+        });
+      } else {
+        html += '<div style="color:var(--text-muted);padding:20px 0;text-align:center">还没有日记</div>';
+      }
+      html += '</div></div>';
+      panelBody.innerHTML = html;
+    })
+    .catch(function(){
+      panelBody.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">无法加载日记</div>';
+    });
+  }
+
+  function saveDiary(){
+    var day = document.getElementById('diaryDayInput').value;
+    var content = document.getElementById('diaryContentInput').value;
+    if(!day || !content.trim()) return;
+    var pid = currentProjectId || 'default';
+    fetch(apiBase()+'/api/v1/diary/'+pid+'/'+day, {
+      method:'PUT', headers:apiHeaders(),
+      body:JSON.stringify({content:content.trim()})
+    }).then(function(r){ return r.json(); }).then(function(){
+      document.getElementById('diaryContentInput').value = '';
+      loadDiaryView();
+    });
+  }
+
+  function loadDiaryDay(day){
+    var pid = currentProjectId || 'default';
+    fetch(apiBase()+'/api/v1/diary/'+pid+'/'+day)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      document.getElementById('diaryDayInput').value = d.day;
+      document.getElementById('diaryContentInput').value = d.content;
+    });
   }
 
   // ========== 写作规范 ==========
