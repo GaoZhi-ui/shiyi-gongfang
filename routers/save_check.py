@@ -8,15 +8,20 @@ from pathlib import Path
 
 CJK = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf]')
 
-def check_chapter(content: str) -> list[dict]:
+def check_chapter(content: str, diary: str = "") -> list[dict]:
     """
     对章节内容运行自动检查，返回 issues 列表。
     每个 issue: { type, severity, message }
+    支持分离传入 diary（正文和日记已拆分时）或合着传（content 含 --- 分隔）。
     """
     issues = []
-    parts = content.split("---")
-    body = parts[0]
-    diary = parts[1] if len(parts) > 1 else ""
+    # 兼容模式：如果 diary 为空，尝试从 content 中拆分
+    if not diary and "---" in content:
+        parts = content.split("---")
+        body = parts[0]
+        diary = parts[1] if len(parts) > 1 else ""
+    else:
+        body = content
 
     cjk = len(CJK.findall(body))
     if cjk < 2000:

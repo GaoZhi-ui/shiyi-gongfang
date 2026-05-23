@@ -581,7 +581,19 @@ def update_chapter(filename: str, body: ChapterUpdate):
         existing_fm=existing_fm,
     )
 
-    final_content = fm_text + clean_content
+    # 自动分离日记：如果正文末尾包含 ---，将日记存入 diary API
+    body_only, diary_text, day_number = _split_diary(clean_content)
+    if diary_text:
+        try:
+            project_id = _resolve_active_project_id()
+            if day_number:
+                diary_path = CHAPTERS_DIR.parent / "projects" / project_id / "diary" / f"{day_number}.md"
+                diary_path.parent.mkdir(parents=True, exist_ok=True)
+                diary_path.write_text(diary_text, encoding="utf-8")
+        except Exception:
+            pass  # 日记分离失败不影响正文保存
+
+    final_content = fm_text + body_only
     target.write_text(final_content, encoding="utf-8")
 
     _auto_git_commit("update", filename)
@@ -598,12 +610,19 @@ def update_chapter(filename: str, body: ChapterUpdate):
         logger = __import__("logging").getLogger("chapters")
         logger.warning(f"章节向量化更新失败 [{filename}]: {e}")
 
-    cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', clean_content))
+    cjk = len(re.findall(r'[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]', body_only))
+    # 自动审查
+    try:
+        from routers.save_check import check_chapter
+        issues = check_chapter(body_only, diary_text)
+    except Exception:
+        issues = []
     return {
         "status": "ok",
         "filename": filename,
         "size": len(final_content.encode("utf-8")),
         "cjk_chars": cjk,
+        "check": {"issues": issues, "passed": len(issues) == 0},
     }
 
 

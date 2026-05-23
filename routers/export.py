@@ -75,13 +75,30 @@ class ExportBody(BaseModel):
         None,
         description="导出文件标题（可选，默认使用项目名或当前日期）",
     )
+    include_diary: bool = Field(
+        False,
+        description="是否包含日记（默认不包含）",
+    )
 
 
 # ─── 工具函数 ───
 
 
+def _resolve_active_project_id() -> str:
+    """从项目配置中读取当前活跃项目 ID"""
+    try:
+        config_path = CHAPTERS_DIR.parent / "projects" / "config.json"
+        if config_path.exists():
+            cfg = json.loads(config_path.read_text(encoding="utf-8"))
+            return cfg.get("active_project", "default")
+    except Exception:
+        pass
+    return "default"
+
+
 def _collect_chapters(
     chapters_param: list[str] | str,
+    include_diary: bool = False,
 ) -> list[tuple[str, str]]:
     """
     根据参数收集章节文件内容。
@@ -130,6 +147,22 @@ def _collect_chapters(
     result: list[tuple[str, str]] = []
     for f in selected:
         result.append((f.name, f.read_text(encoding="utf-8", errors="replace")))
+
+    # 如果启用日记合并，尝试为每个章节追加日记内容
+    if include_diary:
+        project_id = _resolve_active_project_id()
+        diary_dir = CHAPTERS_DIR.parent / "projects" / project_id / "diary"
+        if diary_dir.exists():
+            diary_files = sorted(diary_dir.glob("*.md"), key=lambda p: int(p.stem) if p.stem.isdigit() else 0)
+            if diary_files:
+                # 找到日记中最小的天数，从该天开始分配
+                all_diary_text = ""
+                for dp in diary_files:
+                    all_diary_text += f"\n---\n{dp.read_text(encoding='utf-8', errors='replace')}"
+                # 将日记追加到最后一章
+                if result:
+                    last_name, last_content = result[-1]
+                    result[-1] = (last_name, last_content + all_diary_text)
 
     return result
 
@@ -202,7 +235,7 @@ def _export_ebook(
 @router.post("/docx", status_code=201)
 def export_docx(body: ExportBody):
     """导出为 DOCX 文档"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_docx(chapters, title)
     return {
@@ -217,7 +250,7 @@ def export_docx(body: ExportBody):
 @router.post("/txt", status_code=201)
 def export_txt(body: ExportBody):
     """导出为 TXT 纯文本"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_txt(chapters, title)
     return {
@@ -232,7 +265,7 @@ def export_txt(body: ExportBody):
 @router.post("/markdown", status_code=201)
 def export_markdown(body: ExportBody):
     """导出为 Markdown 压缩包"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_markdown_zip(chapters, title)
     return {
@@ -247,7 +280,7 @@ def export_markdown(body: ExportBody):
 @router.post("/pdf", status_code=201)
 def export_pdf(body: ExportBody):
     """导出为 PDF 文档"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_pdf(chapters, title)
     return {
@@ -295,7 +328,7 @@ class EbookExportBody(BaseModel):
 @router.post("/epub", status_code=201)
 def export_epub(body: EpubExportBody):
     """导出为 EPUB 电子书"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_epub(chapters, title)
     return {
@@ -313,7 +346,7 @@ def export_epub(body: EpubExportBody):
 @router.post("/ebook", status_code=201)
 def export_ebook(body: EbookExportBody):
     """编译为完整电子书（含封面页 + 完整目录），输出 EPUB 格式"""
-    chapters = _collect_chapters(body.chapters)
+    chapters = _collect_chapters(body.chapters, include_diary=body.include_diary)
     title = _export_title(body.chapters, body.title)
     filepath = _export_ebook(
         chapters=chapters,
