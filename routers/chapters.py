@@ -406,6 +406,33 @@ def _auto_filename(title: str, existing_names: set[str]) -> str:
     return f"第1章_{title}.md"
 
 
+# ─── 工具函数 ───
+
+import re
+
+def _split_diary(content: str) -> tuple[str, str, int | None]:
+    """
+    将正文和日记分离。
+    如果 content 包含 --- 分隔符，拆分出 body 和 diary。
+    返回 (body, diary_text, day_number)。
+    day_number 从日记文本中的数字提取，找不到返回 None。
+    """
+    parts = content.split('---')
+    if len(parts) > 1:
+        body = parts[0].strip()
+        diary = '---'.join(parts[1:]).strip()
+        # 尝试从日记中提取天数
+        day_match = re.search(r'第[零一二三四五六七八九十百千]+天|第(\d+)天', diary)
+        day_number = None
+        if day_match:
+            try:
+                day_number = int(day_match.group(1))
+            except (ValueError, IndexError):
+                day_number = None
+        return body, diary, day_number
+    return content.strip(), '', None
+
+
 # ─── 路由 ───
 
 
@@ -458,8 +485,6 @@ def read_chapter(filename: str):
     return ChapterContent(filename=filename, content=content, parsed=parsed)
 
 
-@router.post("", status_code=201)
-
 def _vectorize_chapter(project_id: str, filename: str, title: str, content: str):
     """Background task: vectorize chapter (runs after response is sent)"""
     try:
@@ -468,6 +493,7 @@ def _vectorize_chapter(project_id: str, filename: str, title: str, content: str)
         import logging
         logging.getLogger("chapters").warning(f"章节向量化失败 [{filename}]: {e}")
 
+@router.post("", status_code=201)
 def create_chapter(body: ChapterCreate):
     """创建新章节文件"""
     existing = {f.name for f in CHAPTERS_DIR.glob("*.md")}
