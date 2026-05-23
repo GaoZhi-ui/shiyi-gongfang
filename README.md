@@ -14,16 +14,17 @@
 - **Markdown 编辑器** — 左侧编辑，右侧实时预览，支持双栏/单栏切换
 - **章节管理** — 创建、编辑、删除、版本回溯
 - **项目模板** — 空白文档 / 小说章节 / 随笔日记 / 知乎回答草稿
-- **导出** — 支持 `.docx`、`.txt` 格式导出
+- **导出** — 支持 `.docx`、`.txt`、`.md`、`.pdf`、`.epub` 格式导出，**可选合并日记**
 
 ### 📋 管理
 
-- **项目工作区** — 多项目隔离，每个项目独立存储章节、场景、知识库
+- **项目工作区** — 多项目隔离，每个项目独立存储章节、场景、日记、知识库
 - **快照管理** — 随时保存/恢复项目快照
 - **场景管理** — 场景级细纲组织
 - **目标追踪** — 写作进度与计划管理
 - **伏笔追踪** — 伏笔的添加、关联、状态追踪
 - **人物档案** — 角色信息管理
+- **📔 日记** — 日记独立存储，与正文解耦，侧边栏专属入口
 
 ### 🤖 AI
 
@@ -34,7 +35,8 @@
 
 ### 🛠 工具
 
-- **自动审查** — 正则引擎 + 规则库，毫秒级检查拼写、句式、字数、密度
+- **自动审查** — 保存时自动检查字数、句式重复、句号密度、日记三要素，结果直接在编辑区显示
+- **句式密度扫描** — 监控"不是而是""但""却""没有只有"等惯性句式，超出阈值标警告
 - **风格引擎** — 写作风格检测与一致性校验
 - **知识库** — 作品设定、人物关系、时间线等速查
 - **工作流引擎** — 分阶段写作流程管理
@@ -79,7 +81,7 @@ python build.py
 python build.py --clean --onedir
 ```
 
-产物输出到 `dist/` 目录。
+产物输出到 `dist/` 目录。正式发布版通过 GitHub Actions 自动构建于 [Releases 页面](https://github.com/GaoZhi-ui/shiyi-gongfang/releases)。
 
 ---
 
@@ -111,16 +113,22 @@ writing-app/
 │
 ├── core/                       # 业务核心
 │   ├── __init__.py
+│   ├── project_config.py       # 项目配置共享模块
 │   ├── style_engine.py         # 写作风格引擎
+│   ├── style_scanner.py        # 句式密度扫描
 │   ├── tool_definitions.py     # 工具定义
-│   └── tools.py                # 工具实现
+│   ├── tools.py                # 工具实现
+│   ├── vector_store.py         # 向量存储
+│   ├── writing_agent.py        # 写作 AI 代理
+│   └── writing_rules.py        # 写作规则引擎
 │
 ├── routers/                    # API 路由
 │   ├── __init__.py
-│   ├── chapters.py             # 章节 CRUD
+│   ├── chapters.py             # 章节 CRUD（含保存自动审查）
 │   ├── characters.py           # 人物档案
 │   ├── chat.py                 # AI 流式聊天
-│   ├── export.py               # 导出
+│   ├── diary.py                # 📔 日记独立 API
+│   ├── export.py               # 导出（支持日记合并）
 │   ├── foreshadowing.py        # 伏笔追踪
 │   ├── goals.py                # 目标管理
 │   ├── health.py               # 健康检查
@@ -128,6 +136,7 @@ writing-app/
 │   ├── knowledge.py            # 知识库
 │   ├── projects.py             # 项目管理
 │   ├── sanitize.py             # 审查
+│   ├── save_check.py           # 保存时自动审查
 │   ├── scenes.py               # 场景管理
 │   ├── snapshots.py            # 快照
 │   ├── tools.py                # 写作工具
@@ -138,41 +147,19 @@ writing-app/
 │   └── key_manager.py          # 密钥加密存储
 │
 ├── static/                     # 前端资源
-│   ├── index.html
-│   └── prototype.html
+│   └── index.html
 │
 ├── templates/                  # 项目模板
-│   ├── arknights/
 │   ├── default/
 │   └── novel/
 │
-├── chapters/                   # 章节存档
-├── characters/                 # 人物数据
-├── scenes/                     # 场景细纲
-├── knowledge/                  # 知识库
-├── export/                     # 导出产物
-├── foreshadowing/              # 伏笔数据
-├── goals/                      # 写作目标
-├── snapshots/                  # 项目快照
-├── projects/                   # 用户项目
-│   └── {project_id}/
-│       ├── chapters/
-│       ├── knowledge/
-│       ├── scenes/
-│       └── config.json
-│
-├── api-design.md               # API 设计文档
-├── design-notes.md             # 设计笔记
-├── distribution-plan.md        # 分发计划
-├── improvement-plan.md         # 改进计划
-├── security-review.md          # 安全审查
-├── test-report-hanako.md       # 测试报告
-├── test-report-xiaohei.md
-├── test-report-xiaohuang.md
-├── ui-improvements.md          # UI 改进计划
-├── ux-improvement-plan.md
-├── ux-plan.md
-└── comparison.md               # 方案对比
+└── projects/                   # 用户项目数据
+    └── {project_id}/
+        ├── chapters/
+        ├── diary/
+        ├── knowledge/
+        ├── scenes/
+        └── config.json
 ```
 
 ---
@@ -183,7 +170,9 @@ writing-app/
 |------|-----------|------------|
 | 编辑器 | ✓ | ✓ |
 | 快速审查 | ✓ | ✓ |
-| 写作工具 | ✓ | ✓ |
+| 保存自动检查 | ✓ | ✓ |
+| 句式密度扫描 | ✓ | ✓ |
+| 日记管理 | ✓ | ✓ |
 | AI 聊天 | ✓ | 不可用 |
 | 深度审查 | ✓ | 不可用 |
 | 知识库 | ✓ | ✓ |

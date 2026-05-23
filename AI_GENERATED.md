@@ -24,4 +24,4 @@ Every feature, architectural decision, and code change was reviewed and approved
 
 ---
 
-*Last updated: 2026-05-21 | Beta 0.4.1*
+*Last updated: 2026-05-23 | Beta 0.5.0*
