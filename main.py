@@ -79,6 +79,7 @@ app.include_router(agent_router, prefix="/api/v1")
 app.include_router(git_router, prefix="/api/v1")
 app.include_router(generate_router, prefix="/api/v1")
 app.include_router(spell_check_router, prefix="/api/v1")
+app.include_router(diary_router, prefix="/api/v1")
 
 STATIC.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
