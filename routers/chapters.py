@@ -450,11 +450,13 @@ def list_chapters(
     result = []
     for entry in sorted(CHAPTERS_DIR.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True):
         name = entry.name
-        if status and not name.startswith(TMP_PREFIX):
-            # _tmp_ 前缀自动对应 DRAFT，无前缀的章节可由用户自行设置状态
-            continue
-        if status == ChapterStatus.DRAFT and not name.startswith(TMP_PREFIX):
-            continue
+        # _tmp_ 前缀自动对应 DRAFT
+        if status == ChapterStatus.DRAFT:
+            if not name.startswith(TMP_PREFIX):
+                continue
+        elif status:
+            # 其他状态暂不支持文件名级过滤，默认通过
+            pass
         _parse_chapter_path(entry, result)
     return {"chapters": result}
 
@@ -476,7 +478,9 @@ def read_chapter(filename: str):
             "suggestion": "请先通过 GET /api/v1/chapters 查看可用章节列表",
         })
 
-    parts = content.split("---", 1)
+    # 去除 frontmatter 后再拆分日记
+    _, clean_body = _extract_frontmatter(content)
+    parts = clean_body.split("---", 1)
     parsed = {
         "has_diary": len(parts) > 1,
         "body_length": len(parts[0].strip()),
@@ -521,14 +525,15 @@ def create_chapter(body: ChapterCreate):
     stem = Path(filename).stem
     if stem.startswith(TMP_PREFIX):
         display_title = stem[len(TMP_PREFIX):]
+        fm_text = ""
     else:
         display_title = stem
         fm_text = _build_frontmatter(
-        title=display_title,
-        content=content,
-        existing_fm=None,
-        status=body.status.value if isinstance(body.status, ChapterStatus) else str(body.status),
-    )
+            title=display_title,
+            content=content,
+            existing_fm=None,
+            status=body.status.value if isinstance(body.status, ChapterStatus) else str(body.status),
+        )
     target.write_text(fm_text + content, encoding="utf-8")
 
     _auto_git_commit("create", filename)
@@ -538,7 +543,8 @@ def create_chapter(body: ChapterCreate):
         project_id = _resolve_active_project_id()
         vs = _get_vector_store()
         if vs:
-            background_tasks.add_task(_vectorize_chapter, project_id, filename, display_title, content)
+            import threading
+            threading.Thread(target=_vectorize_chapter, args=(project_id, filename, display_title, content), daemon=True).start()
     except Exception:
         pass
 
@@ -632,8 +638,8 @@ def update_chapter(filename: str, body: ChapterUpdate):
     try:
         project_id = _resolve_active_project_id()
         try:
-            from fastapi import BackgroundTasks
-            background_tasks.add_task(_vectorize_chapter, project_id, filename, title, clean_content)
+            import threading
+            threading.Thread(target=_vectorize_chapter, args=(project_id, filename, title, clean_content), daemon=True).start()
         except Exception:
             pass  # vector store unavailable
     except Exception as e:
