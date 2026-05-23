@@ -35,3 +35,13 @@ config.yaml
 # 系统
 .DS_Store
 Thumbs.db
+
+# 测试中间产物
+server_*.txt
+test_*.html
+chapter_*.json
+export_*.json
+export_result.txt
+put_chapter.json
+style_check.json
+backup_*.zip
