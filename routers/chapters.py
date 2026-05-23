@@ -39,18 +39,10 @@ BASE = Path(__file__).resolve().parent.parent
 # ─── 章节目录解析 ───
 
 
-def _resolve_active_project_id() -> str:
-    """从 config.yaml 读取当前活跃项目 ID，失败返回 'default'"""
-    yaml_path = BASE / "config.yaml"
-    if yaml_path.exists():
-        try:
-            cfg = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
-            active = cfg.get("active_project", "")
-            if active:
-                return active
-        except Exception:
-            pass  # config optional
-    return "default"
+from core.project_config import resolve_active_project_id as _resolve_active_project_id
+
+# 注意：原版 _resolve_active_project_id 已迁移到 core/project_config.py
+# 此处的 import 是别名，保持旧调用点兼容
 
 
 def _resolve_chapters_dir() -> Path:
@@ -586,12 +578,24 @@ def update_chapter(filename: str, body: ChapterUpdate):
     if diary_text:
         try:
             project_id = _resolve_active_project_id()
+            diary_dir = CHAPTERS_DIR.parent / "projects" / project_id / "diary"
+            diary_dir.mkdir(parents=True, exist_ok=True)
             if day_number:
-                diary_path = CHAPTERS_DIR.parent / "projects" / project_id / "diary" / f"{day_number}.md"
-                diary_path.parent.mkdir(parents=True, exist_ok=True)
+                diary_path = diary_dir / f"{day_number}.md"
                 diary_path.write_text(diary_text, encoding="utf-8")
-        except Exception:
-            pass  # 日记分离失败不影响正文保存
+            else:
+                # 无法解析天数，保存到 fallback 文件
+                fallback_path = diary_dir / "_unmatched.txt"
+                import datetime as _dt
+                fallback_path.write_text(
+                    f"# Unmatched diary ({_dt.datetime.now().isoformat()})\n{diary_text}\n",
+                    encoding="utf-8",
+                )
+                logger = __import__("logging").getLogger("chapters")
+                logger.warning(f"无法从日记中解析天数，已保存到 {fallback_path}")
+        except Exception as e:
+            logger = __import__("logging").getLogger("chapters")
+            logger.error(f"日记分离写入失败: {e}")
 
     final_content = fm_text + body_only
     target.write_text(final_content, encoding="utf-8")

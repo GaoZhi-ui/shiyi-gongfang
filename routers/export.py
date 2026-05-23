@@ -84,16 +84,7 @@ class ExportBody(BaseModel):
 # ─── 工具函数 ───
 
 
-def _resolve_active_project_id() -> str:
-    """从项目配置中读取当前活跃项目 ID"""
-    try:
-        config_path = CHAPTERS_DIR.parent / "projects" / "config.json"
-        if config_path.exists():
-            cfg = json.loads(config_path.read_text(encoding="utf-8"))
-            return cfg.get("active_project", "default")
-    except Exception:
-        pass
-    return "default"
+from core.project_config import resolve_active_project_id, PROJECTS_DIR
 
 
 def _collect_chapters(
@@ -151,7 +142,7 @@ def _collect_chapters(
     # 如果启用日记合并，尝试为每个章节追加日记内容
     if include_diary:
         project_id = _resolve_active_project_id()
-        diary_dir = CHAPTERS_DIR.parent / "projects" / project_id / "diary"
+        diary_dir = PROJECTS_DIR / project_id / "diary"
         if diary_dir.exists():
             diary_files = sorted(diary_dir.glob("*.md"), key=lambda p: int(p.stem) if p.stem.isdigit() else 0)
             if diary_files:
