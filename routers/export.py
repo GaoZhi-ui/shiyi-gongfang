@@ -141,7 +141,7 @@ def _collect_chapters(
 
     # 如果启用日记合并，尝试为每个章节追加日记内容
     if include_diary:
-        project_id = _resolve_active_project_id()
+        project_id = resolve_active_project_id()
         diary_dir = PROJECTS_DIR / project_id / "diary"
         if diary_dir.exists():
             diary_files = sorted(diary_dir.glob("*.md"), key=lambda p: int(p.stem) if p.stem.isdigit() else 0)

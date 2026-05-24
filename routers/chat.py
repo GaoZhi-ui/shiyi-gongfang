@@ -14,6 +14,10 @@ SSE 流式格式：
   data: {"type": "text", "content": "..."}
   data: {"type": "thinking", "content": "..."}
   data: {"type": "done", "content": "", "usage": {"prompt_tokens": N, "completion_tokens": N}}
+
+v2 新增：
+- 代理支持：读取 HTTPS_PROXY 等环境变量，自动传给 httpx client
+- 预设支持：ChatRequest.preset 字段，优先于 scene 但低于显式参数
 """
 
 import json
@@ -28,6 +32,24 @@ from sse_starlette.sse import EventSourceResponse
 import httpx
 
 from core.vector_store import get_vector_store
+
+
+# ─── 代理配置读取 ───
+
+
+def get_proxy_settings() -> dict:
+    """
+    读取代理配置。
+    优先级：HTTPS_PROXY > https_proxy > HTTP_PROXY > http_proxy
+    返回 httpx 兼容的 proxies 字典，无代理时返回空 dict。
+    """
+    import os
+    for var in ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"]:
+        val = os.environ.get(var)
+        if val:
+            return {"http://": val, "https://": val}
+    return {}
+
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 BASE = Path(__file__).resolve().parent.parent
@@ -129,13 +151,15 @@ class ChatContext(BaseModel):
 class ChatRequest(BaseModel):
     model: str = Field("deepseek", description="模型标识: deepseek / openai / claude / google / moonshot / zhipu / yi")
     mode: str = Field("chat", description="对话模式: chat / continue / expand / rewrite", pattern="^(chat|continue|expand|rewrite)$")
+    scene: str = Field("draft", description="场景标签: draft / polish / continue", pattern="^(draft|polish|continue)$")
     stream: bool = Field(True, description="是否流式响应")
-    temperature: float = Field(0.7, ge=0.0, le=2.0)
+    temperature: float | None = Field(None, ge=0.0, le=2.0, description="温度参数，如不传则根据 scene 自动选择")
     max_tokens: int = Field(4096, ge=1, le=32768)
-    system_prompt: str = Field(
-        "你是专业的写作助手。回答简洁、直接，不啰嗦。",
-        description="系统提示词",
+    system_prompt: str | None = Field(
+        None,
+        description="系统提示词，如不传则根据 scene 自动选择",
     )
+    preset: str | None = Field(None, description="预设名称（优先级高于 scene，低于显式传入的 temperature/system_prompt）")
     messages: list[ChatMessage] = Field(..., min_length=1)
     context: ChatContext | None = None
 
@@ -197,72 +221,89 @@ def _append_to_history(entry: dict):
     _save_history(history)
 
 
-# ─── Provider 配置 ───
+# ─── Provider 配置（协议族分组） ───
 
-PROVIDER_CONFIGS = {
-    "deepseek": {
-        "base_url": "https://api.deepseek.com",
-        "default_model": "deepseek-v4-flash",
+PROVIDER_FAMILIES = {
+    "openai_compatible": {
+        "label": "OpenAI 兼容",
         "chat_endpoint": "/v1/chat/completions",
         "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
+        "providers": {
+            "deepseek": {"name": "DeepSeek", "base_url": "https://api.deepseek.com", "default_model": "deepseek-v4-flash"},
+            "openai": {"name": "OpenAI", "base_url": "https://api.openai.com", "default_model": "gpt-5.4"},
+            "moonshot": {"name": "Kimi", "base_url": "https://api.moonshot.cn", "default_model": "kimi-k2.6"},
+            "zhipu": {"name": "GLM", "base_url": "https://open.bigmodel.cn", "default_model": "glm-5.1", "chat_endpoint": "/api/paas/v4/chat/completions"},
+            "yi": {"name": "Yi", "base_url": "https://api.lingyiwanwu.com", "default_model": "yi-lightning"},
+        },
     },
-    "openai": {
-        "base_url": "https://api.openai.com",
-        "default_model": "gpt-5.4",
-        "chat_endpoint": "/v1/chat/completions",
-        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
-        "content_type": "application/json",
-    },
-    "claude": {
-        "base_url": "https://api.anthropic.com",
-        "default_model": "claude-sonnet-4-20250514",
+    "anthropic": {
+        "label": "Anthropic",
         "chat_endpoint": "/v1/messages",
         "auth_header": lambda key: {
             "x-api-key": key,
             "anthropic-version": "2023-06-01",
         },
         "content_type": "application/json",
+        "providers": {
+            "claude": {"name": "Claude", "base_url": "https://api.anthropic.com", "default_model": "claude-sonnet-4-20250514"},
+        },
     },
     "google": {
-        "base_url": "https://generativelanguage.googleapis.com",
-        "default_model": "gemini-2.5-pro",
+        "label": "Google",
         "chat_endpoint": "/v1beta/openai/chat/completions",
         "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
         "content_type": "application/json",
-    },
-    "moonshot": {
-        "base_url": "https://api.moonshot.cn",
-        "default_model": "kimi-k2.6",
-        "chat_endpoint": "/v1/chat/completions",
-        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
-        "content_type": "application/json",
-    },
-    "zhipu": {
-        "base_url": "https://open.bigmodel.cn",
-        "default_model": "glm-5.1",
-        "chat_endpoint": "/api/paas/v4/chat/completions",
-        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
-        "content_type": "application/json",
-    },
-    "yi": {
-        "base_url": "https://api.lingyiwanwu.com",
-        "default_model": "yi-lightning",
-        "chat_endpoint": "/v1/chat/completions",
-        "auth_header": lambda key: {"Authorization": f"Bearer {key}"},
-        "content_type": "application/json",
+        "providers": {
+            "google": {"name": "Gemini", "base_url": "https://generativelanguage.googleapis.com", "default_model": "gemini-2.5-pro"},
+        },
     },
     "ollama": {
-        "base_url": "http://localhost:11434",
-        "default_model": "llama3.2",
-        "chat_endpoint": "/v1/chat/completions",
+        "label": "Ollama (本地)",
+        "chat_endpoint": "/api/chat",
         "auth_header": lambda key: {},
         "content_type": "application/json",
-        "local": True,
+        "providers": {
+            "ollama": {"name": "Ollama", "base_url": "http://localhost:11434", "default_model": "llama3.2", "local": True},
+        },
     },
 }
 
+# 从 PROVIDER_FAMILIES 生成 flat PROVIDER_CONFIGS（向后兼容）
+PROVIDER_CONFIGS = {}
+for family_id, family in PROVIDER_FAMILIES.items():
+    for pid, info in family["providers"].items():
+        PROVIDER_CONFIGS[pid] = {
+            "base_url": info["base_url"],
+            "default_model": info["default_model"],
+            "chat_endpoint": info.get("chat_endpoint", family.get("chat_endpoint", "/v1/chat/completions")),
+            "auth_header": family["auth_header"],
+            "content_type": family["content_type"],
+            "family": family_id,
+            "family_label": family["label"],
+            "local": info.get("local", False),
+        }
+
+
+
+
 DEFAULT_SYSTEM = "你是专业的写作助手。回答简洁、直接、不啰嗦。"
+
+SCENE_PRESETS = {
+    "draft": {
+        "temperature": 0.7,
+        "system": "你是一个写作助手，专注于头脑风暴、大纲生成和快速创作。回答直接、灵感导向，鼓励发散思维。",
+    },
+    "polish": {
+        "temperature": 0.3,
+        "system": "你是一个文字润色专家，专注于文笔优化、句式调整和语言精炼。保持原意，注重修辞和流畅度。",
+    },
+    "continue": {
+        "temperature": 0.8,
+        "system": "你是一个小说续写者，擅长故事续写、场景扩展和情节推进。保持文风一致，不破坏叙事节奏。",
+    },
+}
+
 
 MODE_SYSTEM_PROMPTS = {
     "chat": DEFAULT_SYSTEM,
@@ -335,16 +376,41 @@ def _load_writing_guide(project_id: str) -> str | None:
         return None
 
 
+def _resolve_scene_temperature(req: ChatRequest) -> tuple[float, str]:
+    """根据场景标签解析 temperature 和 system prompt，向后兼容"""
+    scene_key = req.scene or "draft"
+    preset = SCENE_PRESETS.get(scene_key, SCENE_PRESETS["draft"])
+    temperature = req.temperature if req.temperature is not None else preset["temperature"]
+    system_prompt = req.system_prompt if req.system_prompt is not None else preset["system"]
+    return temperature, system_prompt
+
+
 def _build_payload(provider: str, req: ChatRequest) -> dict:
     """构建请求体（OpenAI 兼容格式）"""
     provider_lower = provider.lower()
     cfg = PROVIDER_CONFIGS.get(provider_lower, PROVIDER_CONFIGS["deepseek"])
     model_name = cfg["default_model"]
 
+    # 根据场景标签解析 temperature 和 system prompt
+    temperature, system_prompt = _resolve_scene_temperature(req)
+
+    # 预设覆盖：预设优先级高于 scene，但低于显式传入的 temperature/system_prompt
+    if req.preset:
+        try:
+            from services.key_manager import get_preset_by_name
+            preset_cfg = get_preset_by_name(req.preset)
+            if preset_cfg:
+                if req.temperature is None:
+                    temperature = preset_cfg["temperature"]
+                if req.system_prompt is None:
+                    system_prompt = preset_cfg["system_prompt"]
+        except Exception:
+            pass
+
     # 构建 messages
     messages = []
-    if req.system_prompt:
-        messages.append({"role": "system", "content": req.system_prompt})
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
 
     # 注入附加上下文
     context_notes = []
@@ -397,7 +463,7 @@ def _build_payload(provider: str, req: ChatRequest) -> dict:
     payload = {
         "model": model_name,
         "messages": messages,
-        "temperature": req.temperature,
+        "temperature": temperature,
         "max_tokens": req.max_tokens,
         "stream": req.stream,
     }
@@ -534,10 +600,13 @@ async def _stream_anthropic(client: httpx.AsyncClient, url: str, payload: dict, 
             yield json.dumps({"type": "done", "content": ""}, ensure_ascii=False)
 
 
-async def _non_stream_chat(payload: dict, cfg: dict, headers: dict) -> dict:
+async def _non_stream_chat(payload: dict, cfg: dict, headers: dict, proxies: dict | None = None) -> dict:
     """非流式请求"""
     url = cfg["base_url"].rstrip("/") + cfg["chat_endpoint"]
-    async with httpx.AsyncClient(timeout=120) as client:
+    client_kwargs = {"timeout": 120}
+    if proxies:
+        client_kwargs["proxies"] = proxies
+    async with httpx.AsyncClient(**client_kwargs) as client:
         resp = await client.post(url, json=payload, headers=headers)
         if resp.status_code != 200:
             raise HTTPException(502, detail={
@@ -578,11 +647,13 @@ async def chat_completions(req: ChatRequest):
     # 根据 mode 切换 system prompt
     if req.mode != "chat":
         mode_prompt = MODE_SYSTEM_PROMPTS.get(req.mode, DEFAULT_SYSTEM)
-        if req.system_prompt != DEFAULT_SYSTEM:
-            req.system_prompt = f"{mode_prompt}\n\n{req.system_prompt}"
+        current_system = req.system_prompt or ""
+        if current_system and current_system != SCENE_PRESETS.get(req.scene or "draft", {}).get("system", ""):
+            req.system_prompt = f"{mode_prompt}\n\n{current_system}"
         else:
             req.system_prompt = mode_prompt
 
+    proxies = get_proxy_settings()
     api_key, provider_cfg = _get_api_info(provider)
     payload, cfg = _build_payload(provider, req)
 
@@ -629,7 +700,7 @@ async def chat_completions(req: ChatRequest):
 
     if not req.stream:
         # 非流式
-        result = await _non_stream_chat(api_payload, provider_cfg, headers)
+        result = await _non_stream_chat(api_payload, provider_cfg, headers, proxies=proxies)
 
         # 记录响应到历史
         assistant_msg = {
@@ -655,7 +726,10 @@ async def chat_completions(req: ChatRequest):
         usage_info = None
 
         try:
-            async with httpx.AsyncClient(timeout=120) as client:
+            client_kwargs = {"timeout": 120}
+            if proxies:
+                client_kwargs["proxies"] = proxies
+            async with httpx.AsyncClient(**client_kwargs) as client:
                 if is_anthropic:
                     stream_gen = _stream_anthropic(client, url, api_payload, headers)
                 else:

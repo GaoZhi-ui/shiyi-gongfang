@@ -208,6 +208,11 @@ input,textarea,select,button{font-family:inherit;font-size:inherit;outline:none}
 .topbar .model-select{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;color:var(--text-secondary);padding:5px 10px;font-size:12px;cursor:pointer;transition:border-color .12s}
 .topbar .model-select:hover{border-color:var(--border-hover)}
 .topbar .model-select:focus{border-color:var(--accent)}
+.topbar .scene-select{background:var(--bg-secondary);border:1px solid var(--accent);border-radius:6px;color:var(--text-primary);padding:5px 10px;font-size:12px;cursor:pointer;transition:border-color .12s;font-weight:500}
+.topbar .scene-select:hover{border-color:var(--accent-hover)}
+.topbar .model-select-toggle{background:transparent;border:1px solid transparent;border-radius:6px;color:var(--text-muted);padding:4px 6px;font-size:13px;cursor:pointer;transition:all .12s;line-height:1}
+.topbar .model-select-toggle:hover{background:var(--bg-hover);color:var(--text-secondary);border-color:var(--bg-surface)}
+.topbar .model-select-toggle.active{color:var(--accent);border-color:var(--accent);background:var(--bg-secondary)}
 .topbar-spacer{flex:1}
 .topbar .api-btn{background:transparent;border:1px solid var(--bg-surface);border-radius:6px;color:var(--text-muted);padding:5px 10px;font-size:12px;cursor:pointer;transition:all .12s}
 .topbar .api-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
@@ -881,6 +886,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   body{font-size:15px}
   .topbar{padding:0 10px;gap:8px;height:48px}
   .topbar .model-select{font-size:11px;padding:4px 6px;max-width:100px}
+  .topbar .scene-select{font-size:11px;padding:4px 6px;max-width:130px}
+  .topbar .model-select-toggle{font-size:11px;padding:3px 5px}
   .topbar .focus-btn,.topbar .api-btn,.topbar .shortcut-btn{font-size:11px;padding:4px 8px}
   .editor-area.active textarea{font-size:15px;line-height:1.8;padding:12px 14px}
   .editor-area .editor-toolbar{padding:4px 10px;flex-wrap:wrap;gap:4px}
@@ -983,6 +990,67 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 .version-compare .vc-btn{padding:4px 10px;background:var(--accent);border:none;border-radius:5px;color:var(--bg-primary);font-size:11px;cursor:pointer;font-weight:500}
 .version-compare .vc-btn:hover{background:var(--accent-hover)}
 .version-compare .vc-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ===== AI 配置面板 ===== */
+.ai-config-container{display:flex;flex-direction:column;gap:16px;height:100%}
+.ai-config-family{border:1px solid var(--bg-surface);border-radius:var(--radius-md);overflow:hidden}
+.ai-config-family-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-secondary);border-bottom:1px solid var(--bg-surface);cursor:default}
+.ai-config-family-header .acfh-icon{font-size:16px}
+.ai-config-family-header .acfh-title{font-size:13px;color:var(--text-primary);font-weight:500;flex:1}
+.ai-config-family-header .acfh-badge{font-size:10px;color:var(--text-muted);background:var(--bg-hover);padding:2px 8px;border-radius:10px}
+.ai-config-family-body{padding:12px 14px;background:var(--bg-primary);display:flex;flex-direction:column;gap:12px}
+.ai-config-family-body .acf-hide-key{opacity:.5;filter:grayscale(.3);pointer-events:none}
+.ai-config-family-body .acf-hide-key input,.ai-config-family-body .acf-hide-key select{pointer-events:auto}
+.acf-field{display:flex;flex-direction:column;gap:4px}
+.acf-field label{font-size:11px;color:var(--text-muted);letter-spacing:.5px}
+.acf-field .acf-input,.acf-field select{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:5px;padding:7px 10px;color:var(--text-secondary);font-size:12px;transition:border-color .12s;font-family:inherit}
+.acf-field .acf-input:focus,.acf-field select:focus{border-color:var(--accent)}
+.acf-field .acf-input::placeholder{color:var(--text-muted)}
+.acf-field .acf-input[readonly]{color:var(--text-muted);cursor:default}
+.acf-key-wrap{display:flex;align-items:center;gap:4px}
+.acf-key-wrap .acf-input{flex:1;font-family:monospace}
+.acf-key-toggle{background:transparent;border:1px solid var(--bg-surface);border-radius:5px;color:var(--text-muted);padding:5px 8px;font-size:13px;cursor:pointer;transition:all .12s;line-height:1;flex-shrink:0}
+.acf-key-toggle:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.acf-key-hint{font-size:10px;color:var(--text-muted);margin-top:1px}
+.acf-actions{display:flex;align-items:center;gap:10px;margin-top:4px}
+.acf-action-btn{background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:5px;color:var(--text-secondary);padding:6px 14px;font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.acf-action-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.acf-action-btn:disabled{opacity:.5;cursor:not-allowed}
+.acf-action-btn .acf-spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--text-muted);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
+.acf-test-status{font-size:11px;line-height:1.4}
+.acf-test-status .acf-ok{color:var(--success)}
+.acf-test-status .acf-err{color:var(--danger)}
+.acf-test-status .acf-warn{color:var(--warning)}
+.acf-models{margin-top:4px;display:flex;flex-direction:column;gap:6px}
+.acf-models .acf-fetch-btn{background:transparent;border:1px dashed var(--bg-surface);border-radius:5px;color:var(--text-muted);padding:5px 12px;font-size:10px;cursor:pointer;transition:all .12s;align-self:flex-start}
+.acf-models .acf-fetch-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.acf-models .acf-fetch-btn:disabled{opacity:.5;cursor:not-allowed}
+.acf-model-list{display:flex;flex-wrap:wrap;gap:4px}
+.acf-model-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;color:var(--text-muted);background:var(--bg-secondary);border:1px solid var(--bg-surface);cursor:pointer;transition:all .12s;user-select:none}
+.acf-model-chip:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-hover)}
+.acf-model-chip.active{background:rgba(var(--accent-rgb), 0.12);color:var(--accent);border-color:rgba(var(--accent-rgb), 0.3)}
+.acf-model-chip .acf-mc-check{font-size:9px;margin-left:2px}
+.acf-empty-msg{font-size:11px;color:var(--text-muted);padding:8px 0;text-align:center}
+.ai-config-error{text-align:center;padding:40px 0;color:var(--danger);font-size:13px}
+@keyframes acf-spin{to{transform:rotate(360deg)}}
+
+/* ===== 写作设置面板 ===== */
+.writing-config-container{display:flex;flex-direction:column;gap:20px;height:100%}
+.writing-config-section{border:1px solid var(--bg-surface);border-radius:var(--radius-md);overflow:hidden}
+.writing-config-section-header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg-secondary);border-bottom:1px solid var(--bg-surface);cursor:default}
+.writing-config-section-header .wcsh-icon{font-size:16px}
+.writing-config-section-header .wcsh-title{font-size:13px;color:var(--text-primary);font-weight:500;flex:1}
+.writing-config-section-body{padding:16px 14px;background:var(--bg-primary);display:flex;flex-direction:column;gap:16px}
+.wc-field{display:flex;flex-direction:column;gap:6px}
+.wc-field label{font-size:12px;color:var(--text-primary);font-weight:500}
+.wc-field .wc-row{display:flex;gap:8px;align-items:center}
+.wc-field .wc-row input[type="number"]{width:90px;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;padding:7px 10px;color:var(--text-secondary);font-size:13px;text-align:center;transition:border-color .12s}
+.wc-field .wc-row input[type="number"]:focus{border-color:var(--accent)}
+.wc-field .wc-row span{font-size:12px;color:var(--text-muted)}
+.wc-field .hint{font-size:11px;color:var(--text-muted);margin-top:1px}
+.wc-save-btn{background:rgba(var(--accent-rgb),0.12);border:1px solid rgba(var(--accent-rgb),0.3);border-radius:6px;color:var(--accent);padding:8px 20px;font-size:13px;cursor:pointer;transition:all .12s;align-self:flex-start}
+.wc-save-btn:hover{background:rgba(var(--accent-rgb),0.2)}
+.wc-save-status{font-size:11px;color:var(--text-muted);margin-left:10px}
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css">
 <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
@@ -1036,6 +1104,8 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="tool-item" data-tool="guide"><span class="icon">📖</span><span class="label">规范</span></div>
     <div class="tool-item" data-tool="diary"><span class="icon">📔</span><span class="label">日记</span></div>
     <div class="tool-item" data-tool="calendar"><span class="icon">📅</span><span class="label">日历</span></div>
+    <div class="tool-item" data-tool="ai-config"><span class="icon">⚙</span><span class="label">AI 配置</span></div>
+    <div class="tool-item" data-tool="writing-config"><span class="icon">✍️</span><span class="label">写作设置</span></div>
 
     <div class="tool-group-title">AI</div>
     <div class="tool-item" data-tool="agentWrite"><span class="icon">🤖</span><span class="label">智能写作</span></div>
@@ -1055,7 +1125,12 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
 <div class="col-main">
   <div class="topbar">
     <button class="hamburger-btn" id="hamburgerBtn" title="菜单">☰</button>
-    <select class="model-select" id="modelSelect">
+    <select class="model-select scene-select" id="sceneSelect">
+      <option value="draft" selected>🚀 快速草稿</option>
+      <option value="polish">✍️ 精细润色</option>
+      <option value="continue">📖 续写生成</option>
+    </select>
+    <select class="model-select" id="modelSelect" style="display:none">
       <option value="openai" selected>GPT-5.4</option>
       <option value="deepseek">DeepSeek V4 Flash</option>
       <option value="claude">Claude Sonnet 4</option>
@@ -1064,7 +1139,7 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       <option value="zhipu">GLM-5.1</option>
       <option value="ollama">Ollama (本地)</option>
     </select>
-    </select>
+    <button class="model-select-toggle" id="modelSelectToggle" title="高级模式">🛠</button>
 
     <div class="project-selector" id="projectSelector">
       <div class="project-trigger" id="projectTrigger">
@@ -1230,6 +1305,9 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     <div class="modal-header">
       <h2>⚙ 设置</h2>
       <button class="close-btn" id="apiModalClose">✕</button>
+    </div>
+    <div style="font-size:10px;color:var(--warning);padding:5px 16px 0;line-height:1.4">
+      ⓘ AI 配置已迁移至侧栏「快捷操作 &gt; AI 配置」，写作设置已迁移至「快捷操作 &gt; 写作设置」。此弹窗将在后续版本移除。
     </div>
     <div class="modal-tabs" id="modalTabs">
       <div class="modal-tab active" data-tab="api">API 设置</div>
@@ -1482,7 +1560,11 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   const statusModel = $('statusModel');
   const connStatus = $('connStatus');
   const modelSelect = $('modelSelect');
+  const sceneSelect = $('sceneSelect');
+  const modelSelectToggle = $('modelSelectToggle');
   const checklistBadge = $('checklist-badge');
+  let currentScene = 'draft';
+  let modelSelectVisible = false;
 
   // API 通用头
   function apiHeaders(){
@@ -1515,10 +1597,327 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
         if(sel.options.length > 0){
           modelSelect.value = sel.options[0].value;
           sel.value = sel.options[0].value;
-          statusModel.textContent = sel.options[0].textContent;
+          updateStatusModel();
         }
       }
     } catch(e){}
+  }
+
+  // ===== AI 配置面板 =====
+
+  // 默认端点映射
+  var PROVIDER_DEFAULTS = {
+    deepseek: { endpoint: 'https://api.deepseek.com' },
+    openai: { endpoint: 'https://api.openai.com' },
+    moonshot: { endpoint: 'https://api.moonshot.cn' },
+    zhipu: { endpoint: 'https://open.bigmodel.cn' },
+    yi: { endpoint: 'https://api.lingyiwanwu.com' },
+    claude: { endpoint: 'https://api.anthropic.com' },
+    google: { endpoint: 'https://generativelanguage.googleapis.com' },
+    ollama: { endpoint: 'http://localhost:11434' },
+  };
+
+  // 当前 AI 配置状态
+  var _aiConfigState = { families: [], keyMap: {} };
+
+  async function loadAIConfigView(){
+    panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted)"><div class="tb-loading-spinner" style="margin:12px auto"></div><div style="font-size:12px">加载配置…</div></div>';
+    try{
+      var [famRes, keyRes] = await Promise.all([
+        fetch(apiBase() + '/api/v1/keys/families'),
+        fetch(apiBase() + '/api/v1/keys', { headers: apiHeaders() }).catch(function(){ return null; }),
+      ]);
+      if(!famRes.ok) throw new Error('HTTP ' + famRes.status);
+      var famData = await famRes.json();
+      var keyData = keyRes && keyRes.ok ? await keyRes.json() : [];
+      var keyMap = {};
+      if(Array.isArray(keyData)){
+        keyData.forEach(function(k){ keyMap[k.provider] = k; });
+      }
+      _aiConfigState.families = famData.families || [];
+      _aiConfigState.keyMap = keyMap;
+      renderAIConfigFamilies();
+    }catch(e){
+      panelBody.innerHTML = '<div class="ai-config-error">❌ 加载配置失败: ' + escHtml(e.message) + '</div>';
+    }
+  }
+
+  function renderAIConfigFamilies(){
+    var families = _aiConfigState.families;
+    var keyMap = _aiConfigState.keyMap;
+    if(!families.length){
+      panelBody.innerHTML = '<div class="ai-config-error">暂无可用协议族</div>';
+      return;
+    }
+    var html = '<div class="ai-config-container">';
+    families.forEach(function(fam){
+      var prvHtml = '';
+      // 每个族默认选中第一个已配置的 provider，或第一个
+      var defaultPid = null;
+      fam.providers.forEach(function(p){
+        if(keyMap[p.id] && !defaultPid) defaultPid = p.id;
+      });
+      if(!defaultPid && fam.providers.length > 0) defaultPid = fam.providers[0].id;
+      // 构建 provider 下拉
+      var optsHtml = fam.providers.map(function(p){
+        var sel = p.id === defaultPid ? ' selected' : '';
+        return '<option value="' + p.id + '"' + sel + '>' + escHtml(p.name) + '</option>';
+      }).join('');
+      var defaultPrv = fam.providers.find(function(p){ return p.id === defaultPid; }) || fam.providers[0];
+      var defCfg = PROVIDER_DEFAULTS[defaultPid] || { endpoint: '' };
+      var savedKey = keyMap[defaultPid];
+      var endpointVal = (savedKey && savedKey.endpoint) ? savedKey.endpoint : defCfg.endpoint;
+      var keyPreview = (savedKey && savedKey.key_preview) ? savedKey.key_preview : '';
+      var hideKey = fam.local ? ' acf-hide-key' : '';
+      var keySection = fam.local ?
+        '<div class="acf-field"><label>API Key</label><div class="acf-key-hint">无需 API Key（本地服务）</div></div>' :
+        '<div class="acf-field">' +
+          '<label>API Key</label>' +
+          '<div class="acf-key-wrap">' +
+            '<input type="password" class="acf-input acf-key-input" value="' + escHtml(keyPreview) + '" placeholder="输入 ' + escHtml(defaultPrv.name) + ' API Key" spellcheck="false">' +
+            '<button class="acf-key-toggle" title="显示/隐藏 Key">👁</button>' +
+          '</div>' +
+        '</div>';
+      prvHtml +=
+        '<div class="acf-field">' +
+          '<label>Provider</label>' +
+          '<select class="acf-provider-select" data-family="' + fam.id + '">' + optsHtml + '</select>' +
+        '</div>' +
+        '<div class="acf-field">' +
+          '<label>Endpoint</label>' +
+          '<input type="text" class="acf-input acf-endpoint-input" value="' + escHtml(endpointVal) + '" readonly>' +
+        '</div>' +
+        keySection;
+      html +=
+        '<div class="ai-config-family" data-family="' + fam.id + '">' +
+          '<div class="ai-config-family-header">' +
+            '<span class="acfh-icon">' + (fam.local ? '🖥' : '🔌') + '</span>' +
+            '<span class="acfh-title">' + escHtml(fam.label) + '</span>' +
+            '<span class="acfh-badge">' + fam.providers.length + ' 个服务商</span>' +
+          '</div>' +
+          '<div class="ai-config-family-body' + hideKey + '" data-provider="' + defaultPid + '">' +
+            prvHtml +
+            '<div class="acf-actions">' +
+              '<button class="acf-action-btn acf-test-btn">🔌 测试连接</button>' +
+              '<div class="acf-test-status"></div>' +
+            '</div>' +
+            '<div class="acf-models">' +
+              '<button class="acf-action-btn acf-fetch-btn">📋 获取模型</button>' +
+              '<div class="acf-model-list"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    panelBody.innerHTML = html;
+    // 绑定事件
+    bindAIConfigEvents();
+  }
+
+  function bindAIConfigEvents(){
+    // Provider 切换
+    panelBody.querySelectorAll('.acf-provider-select').forEach(function(sel){
+      sel.addEventListener('change', function(){
+        onProviderChange(this);
+      });
+    });
+    // 测试连接
+    panelBody.querySelectorAll('.acf-test-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var body = this.closest('.ai-config-family-body');
+        var providerId = body.dataset.provider;
+        var statusEl = body.querySelector('.acf-test-status');
+        testProviderConnection(this, providerId, statusEl);
+      });
+    });
+    // 获取模型
+    panelBody.querySelectorAll('.acf-fetch-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var body = this.closest('.ai-config-family-body');
+        var providerId = body.dataset.provider;
+        var listEl = body.querySelector('.acf-model-list');
+        fetchProviderModels(this, providerId, listEl);
+      });
+    });
+    // Key 可见性
+    panelBody.querySelectorAll('.acf-key-toggle').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var input = this.parentElement.querySelector('.acf-key-input');
+        if(input.type === 'password'){
+          input.type = 'text';
+          this.textContent = '🙈';
+        }else{
+          input.type = 'password';
+          this.textContent = '👁';
+        }
+      });
+    });
+    // Key 输入后自动保存
+    panelBody.querySelectorAll('.acf-key-input').forEach(function(input){
+      input.addEventListener('change', function(){
+        var body = this.closest('.ai-config-family-body');
+        var providerId = body.dataset.provider;
+        saveProviderKey(providerId);
+      });
+    });
+  }
+
+  function onProviderChange(selEl){
+    var body = selEl.closest('.ai-config-family-body');
+    var providerId = selEl.value;
+    var familyId = selEl.dataset.family;
+    var fam = _aiConfigState.families.find(function(f){ return f.id === familyId; });
+    if(!fam) return;
+    var prv = fam.providers.find(function(p){ return p.id === providerId; });
+    if(!prv) return;
+    body.dataset.provider = providerId;
+    // 更新 endpoint
+    var defCfg = PROVIDER_DEFAULTS[providerId] || { endpoint: '' };
+    var savedKey = _aiConfigState.keyMap[providerId];
+    var endpointVal = (savedKey && savedKey.endpoint) ? savedKey.endpoint : defCfg.endpoint;
+    var epInput = body.querySelector('.acf-endpoint-input');
+    if(epInput) epInput.value = endpointVal;
+    // 更新 Key 区域
+    var keyPreview = (savedKey && savedKey.key_preview) ? savedKey.key_preview : '';
+    var keyInput = body.querySelector('.acf-key-input');
+    if(keyInput) keyInput.value = keyPreview;
+    // 隐藏族（如 Ollama）隐藏 Key 区域
+    if(fam.local){
+      body.classList.add('acf-hide-key');
+    }else{
+      body.classList.remove('acf-hide-key');
+    }
+    // 清空状态
+    var statusEl = body.querySelector('.acf-test-status');
+    if(statusEl) statusEl.innerHTML = '';
+    var listEl = body.querySelector('.acf-model-list');
+    if(listEl) listEl.innerHTML = '';
+  }
+
+  async function saveProviderKey(providerId){
+    var body = panelBody.querySelector('.ai-config-family-body[data-provider="' + providerId + '"]');
+    if(!body) return;
+    var keyInput = body.querySelector('.acf-key-input');
+    if(!keyInput) return;
+    var keyVal = keyInput.value.trim();
+    if(!keyVal) return;
+    try{
+      await fetch(apiBase() + '/api/v1/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: providerId, api_key: keyVal }),
+      });
+      // 更新 keyMap
+      _aiConfigState.keyMap[providerId] = _aiConfigState.keyMap[providerId] || {};
+      _aiConfigState.keyMap[providerId].key_preview = keyVal.substring(0, 5) + '****' + keyVal.substring(keyVal.length - 4);
+      _aiConfigState.keyMap[providerId].configured = true;
+    }catch(e){ /* 静默失败 */ }
+  }
+
+  async function testProviderConnection(btnEl, providerId, statusEl){
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="acf-spinner"></span> 测试中…';
+    statusEl.innerHTML = '';
+    try{
+      var res = await fetch(apiBase() + '/api/v1/keys/' + providerId + '/test', {
+        headers: apiHeaders(),
+      });
+      var data = await res.json();
+      if(data.status === 'ok'){
+        statusEl.innerHTML = '<span class="acf-ok">✅ ' + escHtml(data.detail || '连接成功') + '</span>';
+        btnEl.disabled = false;
+        btnEl.innerHTML = '🔌 测试连接';
+        // 成功后自动获取模型
+        var body = btnEl.closest('.ai-config-family-body');
+        var listEl = body.querySelector('.acf-model-list');
+        var fetchBtn = body.querySelector('.acf-fetch-btn');
+        if(fetchBtn && listEl) fetchProviderModels(fetchBtn, providerId, listEl);
+      }else{
+        statusEl.innerHTML = '<span class="acf-err">❌ ' + escHtml(data.detail || '连接失败') + '</span>';
+        btnEl.disabled = false;
+        btnEl.innerHTML = '🔌 测试连接';
+      }
+    }catch(e){
+      statusEl.innerHTML = '<span class="acf-err">❌ 网络错误: ' + escHtml(e.message) + '</span>';
+      btnEl.disabled = false;
+      btnEl.innerHTML = '🔌 测试连接';
+    }
+  }
+
+  async function fetchProviderModels(btnEl, providerId, listEl){
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<span class="acf-spinner"></span> 获取中…';
+    listEl.innerHTML = '';
+    try{
+      var res = await fetch(apiBase() + '/api/v1/keys/' + providerId + '/models', {
+        headers: apiHeaders(),
+      });
+      var data = await res.json();
+      var models = data.models || [];
+      if(models.length === 0){
+        listEl.innerHTML = '<div class="acf-empty-msg">未获取到模型列表</div>';
+      }else{
+        var currentModel = modelSelect.value;
+        listEl.innerHTML = models.map(function(m){
+          var active = (m === currentModel) ? ' active' : '';
+          return '<span class="acf-model-chip' + active + '" data-model="' + escHtml(m) + '">' + escHtml(m) + '<span class="acf-mc-check">' + (m === currentModel ? '✓' : '') + '</span></span>';
+        }).join('');
+        // 点击模型芯片同步到 modelSelect
+        listEl.querySelectorAll('.acf-model-chip').forEach(function(chip){
+          chip.addEventListener('click', function(){
+            var model = this.dataset.model;
+            selectAiModel(model, listEl);
+          });
+        });
+        // 如果当前 modelSelect 的值不在列表中，自动选中第一个
+        var chips = listEl.querySelectorAll('.acf-model-chip');
+        if(chips.length > 0 && !listEl.querySelector('.acf-model-chip.active')){
+          var firstModel = chips[0].dataset.model;
+          selectAiModel(firstModel, listEl);
+        }
+      }
+      btnEl.disabled = false;
+      btnEl.innerHTML = '📋 获取模型';
+    }catch(e){
+      listEl.innerHTML = '<div class="acf-empty-msg">获取失败: ' + escHtml(e.message) + '</div>';
+      btnEl.disabled = false;
+      btnEl.innerHTML = '📋 获取模型';
+    }
+  }
+
+  function selectAiModel(model, listEl){
+    // 同步 modelSelect
+    modelSelect.value = model;
+    updateStatusModel();
+    // 同步聊天 connStatus
+    connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
+    // 更新芯片高亮
+    listEl.querySelectorAll('.acf-model-chip').forEach(function(c){
+      c.classList.remove('active');
+      c.querySelector('.acf-mc-check').textContent = '';
+    });
+    var activeChip = listEl.querySelector('.acf-model-chip[data-model="' + model.replace(/"/g, '&quot;') + '"]');
+    if(activeChip){
+      activeChip.classList.add('active');
+      activeChip.querySelector('.acf-mc-check').textContent = '✓';
+    }
+    // 同步旧的 apiModel 下拉（保持向后兼容）
+    var oldApiModel = $('#apiModel');
+    if(oldApiModel){
+      oldApiModel.value = model;
+    }
+    // 更新旧的 endpoint（向后兼容）
+    var bodyEl = listEl.closest('.ai-config-family-body');
+    if(bodyEl){
+      var epInput = bodyEl.querySelector('.acf-endpoint-input');
+      if(epInput){
+        $('#apiEndpoint').value = epInput.value;
+      }
+    }
+    // 触发 change 事件（确保其他监听器响应）
+    if(typeof Event === 'function'){
+      modelSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   }
 
   // ========== 项目管理 ==========
@@ -1707,6 +2106,16 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   }
 
   // ========== 写作配置 ==========
+  // 场景预设默认值
+  const SCENE_PRESETS = {
+    draft: { temperature: 0.7, system: '你是一个写作助手，专注于头脑风暴、大纲生成和快速创作。回答直接、灵感导向，鼓励发散思维。' },
+    polish: { temperature: 0.3, system: '你是一个文字润色专家，专注于文笔优化、句式调整和语言精炼。保持原意，注重修辞和流畅度。' },
+    continue: { temperature: 0.8, system: '你是一个小说续写者，擅长故事续写、场景扩展和情节推进。保持文风一致，不破坏叙事节奏。' },
+  };
+
+  // 用户自定义场景预设覆盖
+  let scenePresets = JSON.parse(JSON.stringify(SCENE_PRESETS));
+
   let writingConfig = {
     wordMin: 2000,
     wordMax: 2800,
@@ -1726,6 +2135,15 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
             periodDensity: cfg.writing.periodDensity || 6,
             taPerThousand: cfg.writing.taPerThousand || 15
           };
+          // 加载场景预设覆盖
+          if(cfg.writing.scenePresets){
+            ['draft','polish','continue'].forEach(function(key){
+              if(cfg.writing.scenePresets[key]){
+                scenePresets[key].temperature = cfg.writing.scenePresets[key].temperature ?? SCENE_PRESETS[key].temperature;
+                scenePresets[key].system = cfg.writing.scenePresets[key].system || SCENE_PRESETS[key].system;
+              }
+            });
+          }
         }
       }
     }catch(e){}
@@ -1758,9 +2176,18 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       await fetch(apiBase()+'/api/v1/projects/'+pid+'/config', {
         method:'PUT',
         headers:apiHeaders(),
-        body:JSON.stringify({writing:writingConfig})
+        body:JSON.stringify({writing:writingConfig, scene_presets:scenePresets})
       });
     }catch(e){}
+  }
+  function saveScenePresetsToWritingConfig(){
+    // 从自定义输入读取场景预设（面板版本）
+    ['draft','polish','continue'].forEach(function(key){
+      var tempEl = document.getElementById('sceneTemp-' + key);
+      var sysEl = document.getElementById('sceneSys-' + key);
+      if(tempEl) scenePresets[key].temperature = parseFloat(tempEl.value) || SCENE_PRESETS[key].temperature;
+      if(sysEl) scenePresets[key].system = sysEl.value || SCENE_PRESETS[key].system;
+    });
   }
 
   function readWritingConfigFromUI(){
@@ -1769,6 +2196,118 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     const pd = parseInt($('wsPeriodDensity').value) || 6;
     const tl = parseInt($('wsTaLimit').value) || 15;
     writingConfig = {wordMin: Math.min(wm,wM), wordMax: Math.max(wm,wM), periodDensity: pd, taPerThousand: tl};
+    saveScenePresetsToWritingConfig();
+  }
+
+  // 独立保存函数：从 UI 读取、更新清单、写 API
+  function saveWritingConfig(){
+    readWritingConfigFromUI();
+    updateChecklistFromConfig();
+    if(currentProjectId) saveWritingConfigToApi(currentProjectId);
+  }
+
+  function readPanelWritingConfig(){
+    var wm = parseInt(document.getElementById('wsWordMin-panel').value) || 2000;
+    var wM = parseInt(document.getElementById('wsWordMax-panel').value) || 2800;
+    var pd = parseInt(document.getElementById('wsPeriodDensity-panel').value) || 6;
+    var tl = parseInt(document.getElementById('wsTaLimit-panel').value) || 15;
+    writingConfig = {wordMin: Math.min(wm,wM), wordMax: Math.max(wm,wM), periodDensity: pd, taPerThousand: tl};
+    saveScenePresetsToWritingConfig();
+  }
+
+  function loadWritingConfigView(){
+    if(!currentProjectId){
+      panelBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted)">请先选择项目</div>';
+      return;
+    }
+    var html = '<div class="writing-config-container">';
+    // 字数目标
+    html += '<div class="writing-config-section">';
+    html += '  <div class="writing-config-section-header">';
+    html += '    <span class="wcsh-icon">📐</span>';
+    html += '    <span class="wcsh-title">字数目标</span>';
+    html += '  </div>';
+    html += '  <div class="writing-config-section-body">';
+    html += '    <div class="wc-field">';
+    html += '      <label>每章字数范围</label>';
+    html += '      <div class="wc-row">';
+    html += '        <input type="number" id="wsWordMin-panel" value="' + writingConfig.wordMin + '" min="500" max="5000">';
+    html += '        <span>—</span>';
+    html += '        <input type="number" id="wsWordMax-panel" value="' + writingConfig.wordMax + '" min="500" max="5000">';
+    html += '        <span>字</span>';
+    html += '      </div>';
+    html += '      <div class="hint">每章基线字数范围</div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+    // 语句密度
+    html += '<div class="writing-config-section">';
+    html += '  <div class="writing-config-section-header">';
+    html += '    <span class="wcsh-icon">📏</span>';
+    html += '    <span class="wcsh-title">语句密度</span>';
+    html += '  </div>';
+    html += '  <div class="writing-config-section-body">';
+    html += '    <div class="wc-field">';
+    html += '      <label>句号密度上限</label>';
+    html += '      <div class="wc-row">';
+    html += '        <input type="number" id="wsPeriodDensity-panel" value="' + writingConfig.periodDensity + '" min="1" max="20">';
+    html += '        <span>句/千字</span>';
+    html += '      </div>';
+    html += '      <div class="hint">每千字句号数量上限，防止碎句</div>';
+    html += '    </div>';
+    html += '    <div class="wc-field">';
+    html += '      <label>"他"字上限</label>';
+    html += '      <div class="wc-row">';
+    html += '        <input type="number" id="wsTaLimit-panel" value="' + writingConfig.taPerThousand + '" min="1" max="50">';
+    html += '        <span>次/千字</span>';
+    html += '      </div>';
+    html += '      <div class="hint">每千字"他"出现次数上限</div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+    // 场景预设
+    html += '<div class="writing-config-section">';
+    html += '  <div class="writing-config-section-header">';
+    html += '    <span class="wcsh-icon">🎯</span>';
+    html += '    <span class="wcsh-title">场景预设</span>';
+    html += '  </div>';
+    html += '  <div class="writing-config-section-body">';
+    html += '    <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px">自定义每个场景标签的 temperature 和 system prompt（留空则使用默认值）</div>';
+    ['draft','polish','continue'].forEach(function(key){
+      var labels = {draft:'🚀 快速草稿', polish:'✍️ 精细润色', continue:'📖 续写生成'};
+      var p = scenePresets[key];
+      html += '    <div class="wc-field" style="border-bottom:1px solid var(--bg-surface);padding-bottom:12px;margin-bottom:12px">';
+      html += '      <label>' + labels[key] + '</label>';
+      html += '      <div class="wc-row" style="margin-bottom:6px">';
+      html += '        <span style="font-size:11px;color:var(--text-muted);width:70px">温度 (0~2)</span>';
+      html += '        <input type="number" id="sceneTemp-' + key + '" value="' + (p.temperature !== SCENE_PRESETS[key].temperature ? p.temperature : '') + '" min="0" max="2" step="0.05" style="width:80px" placeholder="' + SCENE_PRESETS[key].temperature + '">';
+      html += '      </div>';
+      html += '      <div class="wc-row">';
+      html += '        <span style="font-size:11px;color:var(--text-muted);width:70px">System</span>';
+      html += '        <textarea id="sceneSys-' + key + '" rows="2" style="flex:1;background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;padding:6px 10px;color:var(--text-secondary);font-size:12px;resize:vertical" placeholder="' + escHtml(SCENE_PRESETS[key].system) + '">' + (p.system !== SCENE_PRESETS[key].system ? escHtml(p.system) : '') + '</textarea>';
+      html += '      </div>';
+      html += '    </div>';
+    });
+    html += '  </div>';
+    html += '</div>';
+    // 操作按钮
+    html += '<div style="display:flex;align-items:center;gap:12px">';
+    html += '  <button class="wc-save-btn" id="wcSaveBtn">✓ 保存设置</button>';
+    html += '  <span class="wc-save-status" id="wcSaveStatus"></span>';
+    html += '</div>';
+    html += '</div>';
+    panelBody.innerHTML = html;
+    // 绑定保存按钮
+    document.getElementById('wcSaveBtn').addEventListener('click', function(){
+      readPanelWritingConfig();
+      syncWritingConfigUI();
+      updateChecklistFromConfig();
+      if(currentProjectId) saveWritingConfigToApi(currentProjectId);
+      var st = document.getElementById('wcSaveStatus');
+      st.textContent = '✓ 已保存';
+      st.style.color = 'var(--success)';
+      setTimeout(function(){ st.textContent = ''; }, 2000);
+    });
   }
 
   // ========== 知识库 ==========
@@ -2271,6 +2810,14 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       panelIcon.textContent = '📅';
       panelTitle.textContent = '写作日历';
       loadCalendarView();
+    }else if(type==='ai-config'){
+      panelIcon.textContent = '⚙';
+      panelTitle.textContent = 'AI 模型配置';
+      loadAIConfigView();
+    }else if(type==='writing-config'){
+      panelIcon.textContent = '✍️';
+      panelTitle.textContent = '写作设置';
+      loadWritingConfigView();
     }else if(type==='agentWrite'){
       panelIcon.textContent = '🤖';
       panelTitle.textContent = '智能写作';
@@ -2488,13 +3035,26 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       return;
     }
 
-    fetch(apiBase()+'/api/v1/chat', {
+    // 构建 ChatRequest 结构
+    var chatReqPayload = {
+      model: modelSelect.value,
+      mode: 'chat',
+      scene: sceneSelect.value,
+      stream: false,
+      messages: [{ role: 'user', content: text }],
+      context: {
+        active_chapter: '卷二·归途未定·第31章',
+        project_id: currentProjectId,
+      },
+    };
+
+    fetch(apiBase()+'/api/v1/chat/completions', {
       method:'POST',
       headers:apiHeaders(),
-      body:JSON.stringify({message:text, model:modelSelect.value, context:{chapter:'卷二·归途未定·第31章'}, project_id:currentProjectId})
+      body:JSON.stringify(chatReqPayload)
     }).then(r=>r.json()).then(data=>{
       removeLoadingIndicator(loadingEl);
-      addMessage('system', data.reply || data.message || '收到。我正在处理你的请求…');
+      addMessage('system', data.content || data.reply || data.message || '收到。');
       sendBtn.classList.remove('disabled');
     }).catch(()=>{
       setTimeout(()=>{
@@ -2607,11 +3167,9 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     $('shortcutModal').classList.remove('open');
   });
 
-  // API 设置弹窗
+  // API 设置 — 打开侧栏 AI 配置页
   $('apiSettingsBtn').addEventListener('click', function(){
-    $('apiModal').classList.add('open');
-    $('#apiModel').value = modelSelect.value;
-    syncWritingConfigUI();
+    handleToolClick('ai-config');
   });
 
   $('apiModalClose').addEventListener('click', ()=>$('apiModal').classList.remove('open'));
@@ -2633,14 +3191,12 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
     const endpoint = $('#apiEndpoint').value.trim();
     const mdl = $('#apiModel').value;
     modelSelect.value = mdl;
-    statusModel.textContent = modelSelect.options[modelSelect.selectedIndex].text;
+    updateStatusModel();
     if(endpoint){
       connStatus.innerHTML = '<span class="dot green"></span>API 已连接';
     }
     // 保存写作设置
-    readWritingConfigFromUI();
-    updateChecklistFromConfig();
-    if(currentProjectId) saveWritingConfigToApi(currentProjectId);
+    saveWritingConfig();
     $('apiModal').classList.remove('open');
   });
 
@@ -2675,15 +3231,34 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       if(sel.options.length > 0){
         modelSelect.value = sel.options[0].value;
         sel.value = sel.options[0].value;
-        statusModel.textContent = sel.options[0].textContent;
+        updateStatusModel();
       }
     }).catch(function(){
       mr.innerHTML = '<span style="color:var(--warning)">获取失败</span>';
     });
   });
 
+  function updateStatusModel(){
+    var sceneLabel = sceneSelect.options[sceneSelect.selectedIndex].text;
+    var modelLabel = modelSelect.options[modelSelect.selectedIndex].text;
+    statusModel.textContent = sceneLabel + ' | ' + modelLabel;
+  }
+
+  sceneSelect.addEventListener('change', function(){
+    currentScene = this.value;
+    updateStatusModel();
+  });
+
   modelSelect.addEventListener('change', function(){
-    statusModel.textContent = this.options[this.selectedIndex].text;
+    updateStatusModel();
+  });
+
+  // 高级模式切换：显示/隐藏实际模型选择
+  modelSelectToggle.addEventListener('click', function(){
+    modelSelectVisible = !modelSelectVisible;
+    modelSelect.style.display = modelSelectVisible ? '' : 'none';
+    modelSelectToggle.classList.toggle('active', modelSelectVisible);
+    modelSelectToggle.title = modelSelectVisible ? '隐藏模型名' : '高级模式';
   });
 
   $('#btn-clear-chat').addEventListener('click', function(){
