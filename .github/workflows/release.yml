@@ -33,21 +33,28 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          case "${{ runner.os }}" in
+          suffix="${{ runner.os }}"
+          case "$suffix" in
             Windows) suffix="win64" ;;
-            macOS)   suffix="macos" ;;
-            Linux)   suffix="linux-x86_64" ;;
+            macOS) suffix="macos" ;;
+            Linux) suffix="linux-x86_64" ;;
           esac
-          cd dist
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            7z a -tzip "../${APP_NAME}-${{ github.ref_name }}-${suffix}.zip" "${APP_NAME}/"
+          echo "Packaging for $suffix..."
+          ls -la dist/
+          if [ -d "dist/${APP_NAME}" ]; then
+            cd dist
+            zip -r "../${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip" "${APP_NAME}/"
+            cd ..
+            ls -la "${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip"
           else
-            zip -r "../${APP_NAME}-${{ github.ref_name }}-${suffix}.zip" "${APP_NAME}/"
+            echo "ERROR: dist/${APP_NAME} not found!"
+            ls -la dist/
+            exit 1
           fi
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.ref_name }}-${{ runner.os }}
-          path: ${{ github.ref_name }}-*.zip
+          path: "*.zip"
 
   release:
     if: ${{ success() }}
@@ -59,20 +66,25 @@ jobs:
           path: artifacts
       - name: Create Release
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
           echo "Creating release for ${GITHUB_REF_NAME}..."
-          echo "Using token: ${GITHUB_TOKEN:0:10}..."
-          # First verify token works
-          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}" > /dev/null && \
-            echo "Token OK" || echo "Token FAILED"
-          # Then create the release
-          curl -v -X POST \
+          echo "Files to attach:"
+          find artifacts/ -name "*.zip" -type f -exec echo "  {}" \;
+          # Create release via API
+          RESP=$(curl -s -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             "https://api.github.com/repos/${{ github.repository }}/releases" \
-            -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"由 GitHub Actions 自动构建。\\n\\n## 下载\\n| 平台 | 便携版 |\\n|------|--------|\\n| Windows | \\`${APP_NAME}-${GITHUB_REF_NAME}-win64.zip\\` |\\n| macOS | \\`${APP_NAME}-${GITHUB_REF_NAME}-macos.zip\\` |\\n| Linux | \\`${APP_NAME}-${GITHUB_REF_NAME}-linux-x86_64.zip\\` |\",\"draft\":false,\"prerelease\":false}" 2>&1 | tee /tmp/release.log
-          echo "---"
-          cat /tmp/release.log
+            -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"由 GitHub Actions 自动构建。\",\"draft\":false,\"prerelease\":false}")
+          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('id','ERR'))" 2>/dev/null || echo "ERR")
+          echo "Release ID: $RELEASE_ID"
+          # Upload assets
+          for f in artifacts/*/*.zip; do
+            echo "Uploading $(basename $f)..."
+            curl -s -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/zip" \
+              "https://uploads.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
+              --data-binary @"$f"
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
