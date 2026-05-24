@@ -115,10 +115,15 @@ jobs:
 
       - name: Create GitHub Release
         run: |
+          echo "Version: v${{ env.VERSION }}"
+          echo "Repo: ${{ github.repository }}"
+          echo "Token length: ${#GH_TOKEN}"
+          ls -la artifacts/
+          find artifacts/ -name "*.zip" -type f -ls
           gh release create v${{ env.VERSION }} \
             --repo ${{ github.repository }} \
             --title "写作助手工坊 v${{ env.VERSION }}" \
             --notes-file release-notes.md \
-            artifacts/**/*.zip
+            artifacts/**/*.zip 2>&1
         env:
           GH_TOKEN: ${{ github.token }}
