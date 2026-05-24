@@ -220,3 +220,48 @@ def _default_endpoint(provider: str) -> str:
         "openai": "https://api.openai.com/v1",
     }
     return defaults.get(provider, "https://api.deepseek.com/v1")
+
+
+@router.get("/{provider}/models")
+async def list_models(provider: str):
+    """获取指定 provider 的可用模型列表"""
+    provider = provider.strip().lower()
+    km = _get_key_manager()
+
+    # Ollama 使用独立 API
+    if provider == "ollama":
+        import httpx
+        try:
+            config = km.get_config(provider)
+            base = (config.get("endpoint", "http://localhost:11434") if config else "http://localhost:11434").rstrip("/")
+            async with httpx.AsyncClient(timeout=5) as client:
+                resp = await client.get(base + "/api/tags")
+                if resp.status_code == 200:
+                    models = [m["name"] for m in resp.json().get("models", [])]
+                    return {"provider": provider, "models": models}
+        except Exception:
+            pass
+        return {"provider": provider, "models": []}
+
+    # OpenAI 兼容：GET /v1/models
+    config = km.get_config(provider)
+    if config is None:
+        return {"provider": provider, "models": []}
+
+    raw_key = km.get_key(provider)
+    base_url = config.get("endpoint", _default_endpoint(provider)).rstrip("/")
+
+    import httpx
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                base_url + "/models",
+                headers={"Authorization": f"Bearer {raw_key}"},
+            )
+            if resp.status_code == 200:
+                models = [m["id"] for m in resp.json().get("data", [])]
+                return {"provider": provider, "models": models}
+    except Exception:
+        pass
+
+    return {"provider": provider, "models": []}

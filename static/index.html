@@ -1303,6 +1303,10 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
             <label>连接测试</label>
             <button id="testConnectionBtn" style="background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;color:var(--text-secondary);padding:8px 14px;font-size:12px;cursor:pointer;width:100%;text-align:center">测试连接</button>
             <div id="testResult" style="margin-top:6px;font-size:11px;color:var(--text-muted)"></div>
+            <div style="margin-top:8px">
+              <button id="fetchModelsBtn" style="background:var(--bg-secondary);border:1px solid var(--bg-surface);border-radius:6px;color:var(--text-secondary);padding:6px 12px;font-size:11px;cursor:pointer">获取可用模型</button>
+              <span id="modelsResult" style="margin-left:8px;font-size:11px;color:var(--text-muted)"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -1489,6 +1493,32 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
   function apiBase(){
     const ep = ($('apiEndpoint')||{}).value || 'http://127.0.0.1:8000/api/v1';
     return ep.endsWith('/api/v1') ? ep.replace(/\/api\/v1$/,'') : ep;
+  }
+
+  // 获取可用模型列表并更新下拉
+  async function fetchModels(provider){
+    try{
+      var base = apiBase();
+      if(!base.endsWith('/api/v1')) base += '/api/v1';
+      const res = await fetch(base+'/keys/'+provider+'/models');
+      if(!res.ok) return;
+      const data = await res.json();
+      if(data.models && data.models.length > 0){
+        var sel = $('#apiModel');
+        sel.innerHTML = '';
+        data.models.forEach(function(m){
+          var opt = document.createElement('option');
+          opt.value = m;
+          opt.textContent = m;
+          sel.appendChild(opt);
+        });
+        if(sel.options.length > 0){
+          modelSelect.value = sel.options[0].value;
+          sel.value = sel.options[0].value;
+          statusModel.textContent = sel.options[0].textContent;
+        }
+      }
+    } catch(e){}
   }
 
   // ========== 项目管理 ==========
@@ -2633,6 +2663,23 @@ body.focus-mode .editor-area .editor-footer{padding:8px 60px}
       }).catch(() => {
         res.innerHTML = '<span style="color:var(--warning)">⚠ 无法连接，请检查地址</span>';
       });
+  });
+
+  $('fetchModelsBtn').addEventListener('click', function(){
+    var provider = modelSelect.value;
+    var mr = document.getElementById('modelsResult');
+    mr.innerHTML = '... 获取中…';
+    fetchModels(provider).then(function(){
+      var sel = $('#apiModel');
+      mr.innerHTML = '获取到 ' + sel.options.length + ' 个模型';
+      if(sel.options.length > 0){
+        modelSelect.value = sel.options[0].value;
+        sel.value = sel.options[0].value;
+        statusModel.textContent = sel.options[0].textContent;
+      }
+    }).catch(function(){
+      mr.innerHTML = '<span style="color:var(--warning)">获取失败</span>';
+    });
   });
 
   modelSelect.addEventListener('change', function(){
