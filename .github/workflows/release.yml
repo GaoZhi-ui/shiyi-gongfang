@@ -81,7 +81,7 @@ jobs:
             "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
             -d "{\"tag_name\":\"$GITHUB_REF_NAME\"}")
           echo "Response: $RESP"
-          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get(\"id\",d.get(\"message\",\"ERR\")))" 2>/dev/null)
+          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('id','ERR'))" 2>/dev/null || echo "PARSE_ERR")
           echo "Release ID: $RELEASE_ID"
           # Upload assets
           find artifacts/ -name "*.zip" -type f | while read f; do
