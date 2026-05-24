@@ -42,9 +42,11 @@ jobs:
           echo "Packaging for $suffix..."
           ls -la dist/
           if [ -d "dist/${APP_NAME}" ]; then
-            cd dist
-            zip -r "../${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip" "${APP_NAME}/"
-            cd ..
+            if [ "${{ runner.os }}" = "Windows" ]; then
+              powershell -Command "Compress-Archive -Path dist/${APP_NAME}/* -DestinationPath ${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip -Force"
+            else
+              cd dist && zip -r "../${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip" "${APP_NAME}/" && cd ..
+            fi
             ls -la "${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip"
           else
             echo "ERROR: dist/${APP_NAME} not found!"
