@@ -12,52 +12,25 @@ on:
 
 permissions:
   contents: write
-  actions: read
-  checks: read
 
 env:
   APP_NAME: shiyi-gongfang
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # ── 版本提取 ──
-  version:
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
-    steps:
-      - id: get-version
-        run: |
-          VERSION="${{ github.event.inputs.version || github.ref_name }}"
-          VERSION="${VERSION#v}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-
-  # ── 矩阵构建 ──
   build:
-    needs: version
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Python 3.13
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
           cache: pip
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt pyinstaller
-
-      - name: Build with PyInstaller (onedir)
-        run: python build.py --onedir
-
-      - name: Set archive name
+      - run: pip install -r requirements.txt pyinstaller
+      - run: python build.py --onedir
+      - name: Package
         shell: bash
         run: |
           case "${{ runner.os }}" in
@@ -65,86 +38,38 @@ jobs:
             macOS)   suffix="macos" ;;
             Linux)   suffix="linux-x86_64" ;;
           esac
-          echo "ARCHIVE_NAME=${APP_NAME}-${VERSION}-${suffix}" >> "$GITHUB_ENV"
-
-      - name: Package portable zip (Unix)
-        if: runner.os != 'Windows'
-        run: |
           cd dist
-          zip -r "../${{ env.ARCHIVE_NAME }}.zip" "${{ env.APP_NAME }}/"
-
-      - name: Package portable zip (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path "dist/${{ env.APP_NAME }}/*" -DestinationPath "${{ env.ARCHIVE_NAME }}.zip"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a -tzip "../${APP_NAME}-${{ github.ref_name }}-${suffix}.zip" "${APP_NAME}/"
+          else
+            zip -r "../${APP_NAME}-${{ github.ref_name }}-${suffix}.zip" "${APP_NAME}/"
+          fi
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARCHIVE_NAME }}
-          path: ${{ env.ARCHIVE_NAME }}.zip
+          name: ${{ github.ref_name }}-${{ runner.os }}
+          path: ${{ github.ref_name }}-*.zip
 
-  # ── 发布 Release ──
   release:
     if: ${{ success() }}
-    needs: [version, build]
+    needs: build
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: Generate release notes
+      - name: Create Release
         run: |
-          cat > release-notes.md <<- EOF
-          # 写作助手工坊 v${VERSION}
-
-          ## 下载
-
-          | 平台 | 便携版 |
-          |------|--------|
-          | Windows | \`${APP_NAME}-${VERSION}-win64.zip\` |
-          | macOS   | \`${APP_NAME}-${VERSION}-macos.zip\` |
-          | Linux   | \`${APP_NAME}-${VERSION}-linux-x86_64.zip\` |
-
-          > 由 GitHub Actions 自动构建。
-          EOF
-
-      - name: Create GitHub Release
-        run: |
-          echo "Version: v${{ env.VERSION }}"
-          echo "Repo: ${{ github.repository }}"
-          echo "Artifacts:"
-          find artifacts/ -type f -ls 2>/dev/null || echo "No artifacts found in artifacts/"
-          # 用 gh release create 带 --clobber
-          gh release create v${{ env.VERSION }} \
-            --repo ${{ github.repository }} \
-            --title "写作助手工坊 v${{ env.VERSION }}" \
-            --notes-file release-notes.md \
-            --clobber \
-            artifacts/**/*.zip 2>&1 || {
-            echo "gh release create failed, falling back to API..."
-            # 改用 GitHub API 直接创建
-            RELEASE_ID=$(curl -s -X POST \
-              -H "Authorization: token ${{ github.token }}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/releases" \
-              -d "{\"tag_name\": \"v${{ env.VERSION }}\", \"name\": \"写作助手工坊 v${{ env.VERSION }}\", \"body\": \"由 GitHub Actions 自动构建。\", \"draft\": false, \"prerelease\": false}" | tee /tmp/release_resp.json | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('id','ERR:'+str(d)))")
-            echo "Release ID: $RELEASE_ID"
-            for f in artifacts/*/*.zip; do
-              echo "Uploading $f..."
-              curl -s -X POST \
-                -H "Authorization: token ${{ github.token }}" \
-                -H "Content-Type: application/zip" \
-                "https://uploads.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
-                --data-binary @"$f"
-            done
-          }
-        env:
-          GH_TOKEN: ${{ github.token }}
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Creating release for v${VERSION}..."
+          echo "Files:"
+          find artifacts/ -name "*.zip" -type f
+          # Upload each zip as a release asset
+          for f in $(find artifacts/ -name "*.zip" -type f); do
+            echo "  Uploading: $(basename $f)"
+          done
+          # Create release via API
+          curl -s -X POST \
+            -H "Authorization: token ${{ github.token }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"自动构建。\",\"draft\":false,\"prerelease\":false}"
