@@ -81,17 +81,19 @@ jobs:
             "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
             -d "{\"tag_name\":\"$GITHUB_REF_NAME\"}")
           echo "Response: $RESP"
-          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('id','ERR'))" 2>/dev/null || echo "PARSE_ERR")
+          RELEASE_ID=$(echo "$RESP" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || echo "0")
           echo "Release ID: $RELEASE_ID"
-          # Upload assets
-          find artifacts/ -name "*.zip" -type f | while read f; do
-            echo "Uploading $(basename \"$f\")..."
-            curl -s -X POST \
-              -H "Authorization: Bearer $GH_TOKEN" \
-              -H "Content-Type: application/zip" \
-              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
-              --data-binary @"$f"
-            echo ""
-          done
+          # Upload assets (only if release was created)
+          if [ "$RELEASE_ID" != "0" ] && [ "$RELEASE_ID" != "" ]; then
+            find artifacts/ -name "*.zip" -type f | while read f; do
+              echo "Uploading $(basename \"$f\")..."
+              curl -s -X POST \
+                -H "Authorization: Bearer $GH_TOKEN" \
+                -H "Content-Type: application/zip" \
+                "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
+                --data-binary @"$f"
+              echo ""
+            done
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
