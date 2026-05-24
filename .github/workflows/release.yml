@@ -68,25 +68,30 @@ jobs:
           path: artifacts
       - name: Create Release
         run: |
-          echo "Creating release for ${GITHUB_REF_NAME}..."
-          echo "Files to attach:"
-          find artifacts/ -name "*.zip" -type f -exec echo "  {}" \;
+          echo "Creating release for $GITHUB_REF_NAME..."
+          echo "Artifacts:"
+          ls -la artifacts/
+          for d in artifacts/*/; do echo "  $d:"; ls -la "$d"; done
           # Create release via API
+          PAYLOAD="{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"自动构建\",\"draft\":false,\"prerelease\":false}"
+          echo "Payload: $PAYLOAD"
           RESP=$(curl -s -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/releases" \
-            -d "{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"由 GitHub Actions 自动构建。\",\"draft\":false,\"prerelease\":false}")
-          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get('id','ERR'))" 2>/dev/null || echo "ERR")
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
+            -d "$PAYLOAD")
+          echo "Response: $RESP"
+          RELEASE_ID=$(echo "$RESP" | python3 -c "import json,sys;d=json.load(sys.stdin);print(d.get(\"id\",d.get(\"message\",\"ERR\")))" 2>/dev/null)
           echo "Release ID: $RELEASE_ID"
           # Upload assets
-          for f in artifacts/*/*.zip; do
-            echo "Uploading $(basename $f)..."
+          find artifacts/ -name "*.zip" -type f | while read f; do
+            echo "Uploading $(basename \"$f\")..."
             curl -s -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Authorization: Bearer $GH_TOKEN" \
               -H "Content-Type: application/zip" \
-              "https://uploads.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
+              "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
               --data-binary @"$f"
+            echo ""
           done
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
