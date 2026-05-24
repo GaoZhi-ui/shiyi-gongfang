@@ -115,9 +115,11 @@ jobs:
 
       - name: Create GitHub Release
         run: |
+          ls -la artifacts/
+          find artifacts/ -name "*.zip" -type f
           gh release create v${{ env.VERSION }} \
             --title "写作助手工坊 v${{ env.VERSION }}" \
             --notes-file release-notes.md \
-            artifacts/**/*.zip
+            $(find artifacts/ -name "*.zip" -type f)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
