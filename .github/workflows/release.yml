@@ -55,8 +55,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          find artifacts/ -name "*.zip" -type f -exec mv {} . \;
-          rmdir artifacts/*/ 2>/dev/null || true
+          find artifacts/ -type f -name "*.zip" -exec mv {} . \;
+          rm -rf artifacts/*/
           ls -la *.zip
           gh release create "$GITHUB_REF_NAME" \
             --title "写作助手工坊 $GITHUB_REF_NAME" \
