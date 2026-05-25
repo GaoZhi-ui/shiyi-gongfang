@@ -4,11 +4,6 @@ on:
   push:
     tags:
       - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 版本号（如 1.0.0）
-        required: true
 
 permissions:
   contents: write
@@ -39,61 +34,31 @@ jobs:
             macOS) suffix="macos" ;;
             Linux) suffix="linux-x86_64" ;;
           esac
-          echo "Packaging for $suffix..."
-          ls -la dist/
-          if [ -d "dist/${APP_NAME}" ]; then
-            if [ "${{ runner.os }}" = "Windows" ]; then
-              powershell -Command "Compress-Archive -Path dist/${APP_NAME}/* -DestinationPath ${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip -Force"
-            else
-              cd dist && zip -r "../${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip" "${APP_NAME}/" && cd ..
-            fi
-            ls -la "${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            powershell -Command "Compress-Archive -Path dist/${APP_NAME}/* -DestinationPath ${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip -Force"
           else
-            echo "ERROR: dist/${APP_NAME} not found!"
-            ls -la dist/
-            exit 1
+            cd dist && zip -r "../${APP_NAME}-${GITHUB_REF_NAME}-${suffix}.zip" "${APP_NAME}/" && cd ..
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref_name }}-${{ runner.os }}
+          name: ${{ runner.os }}
           path: "*.zip"
 
   release:
-    if: ${{ success() }}
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Create Release
-        run: |
-          echo "Creating release for $GITHUB_REF_NAME..."
-          echo "Artifacts:"
-          ls -la artifacts/
-          for d in artifacts/*/; do echo "  $d:"; ls -la "$d"; done
-          # Create release via API
-          PAYLOAD="{\"tag_name\":\"$GITHUB_REF_NAME\",\"name\":\"写作助手工坊 $GITHUB_REF_NAME\",\"body\":\"自动构建\",\"draft\":false,\"prerelease\":false}"
-          echo "Payload: $PAYLOAD"
-          RESP=$(curl -s -X POST \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases" \
-            -d "{\"tag_name\":\"$GITHUB_REF_NAME\"}")
-          echo "Response: $RESP"
-          RELEASE_ID=$(echo "$RESP" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2 || echo "0")
-          echo "Release ID: $RELEASE_ID"
-          # Upload assets (only if release was created)
-          if [ "$RELEASE_ID" != "0" ] && [ "$RELEASE_ID" != "" ]; then
-            find artifacts/ -name "*.zip" -type f | while read f; do
-              echo "Uploading $(basename \"$f\")..."
-              curl -s -X POST \
-                -H "Authorization: Bearer $GH_TOKEN" \
-                -H "Content-Type: application/zip" \
-                "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$(basename \"$f\")" \
-                --data-binary @"$f"
-              echo ""
-            done
-          fi
+      - name: Flatten and Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find artifacts/ -name "*.zip" -type f -exec mv {} . \;
+          rmdir artifacts/*/ 2>/dev/null || true
+          ls -la *.zip
+          gh release create "$GITHUB_REF_NAME" \
+            --title "写作助手工坊 $GITHUB_REF_NAME" \
+            --generate-notes \
+            *.zip
