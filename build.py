@@ -100,6 +100,17 @@ def build(clean: bool = False, debug: bool = False, onedir: bool = False, gui: b
     cmd.append("--hidden-import=pydantic")
     cmd.append("--hidden-import=multipart")
 
+    # 排除超大依赖（chromadb / sentence-transformers 按需加载，不打包）
+    cmd.append("--exclude-module=chromadb")
+    cmd.append("--exclude-module=sentence_transformers")
+    cmd.append("--exclude-module=transformers")
+    cmd.append("--exclude-module=torch")
+    cmd.append("--exclude-module=torchvision")
+    cmd.append("--exclude-module=torchaudio")
+    cmd.append("--exclude-module=tokenizers")
+    cmd.append("--exclude-module=onnxruntime")
+    cmd.append("--exclude-module=hnswlib")
+
     # 集合路径
     cmd.append("--collect-submodules=routers")
 
